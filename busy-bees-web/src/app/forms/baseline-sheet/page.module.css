@@ -1,0 +1,237 @@
+/* ── List Page ─────────────────────────────────────────────────────── */
+.page {
+    padding: 24px 32px;
+    min-height: 100%;
+    background: #f6f7f8;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.headerIcon {
+    color: #FFC107;
+}
+
+.pageTitle {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.pageSubtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 2px 0 0;
+}
+
+.addBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: #FFC107;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.addBtn:hover {
+    background: #e6ac00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.searchInput {
+    flex: 1;
+    max-width: 340px;
+    padding: 9px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+    border-color: #FFC107;
+}
+
+.countBadge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.tableWrap {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e8edf5;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.table thead tr {
+    background: linear-gradient(135deg, #fffde7, #fff8e1);
+    border-bottom: 2px solid #ffe082;
+}
+
+.table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.clickableRow {
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.clickableRow:hover {
+    background: #fffde7;
+}
+
+.clientCell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #FFC107;
+    color: #000;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.programChip {
+    display: inline-block;
+    background: #fffde7;
+    color: #92400e;
+    border: 1px solid #ffe082;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sessionCountBadge {
+    display: inline-flex;
+    align-items: center;
+}
+
+.masteredBadge {
+    display: inline-block;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dateCell {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.editBtn,
+.deleteBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.editBtn {
+    background: #fffde7;
+    color: #92400e;
+    border: 1px solid #ffe082;
+}
+
+.editBtn:hover {
+    background: #FFC107;
+    color: #000;
+}
+
+.deleteBtn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.deleteBtn:hover {
+    background: #ef4444;
+    color: white;
+}

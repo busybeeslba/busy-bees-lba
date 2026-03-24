@@ -1,0 +1,143 @@
+.wrapper {
+    width: 100%;
+    margin-top: 20px;
+    background: #fff;
+    color: #000;
+}
+
+.printOnly {
+    display: none;
+}
+
+@media print {
+    .printOnly {
+        display: block !important;
+    }
+}
+
+.metaCard {
+    border: 2px solid #000;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 8px; /* Slightly rounded for web, looks fine on print */
+    page-break-inside: avoid;
+}
+
+.metaGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.metaField {
+    flex: 1;
+    min-width: 150px;
+}
+
+.label {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.printLocationBlock {
+    border: 2px solid #000;
+    margin-bottom: 24px;
+    page-break-inside: avoid;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.printLocationTitle {
+    background: #fef08a; /* Pale yellow */
+    border-bottom: 2px solid #000;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 12px;
+    margin: 0;
+    text-transform: uppercase;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.printLocationTitle span {
+    color: #64748b;
+    font-weight: normal;
+    margin-right: 8px;
+    font-size: 12px;
+}
+
+.printSection {
+    border-bottom: 1px solid #cbd5e1;
+    padding: 12px;
+}
+.printLocationBlock > .printSection:last-child {
+    border-bottom: none;
+}
+
+.printSectionGrid {
+    display: flex;
+    border-bottom: 1px solid #cbd5e1;
+}
+.printLocationBlock > .printSectionGrid:last-child {
+    border-bottom: none;
+}
+
+.printSectionHalf {
+    flex: 1;
+    padding: 12px;
+    border-right: 1px solid #cbd5e1;
+}
+.printSectionHalf:last-child {
+    border-right: none;
+}
+
+.printSectionTitle {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #0c4a6e;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    background: #e0f2fe; /* Light sky blue */
+    padding: 4px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.printFieldRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.printField {
+    font-size: 13px;
+    color: #000;
+}
+
+.printField strong {
+    color: #334155;
+    font-weight: 600;
+}
+
+.printNotesBox {
+    font-size: 12px;
+    color: #000;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+}

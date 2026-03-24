@@ -1,0 +1,129 @@
+:root {
+  /* Brand Colors */
+  --primary: #FFC107;
+  --on-primary: #000000;
+
+  /* Backgrounds */
+  --background-light: #f6f7f8;
+  --background-dark: #101922;
+
+  /* Text */
+  --text-light: #0d141b;
+  --text-dark: #ffffff;
+  --text-secondary-light: #4c739a;
+  --text-secondary-dark: #94a3b8;
+
+  /* Borders */
+  --border-light: #dadce0;
+  --border-dark: #1e293b;
+
+  /* Status */
+  --success: #34A853;
+  --warning: #FBBC05;
+  --error: #EA4335;
+}
+
+/* Global scroll behavior control */
+html,
+body {
+  overscroll-behavior: none;
+  /* Prevents bounce effect on Mac/iOS */
+  height: 100%;
+  width: 100%;
+}
+
+/* Default Theme (Light Mode) - Can toggle class later */
+body {
+  background-color: var(--background-light);
+  color: var(--text-light);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Ensure body never scrolls */
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--background-dark);
+    color: var(--text-dark);
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+/* ── Print / PDF styles ────────────────────────────────────── */
+@media print {
+  /* Force a clean page layout */
+  html, body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body > div > div, main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  /* Hide sidebar, top nav, legend bar, buttons, footer */
+  nav, aside, header, footer,
+  [class*="sidebar"], [class*="Sidebar"],
+  [class*="mainNav"], [class*="topBar"],
+  [class*="legendBar"], [class*="gridFooter"],
+  [class*="backRow"], [class*="printBtn"], 
+  [class*="saveBtn"], [class*="cancelBtn"], 
+  [class*="addStepBar"], [class*="editColBtn"], 
+  [class*="checkBtn"] {
+    display: none !important;
+  }
+
+  /* Remove backgrounds and shadows for clean printing */
+  [class*="mainContent"], [class*="pageWrap"] {
+    background: white !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Make the grid fill the page */
+  [class*="gridCard"] {
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 11px !important;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 5px 6px !important;
+  }
+
+  /* Show page title at top */
+  [class*="pageTitle"] {
+    font-size: 18px !important;
+    margin-bottom: 4px !important;
+  }
+
+  @page {
+    margin: 15mm;
+  }
+}

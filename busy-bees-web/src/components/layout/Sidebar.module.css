@@ -1,0 +1,155 @@
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--background-dark);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-dark);
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: width 0.3s ease;
+    /* Add transition */
+    overflow: hidden;
+    /* Hide overflow content */
+    z-index: 100;
+}
+
+.collapsed {
+    width: 80px;
+}
+
+.collapsed .logo {
+    justify-content: center;
+    padding: 24px 0;
+}
+
+.collapsed .navItem {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.collapsed .footer {
+    padding: 24px 0;
+}
+
+.collapsed .logoutBtn {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.logo {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-dark);
+}
+
+.logoIcon {
+    font-size: 24px;
+}
+
+.logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary);
+}
+
+.nav {
+    flex: 1;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.navGroup {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: var(--text-secondary-dark);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    width: 100%;
+    /* For buttons */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.navItem:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-dark);
+}
+
+.navItem.active {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.subMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+    padding-left: 44px;
+    /* Align text under parent group name */
+}
+
+.subMenuItem {
+    display: flex;
+    padding: 10px 12px;
+    color: var(--text-secondary-dark);
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.subMenuItem:hover {
+    color: var(--text-dark);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.subMenuItem.activeSubMenu {
+    color: var(--primary);
+    background-color: rgba(255, 193, 7, 0.1);
+    /* Subtle primary tint */
+}
+
+.footer {
+    padding: 24px;
+    border-top: 1px solid var(--border-dark);
+}
+
+.logoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.logoutBtn:hover {
+    background-color: rgba(234, 67, 53, 0.1);
+}

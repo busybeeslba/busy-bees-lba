@@ -1,0 +1,182 @@
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[15].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[15].oneOf[5].use[3]!./src/components/dashboard/Dashboard.module.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************/
+/* Dashboard Grid */
+.Dashboard_container__CMGrI {
+    padding: 32px;
+}
+
+.Dashboard_header__ouTs7 {
+    margin-bottom: 32px;
+}
+
+.Dashboard_title__E0DDH {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 8px 0;
+}
+
+.Dashboard_subtitle__ewCAn {
+    color: var(--text-secondary-light);
+    margin: 0;
+}
+
+/* Stats Grid */
+.Dashboard_statsGrid___F4JN {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.Dashboard_statCard__GqeCr {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.Dashboard_statHeader__zpb4Y {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.Dashboard_statTitle__q_N46 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.Dashboard_iconBox__l1Hx5 {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: rgba(255, 193, 7, 0.15);
+    /* Primary generic opacity */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Dashboard_statValue__dIgMP {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.Dashboard_statTrend__RAxTS {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.Dashboard_positive__AdggC {
+    color: var(--success);
+}
+
+.Dashboard_negative__Mt1rF {
+    color: var(--error);
+}
+
+/* Main Content Split */
+.Dashboard_contentGrid__LhPM4 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+/* Map Section */
+.Dashboard_mapSection__K1LVf {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.Dashboard_sectionHeader__SwmHw {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.Dashboard_sectionTitle__S2suw {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.Dashboard_mapContainer___Lx6o {
+    flex: 1 1;
+    background-color: #e5e7eb;
+    /* Placeholder gray */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
+    /* Hacky background */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Feed Section */
+.Dashboard_feedSection__6A4ed {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.Dashboard_feedList__46zmu {
+    flex: 1 1;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.Dashboard_feedItem__dm89a {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    gap: 12px;
+}
+
+.Dashboard_feedItem__dm89a:last-child {
+    border-bottom: none;
+}
+
+.Dashboard_feedIcon__GLCFw {
+    margin-top: 4px;
+}
+
+.Dashboard_feedContent__ncd2J h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.Dashboard_feedContent__ncd2J p {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    color: var(--text-secondary-light);
+}
+
+.Dashboard_feedTime__MR_p6 {
+    font-size: 11px;
+    color: var(--text-secondary-light);
+    font-weight: 500;
+}

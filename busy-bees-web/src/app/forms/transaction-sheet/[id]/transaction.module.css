@@ -1,0 +1,655 @@
+.page {
+    padding: 24px 32px;
+    min-height: 100%;
+    background: #f6f7f8;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.backBtn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.pageTitle {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin: 0 0 4px;
+}
+
+.pageSubtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+}
+
+.metaCard {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e8edf5;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.metaGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.metaField {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.select, .input {
+    padding: 9px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.select:focus, .input:focus {
+    border-color: #FFC107;
+}
+
+.locationsSelector {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.locationPills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.locPill {
+    padding: 8px 16px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.locPill:hover {
+    background: #e2e8f0;
+}
+
+.locPillActive {
+    background: #FFC107;
+    color: #000;
+    border-color: #e6ac00;
+}
+
+.locPillActive:hover {
+    background: #e6ac00;
+}
+
+.locPillCustom {
+    background: white;
+    border: 1px dashed #94a3b8;
+    color: #64748b;
+}
+
+.locPillCustom:hover {
+    border-color: #FFC107;
+    color: #d97706;
+}
+
+/* ── Data Table Layout ── */
+.tableContainer {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e8edf5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+}
+
+.gridHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #fffde7, #fff8e1);
+    border-bottom: 2px solid #ffe082;
+    border-left: 4px solid #FFC107;
+    flex-wrap: wrap;
+}
+
+.gridTitle {
+    font-size: 12px;
+    font-weight: 800;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.programBadge {
+    background: #FFC107;
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 100px;
+}
+
+.dataTable {
+    width: 100%;
+    min-width: 1400px;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.dataTable th {
+    background: #fafbff;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e8edf5;
+    border-right: 1px solid #e8edf5;
+    text-align: left;
+}
+
+.dataTable th:last-child {
+    border-right: none;
+}
+
+.dataTable td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    border-right: 1px solid #e8edf5;
+    vertical-align: top;
+}
+
+.dataTable td:last-child {
+    border-right: none;
+}
+
+.dataTable tbody tr:nth-last-child(1) td {
+    border-bottom: none;
+}
+
+.dataTable tbody tr:hover td {
+    background: #f0f9ff;
+}
+
+.locName {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cellStack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cellRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.cellLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    width: 50px;
+}
+
+.cellLabelWide {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    width: 90px;
+}
+
+.compactSelect, .compactInput {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    color: #1e293b;
+    flex: 1;
+    min-width: 0;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.compactSelect:focus, .compactInput:focus {
+    border-color: #FFC107;
+}
+
+.compactNote {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #1e293b;
+    outline: none;
+    resize: vertical;
+    min-height: 48px;
+    margin-top: auto;
+}
+
+.compactNote:focus {
+    background: #fff;
+    border-color: #FFC107;
+}
+
+.deleteRowBtn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deleteRowBtn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.addLocationBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    border: 2px dashed #ffe082;
+    border-radius: 16px;
+    background: transparent;
+    color: #92400e;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 40px;
+}
+
+.addLocationBtn:hover {
+    border-color: #FFC107;
+    background: #fffbeb;
+}
+
+.printBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: white;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-left: auto;
+}
+
+.printBtn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.saveBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: #FFC107;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-left: auto;
+}
+
+.saveBtn:hover:not(:disabled) {
+    background: #e6ac00;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+}
+
+.saveBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 100px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.printOnlyDocument {
+    display: none;
+}
+
+.showPrintOnly {
+    display: none;
+}
+
+@media print {
+    /* Hide form-specific UI buttons */
+    .pageHeader,
+    .saveBtn,
+    .printBtn,
+    .addLocationBtn,
+    .deleteRowBtn,
+    .hidePrint,
+    .locationsSelector {
+        display: none !important;
+    }
+
+    .showPrintOnly {
+        display: block !important;
+    }
+
+    /* Print adjustments */
+    .tableContainer {
+        display: none !important; /* Hide complex web grid on print */
+    }
+
+    .printOnlyDocument {
+        display: block !important;
+        width: 100% !important;
+        margin-top: 20px !important;
+    }
+
+    .printLocationBlock {
+        border: 2px solid #000 !important;
+        margin-bottom: 24px !important;
+        page-break-inside: avoid !important;
+        background: transparent !important;
+    }
+
+    .printLocationTitle {
+        background: #fef08a !important; /* Pale yellow */
+        border-bottom: 2px solid #000 !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        padding: 8px 12px !important;
+        margin: 0 !important;
+        text-transform: uppercase !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .printLocationTitle span {
+        color: #64748b !important;
+        font-weight: normal !important;
+        margin-right: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .printSection {
+        border-bottom: 1px solid #cbd5e1 !important;
+        padding: 12px !important;
+    }
+    .printLocationBlock > .printSection:last-child {
+        border-bottom: none !important;
+    }
+
+    .printSectionGrid {
+        display: flex !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+    }
+    .printLocationBlock > .printSectionGrid:last-child {
+        border-bottom: none !important;
+    }
+
+    .printSectionHalf {
+        flex: 1 !important;
+        padding: 12px !important;
+        border-right: 1px solid #cbd5e1 !important;
+    }
+    .printSectionHalf:last-child {
+        border-right: none !important;
+    }
+
+    .printSectionTitle {
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        color: #0c4a6e !important;
+        margin-bottom: 8px !important;
+        letter-spacing: 0.5px !important;
+        background: #e0f2fe !important; /* Light sky blue */
+        padding: 4px 6px !important;
+        border-radius: 4px !important;
+        display: inline-block !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .printFieldRow {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 16px !important;
+    }
+
+    .printField {
+        font-size: 13px !important;
+        color: #000 !important;
+    }
+
+    .printField strong {
+        color: #334155 !important;
+        font-weight: 600 !important;
+    }
+
+    .printNotesBox {
+        font-size: 12px !important;
+        color: #000 !important;
+        margin-top: 8px !important;
+        padding: 8px 12px !important;
+        background: white !important;
+        border: 1px solid #94a3b8 !important;
+        border-radius: 4px !important;
+    }
+
+    /* Meta Card is still fine but maybe refine it */
+    .metaCard {
+        border: 2px solid #000 !important;
+        background: transparent !important;
+        margin-bottom: 20px !important;
+        padding: 12px 16px !important;
+        page-break-inside: avoid !important;
+    }
+
+    .metaGrid {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 16px !important;
+    }
+
+    .metaField {
+        flex: 1 !important;
+        min-width: 150px !important;
+    }
+
+    .label {
+        font-size: 10px !important;
+        color: #000 !important;
+        text-transform: uppercase !important;
+        margin-bottom: 4px !important;
+        font-weight: bold !important;
+    }
+
+    .gridHeader {
+        background: transparent !important;
+        border-bottom: 2px solid #000 !important;
+        padding: 8px 12px !important;
+        border-radius: 0 !important;
+    }
+
+    .gridTitle {
+        color: #000 !important;
+        font-size: 14px !important;
+    }
+
+    .programBadge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .page table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: auto !important;
+    }
+
+    .page tr {
+        page-break-inside: avoid !important;
+        page-break-after: auto !important;
+    }
+
+    .page th, .page td {
+        border-bottom: 1px solid #000 !important;
+        border-right: 1px solid #000 !important;
+        padding: 8px !important;
+        background: transparent !important;
+        color: #000 !important;
+        vertical-align: top !important;
+    }
+    
+    .page th {
+        font-size: 10px !important;
+        text-transform: uppercase !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        background: #f1f5f9 !important; /* light grey to distinguish header */
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Convert inputs/selects to flat underlined text */
+    .page input, .page select {
+        border: none !important;
+        border-bottom: 1px solid #ccc !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        padding: 2px 0 !important;
+        margin: 0 !important;
+        color: #000 !important;
+        font-size: 12px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+    }
+    
+    /* Textareas as simple bordered boxes without web outlines */
+    .page textarea {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        margin-top: 4px !important;
+        padding: 4px !important;
+        color: #000 !important;
+        font-size: 12px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        box-shadow: none !important;
+        resize: none !important;
+        width: 100% !important;
+        min-height: 48px !important; /* Force space for handwritten notes if empty */
+    }
+
+    .cellRow {
+        display: flex !important;
+        margin-bottom: 6px !important;
+        border: none !important;
+    }
+
+    .cellLabel {
+        color: #000 !important;
+        font-weight: 600 !important;
+        width: 45px !important;
+    }
+}

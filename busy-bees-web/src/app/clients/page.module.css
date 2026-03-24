@@ -1,0 +1,1023 @@
+.container {
+    padding: 32px;
+    height: 100%;
+    /* Fill available height from parent, not viewport */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    /* Reduced margin */
+    flex-shrink: 0;
+    /* Prevent header from shrinking */
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 8px 0;
+}
+
+.subtitle {
+    color: var(--text-secondary-light);
+    margin: 0;
+}
+
+.addBtn {
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.addBtn:active {
+    transform: scale(0.98);
+}
+
+.filterBtn {
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-main);
+    padding: 11px 19px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+    background-color: var(--background-light);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filterBtn:active {
+    transform: scale(0.98);
+}
+
+.rightActions {
+    display: flex;
+    gap: 12px;
+}
+
+.moreActionsBtn {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    width: 44px;
+    /* Match height of addBtn approx */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    transition: all 0.2s;
+}
+
+.moreActionsBtn:hover {
+    background-color: var(--background-light);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+    /* Prevent toolbar from shrinking */
+}
+
+.searchBox {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 300px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+}
+
+.select {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: white;
+    cursor: pointer;
+}
+
+/* Table */
+.tableContainer {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    overflow: auto;
+    /* Allow both scrollbars if needed */
+    flex: 1;
+    min-height: 0;
+    /* Fill wrapper height */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.table th {
+    text-align: left;
+    padding: 16px 24px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary-light);
+    text-transform: uppercase;
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-light);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.clientName {
+    font-weight: 600;
+    color: var(--text-light);
+    display: block;
+}
+
+.clientType {
+    font-size: 12px;
+    color: var(--text-secondary-light);
+    display: none;
+    /* Hide client type if not needed or keep it */
+}
+
+.cellText {
+    font-size: 14px;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.statusBadge {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.active {
+    background-color: rgba(52, 168, 83, 0.1);
+    color: var(--success);
+}
+
+.inactive {
+    background-color: rgba(234, 67, 53, 0.1);
+    color: var(--error);
+}
+
+.contactIcons {
+    display: flex;
+    gap: 8px;
+}
+
+.contactIcons button {
+    background: none;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+}
+
+.contactIcons button:hover {
+    background-color: var(--background-light);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.addressCell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary-light);
+}
+
+.actionBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 8px;
+    /* Added padding for better hit area */
+    transition: color 0.2s;
+}
+
+.actionBtn:hover {
+    color: var(--primary);
+}
+
+.actionMenuContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    min-width: 140px;
+    padding: 4px;
+    animation: fadeIn 0.1s ease-out;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.dropdownItem:hover {
+    background-color: var(--background-light);
+}
+
+.deleteItem {
+    color: var(--error);
+}
+
+.deleteItem:hover {
+    background-color: rgba(234, 67, 53, 0.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Layout Wrapper */
+.contentWrapper {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    padding-bottom: 2px;
+    min-width: 0;
+}
+
+.tableWrapper {
+    flex: 1;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-right: 24px;
+    /* only gap needed: between table and detail card */
+}
+
+/* duplicate tableContainer removed */
+
+/* Detail View */
+.detailView {
+    flex-shrink: 0;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Ensure handle is positioned correctly */
+}
+
+
+.resizeHandle {
+    position: absolute;
+    left: -24px;
+    /* Place it in the gap */
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    /* Fill the entire gap */
+    cursor: col-resize;
+    z-index: 100;
+    transition: none;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resizeHandle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 48px;
+    background-color: var(--border-light);
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+
+/* Remove hover expansion width/left changes as we have full gap */
+.resizeHandle:hover,
+.resizeHandle:active {
+    /* No movement needed */
+    width: 24px;
+    /* Explicitly keep width */
+}
+
+.resizeHandle:hover::after,
+.resizeHandle:active::after {
+    background-color: var(--primary);
+    height: 64px;
+    /* Slightly longer on hover */
+}
+
+.detailCard {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    /* Fill view height */
+    display: flex;
+    flex-direction: column;
+}
+
+.detailHeader {
+    background: white;
+    padding: 28px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+}
+
+.detailClientId {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary-light);
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.activeClientId {
+    background-color: rgba(52, 168, 83, 0.1);
+    color: var(--success);
+}
+
+.inactiveClientId {
+    background-color: rgba(234, 67, 53, 0.1);
+    color: var(--error);
+}
+
+.avatarLarge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);
+    flex-shrink: 0;
+}
+
+.detailLabel {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.detailName {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 12px 0;
+}
+
+.detailGuardian {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 24px 0;
+}
+
+.detailActions {
+    display: flex;
+    gap: 12px;
+}
+
+.iconBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.iconBtn:hover {
+    background: var(--background-light);
+    border-color: var(--primary);
+}
+
+/* Cleaned up Detail Body */
+.detailBody {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+    background-color: #f4f6fb;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+/* Sections */
+.detailSection {
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 0;
+    overflow: visible;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.sectionTitle {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #92400e;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+    margin: 0;
+    padding: 12px 20px;
+    background: linear-gradient(to right, #fffde7, #fffbf0);
+    border-bottom: 1px solid #ffe082;
+    border-left: 4px solid #FFC107;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detailSectionBody {
+    padding: 20px;
+}
+
+.divider {
+    height: 12px;
+    background: transparent;
+    margin: 0;
+    display: block;
+}
+
+.detailIntro {
+    font-size: 14px;
+    color: var(--text-secondary-light);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.infoGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.infoGridTwoCol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Multi-Entry Styles */
+.multiEntryList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Reduced gap since items are tighter */
+    width: 100%;
+}
+
+.multiEntryItem {
+    display: grid;
+    grid-template-columns: 20px 1fr auto 26px;
+    align-items: center;
+    padding: 5px 0;
+    gap: 8px;
+}
+
+/* Optional: Add a very subtle separator except for start/end if list is long, 
+   but user asked to remove frame. Let's keep it clean. */
+
+.multiEntryLeft {
+    display: contents;
+}
+
+.primaryBadge {
+    font-size: 9px;
+    font-weight: 800;
+    color: #92400e;
+    background-color: #fffde7;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    border: 1px solid #ffe082;
+}
+
+.multiEntryValue {
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.multiEntryType {
+    font-size: 9px;
+    color: #64748b;
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 100px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+    justify-self: end;
+}
+
+.contactActionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #fffde7;
+    color: #92400e;
+    border: 1px solid #ffe082;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    margin-left: 4px;
+}
+
+.contactActionBtn:hover {
+    background: #FFC107;
+    color: #1a1a1a;
+    border-color: #FFC107;
+}
+
+.infoItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.infoItem label {
+    font-size: 12px;
+    color: var(--text-secondary-light);
+    font-weight: 500;
+}
+
+.infoItem span {
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 5px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.closeBtn:hover {
+    color: var(--text-light);
+}
+
+/* Header button group — Edit + Expand + Close together */
+.headerActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    z-index: 2;
+}
+
+/* Expand button inside headerActions */
+.expandDetailBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 5px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.expandDetailBtn:hover {
+    color: var(--primary);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* Visible drag-strip resize handle between two sibling flex panels */
+.panelResizeHandle {
+    width: 6px;
+    flex-shrink: 0;
+    background: transparent;
+    cursor: col-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    transition: none;
+}
+
+.panelResizeHandle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 0;
+    background-color: var(--border-light);
+    border-radius: 2px;
+    transition: all 0.2s;
+    opacity: 0;
+}
+
+.panelResizeHandle:hover::after,
+.panelResizeHandle:active::after {
+    background-color: var(--primary);
+    height: 64px;
+    opacity: 1;
+}
+
+/* Full-width expanded detail panel */
+.detailViewExpanded {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.serviceBubble {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    display: inline-block;
+    color: #fff;
+}
+
+.detailServicesTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.detailServicesTable th,
+.detailServicesTable td {
+    padding: 20px 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.detailServicesTable th {
+    font-weight: 500;
+    color: var(--text-secondary-light);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.detailServicesTable td {
+    color: var(--text-main);
+}
+
+/* ─── Client Forms Table ───────────────────────────────────────────── */
+.clientFormsTableWrap {
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.clientFormsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.clientFormsTable th {
+    text-align: left;
+    padding: 8px 12px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.clientFormsTable td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-light);
+    vertical-align: middle;
+}
+
+.clientFormsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.clientFormsTable tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.clientFormsFooter {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-secondary-light);
+    background: #f9fafb;
+    border-top: 1px solid var(--border-light);
+    font-weight: 500;
+}
+
+/* ─── Form Icon Cards ──────────────────────────────────────────────── */
+.formIconsRow {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.formIconCard {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-light);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.formIconCard:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.formIconEmoji {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.formIconLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.formIconBadge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 100px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ─── Form Detail Aside (third panel) ─────────────────────────────── */
+.formDetailAside {
+    flex-shrink: 0;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    animation: slideIn 0.3s ease-out;
+}
+
+.formDetailHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    flex-shrink: 0;
+}
+
+.formDetailHeader>div {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Inline icon buttons inside the form detail header flex row */
+.formIconBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 5px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.formIconBtn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-light);
+}
+
+.formDetailCount {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.formDetailClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.formDetailClose:hover {
+    background: #f1f5f9;
+    color: var(--text-light);
+}
+
+.formDetailChartSection {
+    padding: 16px 24px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.formDetailChartTitle {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary-light);
+    margin-bottom: 8px;
+}
+
+.formDetailChartLegend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-secondary-light);
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.formDetailTableWrap {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.formDetailEmpty {
+    padding: 40px 24px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary-light);
+    font-style: italic;
+}

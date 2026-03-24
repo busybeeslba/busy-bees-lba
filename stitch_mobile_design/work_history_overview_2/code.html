@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Session Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .signature-pad {
+            background-image: linear-gradient(rgba(19, 91, 236, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(19, 91, 236, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-dark overflow-x-hidden">
+<header class="sticky top-0 z-20 bg-background-dark/80 backdrop-blur-md border-b border-white/5">
+<div class="flex items-center p-4 justify-between">
+<button class="flex size-10 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-white">arrow_back_ios_new</span>
+</button>
+<h2 class="text-white text-lg font-semibold leading-tight tracking-tight">Session Details</h2>
+<div class="w-10"></div> 
+</div>
+</header>
+<main class="flex-1 px-4 py-6 space-y-6 pb-12">
+<div class="bg-[#192233] rounded-2xl p-5 border border-white/5 shadow-xl">
+<div class="flex flex-col gap-4">
+<div>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary/20 text-primary border border-primary/30 mb-2">Completed</span>
+<h1 class="text-2xl font-bold text-white tracking-tight">Client: Acme Corp</h1>
+</div>
+<div class="space-y-3">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">calendar_today</span>
+<div>
+<p class="text-xs text-[#92a4c9] font-medium uppercase tracking-wider">Date &amp; Time</p>
+<p class="text-sm text-white font-medium">Oct 23, 09:15 AM - 12:00 PM</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">settings</span>
+<div>
+<p class="text-xs text-[#92a4c9] font-medium uppercase tracking-wider">Service Type</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary">build</span>
+<p class="text-sm text-white font-medium">Maintenance</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section class="space-y-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">description</span>
+<h3 class="text-[#92a4c9] text-xs font-bold uppercase tracking-widest">Session Summary</h3>
+</div>
+<div class="bg-[#192233] rounded-xl p-4 border border-white/5">
+<p class="text-sm text-white/80 leading-relaxed">
+                        Completed the quarterly preventive maintenance on the primary HVAC system. All filters were replaced and the refrigerant levels were checked and found to be within optimal ranges. Inspected the electrical control panel for any loose connections. The unit is now operating at peak efficiency. No further action required until the next scheduled visit.
+                    </p>
+</div>
+</section>
+<section class="space-y-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">folder_open</span>
+<h3 class="text-[#92a4c9] text-xs font-bold uppercase tracking-widest">Documents</h3>
+</div>
+<div class="grid grid-cols-1 gap-2">
+<div class="flex items-center justify-between bg-[#192233] p-3 rounded-xl border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-400">picture_as_pdf</span>
+<span class="text-sm font-medium">Report.pdf</span>
+</div>
+<button class="text-primary p-1 hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<div class="flex items-center justify-between bg-[#192233] p-3 rounded-xl border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-400">image</span>
+<span class="text-sm font-medium">Site_Photo.jpg</span>
+</div>
+<button class="text-primary p-1 hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</section>
+<section class="space-y-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">draw</span>
+<h3 class="text-[#92a4c9] text-xs font-bold uppercase tracking-widest">Client Signature</h3>
+</div>
+<div class="bg-white rounded-xl p-4 shadow-inner border border-white/10 flex flex-col items-center">
+<div class="w-full h-32 flex items-center justify-center relative overflow-hidden signature-pad rounded-lg">
+<svg class="w-48 h-auto text-slate-800 opacity-90" viewBox="0 0 200 80">
+<path d="M20,50 C40,20 60,60 80,40 C100,20 120,60 140,30 C160,10 180,50 190,40" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M30,30 C45,35 50,45 60,40" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+<div class="absolute bottom-2 right-4 text-[10px] text-slate-400 font-medium italic">Verified by Acme Corp</div>
+</div>
+<div class="w-full mt-3 pt-3 border-t border-slate-100 flex justify-between items-center px-1">
+<span class="text-[11px] text-slate-500 font-medium">Signed by: John Doe</span>
+<span class="text-[11px] text-slate-400">Oct 23, 12:04 PM</span>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+</body></html>

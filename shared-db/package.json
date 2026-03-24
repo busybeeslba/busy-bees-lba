@@ -1,0 +1,11 @@
+{
+    "name": "busy-bees-shared-db",
+    "version": "1.0.0",
+    "description": "Shared mock database for Busy Bees LBA development",
+    "scripts": {
+        "start": "json-server --watch db.json --port 3011 --host 0.0.0.0"
+    },
+    "dependencies": {
+        "json-server": "^0.17.4"
+    }
+}

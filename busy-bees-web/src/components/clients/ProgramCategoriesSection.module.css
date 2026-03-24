@@ -1,0 +1,364 @@
+/* ─── Root ──────────────────────────────────────────────────────── */
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary-light, #64748b);
+}
+
+.count {
+    font-size: 11px;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 1px 7px;
+    border-radius: 100px;
+}
+
+/* ─── Category list ─────────────────────────────────────────────── */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.catRow {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+}
+
+.catHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.catHeader:hover {
+    background: #f8fafc;
+}
+
+.chevron {
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.catName {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.catBadge {
+    font-size: 11px;
+    font-weight: 700;
+    background: #f0f4ff;
+    color: #4f46e5;
+    padding: 1px 7px;
+    border-radius: 100px;
+    flex-shrink: 0;
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.iconBtn:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.deleteBtn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.targets {
+    padding: 8px 12px 10px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+}
+
+.targetChip {
+    font-size: 12px;
+    font-weight: 500;
+    background: #f0f4ff;
+    color: #4338ca;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid #e0e7ff;
+}
+
+.emptyTargets {
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 6px 12px 10px 32px;
+    margin: 0;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* ─── Tag chip input ────────────────────────────────────────────── */
+.tagInput {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 7px 10px;
+    min-height: 42px;
+    background: white;
+    cursor: text;
+    transition: border-color 0.15s;
+}
+
+.tagInput:focus-within {
+    border-color: #6366f1;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #5b21b6;
+    padding: 3px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+}
+
+.tagRemove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    opacity: 0.7;
+}
+
+.tagRemove:hover {
+    opacity: 1;
+}
+
+.tagInputField {
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #1e293b;
+    background: transparent;
+    flex: 1;
+    min-width: 120px;
+}
+
+/* ─── Modal overlay ─────────────────────────────────────────────── */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    width: 100%;
+    max-width: 480px;
+    animation: slideUp 0.2s ease;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modalTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.modalClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.15s;
+}
+
+.modalClose:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.modalBody {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formInput {
+    width: 100%;
+    font-size: 13px;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    color: #1e293b;
+}
+
+.formInput:focus {
+    border-color: #6366f1;
+}
+
+.modalFooter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+
+.saveBtn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.saveBtn:hover {
+    background: #4f46e5;
+}
+
+.cancelBtn {
+    background: white;
+    color: #64748b;
+    border: 1.5px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.15s;
+}
+
+.cancelBtn:hover {
+    background: #f1f5f9;
+}
+
+/* ─── Add button ────────────────────────────────────────────────── */
+.addBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6366f1;
+    background: #f5f3ff;
+    border: 1.5px dashed #c4b5fd;
+    border-radius: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.addBtn:hover {
+    background: #ede9fe;
+    border-color: #a78bfa;
+}

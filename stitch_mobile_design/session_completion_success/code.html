@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Session Completion Success</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Spacer (Status Bar Area) -->
+<div class="h-12 w-full"></div>
+<!-- Main Content Container -->
+<main class="flex flex-1 flex-col items-center justify-center px-6 py-8">
+<!-- Success Icon Section -->
+<div class="mb-8 flex h-32 w-32 items-center justify-center rounded-full bg-primary/10">
+<span class="material-symbols-outlined text-primary text-[80px]">
+                    check_circle
+                </span>
+</div>
+<!-- Headline Section -->
+<div class="text-center">
+<h1 class="text-white tracking-tight text-[32px] font-bold leading-tight pb-3">
+                    Session Completed!
+                </h1>
+<p class="text-[#92c9a4] text-base font-normal leading-normal pb-8 max-w-[280px] mx-auto">
+                    Great job! Your session details have been successfully uploaded.
+                </p>
+</div>
+<!-- Summary Card -->
+<div class="w-full max-w-sm rounded-xl bg-white/5 border border-white/10 p-1 mb-10">
+<div class="grid grid-cols-[35%_1fr] gap-x-2">
+<div class="col-span-2 grid grid-cols-subgrid border-b border-white/5 py-4 px-4">
+<p class="text-[#92c9a4] text-sm font-medium leading-normal">Client</p>
+<p class="text-white text-sm font-semibold leading-normal text-right">Acme Corp</p>
+</div>
+<div class="col-span-2 grid grid-cols-subgrid border-b border-white/5 py-4 px-4">
+<p class="text-[#92c9a4] text-sm font-medium leading-normal">Total Duration</p>
+<p class="text-white text-sm font-semibold leading-normal text-right">02:42:15</p>
+</div>
+<div class="col-span-2 grid grid-cols-subgrid py-4 px-4">
+<p class="text-[#92c9a4] text-sm font-medium leading-normal">Service</p>
+<p class="text-white text-sm font-semibold leading-normal text-right">Maintenance</p>
+</div>
+</div>
+</div>
+<!-- Action Area Image (Abstract Data Representation) -->
+<div class="w-full max-w-sm mb-10 overflow-hidden rounded-xl h-32 opacity-60">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover" data-alt="Abstract green and dark professional geometric pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCM1XdfQmaez2Z80KCRCumNPpfTSxHpHIt_d_GYCdt7t63M3EHPHHxKM5Hd6-vlbPYKNLkHtc2Eod-Ajs7TT3vNZfN3dXaq7OAJ0eu6Zx0qI40jzge35rBd-NdE_Fag6OmrUl-27PASmTt1PyCA42IqqUWSiTmNvB3Qj-t3h8rGDwbcU6UWLJHQSjsjEYpinZSr9Nz-Xwuu9-xwhwSNzLgDbxgzx12pVZMplAhyWBvX0OIPye0mHRaHQHvHatSaUND76pHthoHQ1dLX");'>
+</div>
+</div>
+</main>
+<!-- Fixed Footer Actions -->
+<footer class="mt-auto px-6 pb-12 w-full max-w-sm mx-auto space-y-3">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-primary text-[#102216] text-base font-bold tracking-[0.015em]">
+<span class="truncate">Return to Dashboard</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 border border-white/20 text-white text-base font-semibold tracking-[0.015em]">
+<span class="truncate">View in History</span>
+</button>
+</footer>
+<!-- Bottom Safe Area Spacer -->
+<div class="h-5"></div>
+</div>
+</body></html>

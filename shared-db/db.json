@@ -1,0 +1,1184 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Alex Bee",
+      "email": "alex@busybees.com",
+      "avatarUrl": "https://ui-avatars.com/api/?name=Alex+Bee&background=00E3BF&color=000",
+      "phoneNumber": "+1 (555) 123-4567",
+      "employeeId": "BB-1001",
+      "role": "field_worker",
+      "status": "active"
+    },
+    {
+      "id": "u2",
+      "name": "Maria Santos",
+      "email": "maria@busybees.com",
+      "avatarUrl": "https://ui-avatars.com/api/?name=Maria+Santos&background=CC026F&color=fff",
+      "phoneNumber": "+1 (555) 234-5678",
+      "employeeId": "BB-1002",
+      "role": "field_worker",
+      "status": "active"
+    },
+    {
+      "id": "u3",
+      "name": "James Okafor",
+      "email": "james@busybees.com",
+      "avatarUrl": "https://ui-avatars.com/api/?name=James+Okafor&background=00E3BF&color=000",
+      "phoneNumber": "+1 (555) 345-6789",
+      "employeeId": "BB-1003",
+      "role": "field_worker",
+      "status": "offline"
+    },
+    {
+      "id": "u4",
+      "name": "Linda Chen",
+      "email": "linda@busybees.com",
+      "avatarUrl": "https://ui-avatars.com/api/?name=Linda+Chen&background=CC026F&color=fff",
+      "phoneNumber": "+1 (555) 456-7890",
+      "employeeId": "BB-1004",
+      "role": "supervisor",
+      "status": "active"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Emma Rodriguez",
+      "kidsName": "Emma Rodriguez",
+      "guardian": "Sofia",
+      "guardianLastName": "Rodriguez",
+      "dob": "2017-03-12",
+      "teacher": "Ms. Thompson",
+      "status": "Active",
+      "iepMeeting": "2026-04-10",
+      "services": [
+        {
+          "serviceId": "SRV-7292",
+          "hours": "40h"
+        },
+        {
+          "serviceId": "SRV-7688",
+          "hours": "20h"
+        }
+      ],
+      "assignedPrograms": "We need to work with Emma on learning the colors, shapes, and numbers.",
+      "programPercentage": "0%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "142 Maple Ave, Miami, FL 33101",
+          "type": "Home",
+          "isPrimary": true
+        },
+        {
+          "id": "1771887703234",
+          "value": "Waco, KS 67060, United States of America",
+          "type": "Other",
+          "isPrimary": false
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0192",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "sofia.rodriguez@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 1,
+      "address": "142 Maple Ave, Miami, FL 33101",
+      "phone": "(305) 555-0192",
+      "email": "sofia.rodriguez@email.com",
+      "firstName": "Emma",
+      "lastName": "Rodriguez",
+      "programCategories": [
+        {
+          "id": "TCHYM2",
+          "name": "Colors",
+          "targets": [
+            {
+              "id": "2LEWTF",
+              "name": "Red"
+            },
+            {
+              "id": "9ZF32F",
+              "name": "green"
+            },
+            {
+              "id": "Z3RVU4",
+              "name": "yellow"
+            }
+          ]
+        },
+        {
+          "id": "30E0WD",
+          "name": "Shapes",
+          "targets": [
+            {
+              "id": "JTXY7F",
+              "name": "Square"
+            },
+            {
+              "id": "TYVCEZ",
+              "name": "Triangle"
+            },
+            {
+              "id": "5K630L",
+              "name": "Circle"
+            }
+          ]
+        },
+        {
+          "id": "PN1VFD",
+          "name": "Daily Routine",
+          "targets": [
+            {
+              "id": "FRJGNM",
+              "name": "Walking into class"
+            },
+            {
+              "id": "TVYX8C",
+              "name": "Washing hand"
+            },
+            {
+              "id": "I2DGQH",
+              "name": "Eat breakfast"
+            }
+          ]
+        },
+        {
+          "id": "71Z20C",
+          "name": "Transition - Location",
+          "targets": [
+            {
+              "id": "ADOL69",
+              "name": "Cafeteria"
+            },
+            {
+              "id": "FI9AUO",
+              "name": "GYM"
+            },
+            {
+              "id": "5ZWELR",
+              "name": "211"
+            },
+            {
+              "id": "L215WN",
+              "name": "Launch"
+            },
+            {
+              "id": "ZYAAZ8",
+              "name": "Bus"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Liam Chen",
+      "kidsName": "Liam Chen",
+      "guardian": "David",
+      "guardianLastName": "Chen",
+      "dob": "2016-08-05",
+      "teacher": "Mr. Patel",
+      "status": "Active",
+      "iepMeeting": "2026-03-18",
+      "services": [
+        {
+          "serviceId": "SRV-1002",
+          "hours": "60h"
+        },
+        {
+          "serviceId": "SRV-7019",
+          "hours": "30h"
+        }
+      ],
+      "assignedPrograms": "Home ABA, Comp School ABA",
+      "programPercentage": "80%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "78 Ocean Dr, Coral Gables, FL 33134",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(786) 555-0341",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "david.chen@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 2,
+      "firstName": "Liam",
+      "lastName": "Chen",
+      "programCategories": []
+    },
+    {
+      "name": "Ava Johnson",
+      "kidsName": "Ava Johnson",
+      "guardian": "Michelle",
+      "guardianLastName": "Johnson",
+      "dob": "2018-01-22",
+      "teacher": "Ms. Rivera",
+      "status": "Active",
+      "iepMeeting": "2026-05-07",
+      "services": [
+        {
+          "serviceId": "SRV-2311",
+          "hours": "25h"
+        },
+        {
+          "serviceId": "SRV-2481",
+          "hours": "10h"
+        }
+      ],
+      "assignedPrograms": "Social Skills, AAC Device",
+      "programPercentage": "55%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "310 Palm Blvd, Hialeah, FL 33010",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0487",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "michelle.johnson@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 3
+    },
+    {
+      "name": "Noah Williams",
+      "kidsName": "Noah Williams",
+      "guardian": "James",
+      "guardianLastName": "Williams",
+      "dob": "2015-11-30",
+      "teacher": "Ms. Thompson",
+      "status": "Active",
+      "iepMeeting": "2026-06-15",
+      "services": [
+        {
+          "serviceId": "SRV-4243",
+          "hours": "30h"
+        },
+        {
+          "serviceId": "SRV-1001",
+          "hours": "50h"
+        }
+      ],
+      "assignedPrograms": "PT, School ABA",
+      "programPercentage": "72%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "55 SW 8th St, Miami, FL 33130",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0213",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "james.williams@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 4
+    },
+    {
+      "name": "Isabella Martinez",
+      "kidsName": "Isabella Martinez",
+      "guardian": "Carmen",
+      "guardianLastName": "Martinez",
+      "dob": "2017-07-14",
+      "teacher": "Mr. Patel",
+      "status": "Active",
+      "iepMeeting": "2026-03-25",
+      "services": [
+        {
+          "serviceId": "SRV-7099",
+          "hours": "15h"
+        },
+        {
+          "serviceId": "SRV-1003",
+          "hours": "20h"
+        }
+      ],
+      "assignedPrograms": "Comp FCAT, BCBA Supervision",
+      "programPercentage": "45%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "892 NW 7th Ave, Miami, FL 33136",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(786) 555-0628",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "carmen.martinez@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 5
+    },
+    {
+      "name": "Ethan Brown",
+      "kidsName": "Ethan Brown",
+      "guardian": "Robert",
+      "guardianLastName": "Brown",
+      "dob": "2016-04-03",
+      "teacher": "Ms. Rivera",
+      "status": "Inactive",
+      "iepMeeting": "2025-11-12",
+      "services": [
+        {
+          "serviceId": "SRV-1002",
+          "hours": "40h"
+        }
+      ],
+      "assignedPrograms": "Home ABA",
+      "programPercentage": "90%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "1200 Brickell Ave, Miami, FL 33131",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0755",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "robert.brown@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 6
+    },
+    {
+      "name": "Mia Thompson",
+      "kidsName": "Mia Thompson",
+      "guardian": "Angela",
+      "guardianLastName": "Thompson",
+      "dob": "2018-09-19",
+      "teacher": "Ms. Thompson",
+      "status": "Active",
+      "iepMeeting": "2026-07-22",
+      "services": [
+        {
+          "serviceId": "SRV-2311",
+          "hours": "35h"
+        },
+        {
+          "serviceId": "SRV-1004",
+          "hours": "12h"
+        }
+      ],
+      "assignedPrograms": "Social Skills, PCAT Training",
+      "programPercentage": "60%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "430 Sunset Dr, South Miami, FL 33143",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0891",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "angela.thompson@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 7
+    },
+    {
+      "name": "Lucas Garcia",
+      "kidsName": "Lucas Garcia",
+      "guardian": "Elena",
+      "guardianLastName": "Garcia",
+      "dob": "2015-05-28",
+      "teacher": "Mr. Patel",
+      "status": "Active",
+      "iepMeeting": "2026-04-30",
+      "services": [
+        {
+          "serviceId": "SRV-1001",
+          "hours": "60h"
+        },
+        {
+          "serviceId": "SRV-5830",
+          "hours": "40h"
+        }
+      ],
+      "assignedPrograms": "School ABA, Home ABA",
+      "programPercentage": "88%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "2201 Collins Ave, Miami Beach, FL 33139",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(786) 555-0174",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "elena.garcia@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 8
+    },
+    {
+      "name": "Sophia Davis",
+      "kidsName": "Sophia Davis",
+      "guardian": "Brian",
+      "guardianLastName": "Davis",
+      "dob": "2019-02-07",
+      "teacher": "Ms. Rivera",
+      "status": "Active",
+      "iepMeeting": "2026-08-05",
+      "services": [
+        {
+          "serviceId": "SRV-7292",
+          "hours": "50h"
+        },
+        {
+          "serviceId": "SRV-4243",
+          "hours": "25h"
+        }
+      ],
+      "assignedPrograms": "Speech, PT",
+      "programPercentage": "40%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "615 NE 2nd Ave, Miami, FL 33132",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0562",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "brian.davis@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 9
+    },
+    {
+      "name": "Oliver Lee",
+      "kidsName": "Oliver Lee",
+      "guardian": "Jenny",
+      "guardianLastName": "Lee",
+      "dob": "2016-12-15",
+      "teacher": "Ms. Thompson",
+      "status": "Active",
+      "iepMeeting": "2026-02-28",
+      "services": [
+        {
+          "serviceId": "SRV-2481",
+          "hours": "15h"
+        },
+        {
+          "serviceId": "SRV-1003",
+          "hours": "18h"
+        },
+        {
+          "serviceId": "SRV-7688",
+          "hours": "22h"
+        }
+      ],
+      "assignedPrograms": "AAC Device, BCBA Supervision, OT",
+      "programPercentage": "75%",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "889 SW 27th Ave, Miami, FL 33135",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(786) 555-0439",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "jenny.lee@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 10
+    },
+    {
+      "name": "Noam Nuri",
+      "kidsName": "Noam Nuri",
+      "guardian": "Yosi",
+      "guardianLastName": "Nuri",
+      "address": "",
+      "phone": "917-664-2056",
+      "dob": "2015-06-23",
+      "email": "yosinuri@gmail.com",
+      "teacher": "Ms. K",
+      "services": [
+        {
+          "id": "1",
+          "serviceId": "SRV-2481",
+          "hours": "10h"
+        },
+        {
+          "id": "1771887922663",
+          "serviceId": "SRV-4243",
+          "hours": "20h"
+        },
+        {
+          "id": "1771887926348",
+          "serviceId": "SRV-7019",
+          "hours": "30"
+        }
+      ],
+      "assignedPrograms": "Test Program",
+      "programPercentage": "0%",
+      "iepMeeting": "2026-02-20",
+      "status": "Active",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "917-664-2056",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "yosinuri@gmail.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 11
+    },
+    {
+      "name": "Nadav Nuri",
+      "kidsName": "Nadav Nuri",
+      "guardian": "Keren",
+      "guardianLastName": "Kidron",
+      "address": "6706 Old Stage Road, North Bethesda, MD 20852, United States of America",
+      "phone": "202-557-5569",
+      "dob": "2019-04-29",
+      "email": "kkidron@yahoo.com",
+      "teacher": "Miss A",
+      "services": [
+        {
+          "id": "1",
+          "serviceId": "SRV-4243",
+          "hours": "5h"
+        },
+        {
+          "id": "1771910359013",
+          "serviceId": "SRV-1002",
+          "hours": "26h"
+        }
+      ],
+      "assignedPrograms": "This is a text for a simple program that was assigned to a client.\n",
+      "programPercentage": "0%",
+      "iepMeeting": "2026-01-01",
+      "status": "Active",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "6706 Old Stage Road, North Bethesda, MD 20852, United States of America",
+          "type": "Home",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "202-557-5569",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "kkidron@yahoo.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 12
+    },
+    {
+      "name": "Emma Rodriguez",
+      "kidsName": "Emma Rodriguez",
+      "guardian": "Sofia",
+      "guardianLastName": "Rodriguez",
+      "address": "142 Maple Ave, Miami, FL 33101",
+      "phone": "(305) 555-0192",
+      "dob": "2017-03-12",
+      "email": "sofia.rodriguez@email.com",
+      "teacher": "Ms. Thompson",
+      "services": [
+        {
+          "serviceId": "SRV-7292",
+          "hours": "40h"
+        },
+        {
+          "serviceId": "SRV-7688",
+          "hours": "20h"
+        }
+      ],
+      "assignedPrograms": "We need to work with Emma on learning the colors, shapes, and numbers.",
+      "programPercentage": "0%",
+      "iepMeeting": "2026-04-10",
+      "status": "Active",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "142 Maple Ave, Miami, FL 33101",
+          "type": "Home",
+          "isPrimary": true
+        },
+        {
+          "id": "1771887703234",
+          "value": "Waco, KS 67060, United States of America",
+          "type": "Other",
+          "isPrimary": false
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0192",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "sofia.rodriguez@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 13
+    },
+    {
+      "firstName": "Emma",
+      "lastName": "Rodriguez",
+      "guardian": "Sofia",
+      "guardianLastName": "Rodriguez",
+      "dob": "2017-03-12",
+      "status": "Active",
+      "teacher": "Ms. Thompson",
+      "services": [
+        {
+          "serviceId": "SRV-7292",
+          "hours": "40h"
+        },
+        {
+          "serviceId": "SRV-7688",
+          "hours": "20h"
+        }
+      ],
+      "assignedPrograms": "We need to work with Emma on learning the colors, shapes, and numbers.",
+      "programCategories": [
+        {
+          "id": "TCHYM2",
+          "name": "Colors",
+          "targets": [
+            {
+              "id": "2LEWTF",
+              "name": "Red"
+            },
+            {
+              "id": "9ZF32F",
+              "name": "green"
+            },
+            {
+              "id": "Z3RVU4",
+              "name": "yellow"
+            }
+          ]
+        },
+        {
+          "id": "30E0WD",
+          "name": "Shapes",
+          "targets": [
+            {
+              "id": "JTXY7F",
+              "name": "Square"
+            },
+            {
+              "id": "TYVCEZ",
+              "name": "Triangle"
+            },
+            {
+              "id": "5K630L",
+              "name": "Circle"
+            }
+          ]
+        },
+        {
+          "id": "97TH1G",
+          "name": "Daily routine",
+          "targets": [
+            {
+              "id": "U0Z2E8",
+              "name": "Cafeteria"
+            },
+            {
+              "id": "D3QTJG",
+              "name": "211"
+            }
+          ]
+        }
+      ],
+      "iepMeeting": "2026-04-10",
+      "addresses": [
+        {
+          "id": "1",
+          "value": "142 Maple Ave, Miami, FL 33101",
+          "type": "Home",
+          "isPrimary": true
+        },
+        {
+          "id": "1771887703234",
+          "value": "Waco, KS 67060, United States of America",
+          "type": "Other",
+          "isPrimary": false
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "(305) 555-0192",
+          "type": "Mobile",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "1",
+          "value": "sofia.rodriguez@email.com",
+          "type": "Personal",
+          "isPrimary": true
+        }
+      ],
+      "id": 14
+    }
+  ],
+  "providers": [
+    {
+      "id": "p1",
+      "name": "Busy Bees",
+      "color": "#FFF8E6",
+      "textColor": "#D97706"
+    },
+    {
+      "id": "p2",
+      "name": "So here",
+      "color": "#f6fa00",
+      "textColor": "#000000"
+    },
+    {
+      "id": "p3",
+      "name": "School",
+      "color": "#FFF8E6",
+      "textColor": "#D97706"
+    }
+  ],
+  "available_services": [
+    {
+      "id": "SRV-2481",
+      "serviceId": "SRV-2481",
+      "name": "AAC Device",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-2311",
+      "serviceId": "SRV-2311",
+      "name": "Social Skills",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-4243",
+      "serviceId": "SRV-4243",
+      "name": "PT",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-7688",
+      "serviceId": "SRV-7688",
+      "name": "OT",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-7292",
+      "serviceId": "SRV-7292",
+      "name": "Speech",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-7099",
+      "serviceId": "SRV-7099",
+      "name": "Compensatory FCAT",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-7019",
+      "serviceId": "SRV-7019",
+      "name": "Compensatory School ABA",
+      "provider": "School"
+    },
+    {
+      "id": "SRV-5830",
+      "serviceId": "SRV-5830",
+      "name": "Compensatory Home ABA",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-1001",
+      "serviceId": "SRV-1001",
+      "name": "School Based ABA",
+      "provider": "School"
+    },
+    {
+      "id": "SRV-1002",
+      "serviceId": "SRV-1002",
+      "name": "Home Based ABA",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-1003",
+      "serviceId": "SRV-1003",
+      "name": "BCBA Supervision",
+      "provider": "Busy Bees"
+    },
+    {
+      "id": "SRV-1004",
+      "serviceId": "SRV-1004",
+      "name": "PCAT Training",
+      "provider": "Busy Bees"
+    }
+  ],
+  "sessions": [],
+  "schedule": [],
+  "documents": [],
+  "academic_baselines": [],
+  "probes": [],
+  "roles": [
+    {
+      "id": 1,
+      "name": "Super Admin",
+      "description": "Full access to all system features and configuration.",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Admin",
+      "description": "Standard administrator with partial control over users.",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Technician",
+      "description": "Field worker with read-only access to most modules.",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      }
+    },
+    {
+      "name": "BCBA",
+      "description": "The supervisor who created the program for the client.",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      },
+      "id": 4
+    },
+    {
+      "name": "RBT",
+      "description": "Entry level with certificate to experienced",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      },
+      "id": 5
+    },
+    {
+      "name": "BT",
+      "description": "Entry-level, no certificate employee.",
+      "permissions": {
+        "mobileApp": "Full Control",
+        "webApp": "Full Control",
+        "services": "Full Control",
+        "clients": "Full Control",
+        "sessions": "Full Control",
+        "forms": "Full Control",
+        "reports": "Full Control",
+        "users": "Full Control"
+      },
+      "id": 6
+    }
+  ],
+  "activity_feed": [
+    {
+      "id": "af1",
+      "userId": "u2",
+      "user": "Maria Santos",
+      "action": "completed session",
+      "target": "Green Valley School",
+      "time": "2026-02-23T14:30:00.000Z",
+      "type": "session_complete"
+    },
+    {
+      "id": "af2",
+      "userId": "u1",
+      "user": "Alex Bee",
+      "action": "uploaded a document",
+      "target": "Work Order",
+      "time": "2026-02-23T10:15:00.000Z",
+      "type": "document_upload"
+    },
+    {
+      "id": "af3",
+      "userId": "u1",
+      "user": "Alex Bee",
+      "action": "started a session",
+      "target": "Acme Corp — North Branch",
+      "time": "2026-02-23T09:00:00.000Z",
+      "type": "session_start"
+    },
+    {
+      "id": "af4",
+      "userId": "u3",
+      "user": "James Okafor",
+      "action": "clocked in",
+      "target": "Metro Transit Authority",
+      "time": "2026-02-23T08:30:00.000Z",
+      "type": "clock_in"
+    }
+  ],
+  "availability": [],
+  "program_mastery": [],
+  "mass_trials": [],
+  "daily_routines": [
+    {
+      "clientId": "CLI-1",
+      "clientName": "Emma Rodriguez",
+      "program": "Daily Routine",
+      "rows": [
+        {
+          "step": "Walking into class"
+        },
+        {
+          "step": "Washing hand"
+        },
+        {
+          "step": "Eat breakfast"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 1,
+          "date": "2026-03-24",
+          "employeeName": "Alex Bee",
+          "employeeId": "BB-1001",
+          "results": {
+            "0": "pass",
+            "1": "pass",
+            "2": "pass"
+          }
+        }
+      ],
+      "createdAt": "2026-03-24T16:19:17.973Z",
+      "id": 1
+    }
+  ],
+  "transaction-sheets": [
+    {
+      "clientId": "1",
+      "clientName": "Emma Rodriguez",
+      "employeeId": "1",
+      "employeeName": "Sarah Connor",
+      "program": "Colors",
+      "date": "2026-03-24",
+      "cellPhoneLocation": "",
+      "locations": [
+        {
+          "id": 1,
+          "name": "Classroom",
+          "transition": "+",
+          "delay": "No",
+          "delayTime": "",
+          "prompt": "Verbal",
+          "promptCount": "2",
+          "assistantNeeded": "Yes",
+          "food": "Snack",
+          "cwTaskAssigned": "Puzzle",
+          "cwTaskCompleted": "Yes",
+          "pgTaskAssigned": "Colors",
+          "pgTaskCompleted": "Yes",
+          "scheduleChange": "None",
+          "crisis": "No",
+          "transitionNote": "Smooth transition",
+          "promptNote": "Needed two verbal prompts",
+          "cwNote": "Finished puzzle fast",
+          "pgNote": "Got all colors right",
+          "scheduleNote": "",
+          "crisisNote": "",
+          "summaryExtra": "Great day overall."
+        }
+      ],
+      "id": 1
+    }
+  ]
+}

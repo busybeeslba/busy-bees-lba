@@ -1,0 +1,206 @@
+.container {
+    padding: 32px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: auto;
+    /* Allow the page to scroll if cards get too tall */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.backButton:hover {
+    background-color: #f1f5f9;
+    color: var(--text-light);
+}
+
+.statusBadge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.statusBadge[data-status="active"] {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.statusBadge[data-status="offline"] {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+
+.contentGrid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── Left Column: Overview Card ── */
+.overviewCard {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.profileHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.avatarLarge {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    border: 4px solid #f8fafc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profileTitles h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 4px 0;
+}
+
+.primaryRole {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--primary);
+    margin: 0 0 4px 0;
+}
+
+.employeeId {
+    font-size: 13px;
+    color: var(--text-secondary-light);
+    margin: 0;
+}
+
+.actionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 24px;
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    border: 1px solid var(--border-light);
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.actionBtn:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.detailsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detailItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.detailIcon {
+    color: var(--text-secondary-light);
+    background-color: #f8fafc;
+    padding: 8px;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    box-sizing: border-box;
+}
+
+.detailLabel {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary-light);
+    font-weight: 500;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detailValue {
+    display: block;
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* ── Right Column: Calendar Card ── */
+.calendarCard {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}

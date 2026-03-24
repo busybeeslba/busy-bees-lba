@@ -1,0 +1,309 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+    background-color: white;
+    width: 800px;
+    max-width: 95vw;
+    max-height: 90vh;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+.header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+}
+
+.header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-light);
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background-color: var(--background-light);
+    color: var(--text-light);
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-light);
+    background-color: #f9fafb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.cancelBtn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background-color: white;
+    font-weight: 600;
+    color: var(--text-secondary-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background-color: var(--background-light);
+    color: var(--text-light);
+}
+
+.saveBtn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: var(--primary);
+    font-weight: 600;
+    color: var(--on-primary);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.saveBtn:active {
+    transform: scale(0.98);
+}
+
+/* Form Styles */
+.formSection {
+    margin-bottom: 32px;
+}
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-light);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.formGroup.fullWidth {
+    grid-column: span 2;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary-light);
+}
+
+.input,
+.select,
+.textarea {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: var(--primary);
+}
+
+/* Multi-entry Styles */
+.multiEntryGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.entryRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.entryControls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.primaryToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid var(--border-light);
+    cursor: pointer;
+    color: white;
+    background: white;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.primaryToggle:hover {
+    border-color: var(--primary);
+}
+
+.primaryToggle.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.removeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--error);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.removeBtn:hover {
+    opacity: 1;
+    background-color: rgba(234, 67, 53, 0.1);
+}
+
+.addEntryBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1.5px dashed #c4b5fd;
+    border-radius: 10px;
+    background: #f5f3ff;
+    color: #6366f1;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+}
+
+.addEntryBtn:hover {
+    background: #ede9fe;
+    border-color: #a78bfa;
+    color: #4f46e5;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Address Autocomplete */
+.addressWrapper {
+    position: relative;
+    flex: 1;
+    width: 100%;
+}
+
+.suggestionsList {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 4px;
+    list-style: none;
+    padding: 0;
+}
+
+.suggestionItem {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.suggestionItem:hover {
+    background-color: var(--bg-hover);
+}
+
+.suggestionItem:not(:last-child) {
+    border-bottom: 1px solid var(--border-light);
+}

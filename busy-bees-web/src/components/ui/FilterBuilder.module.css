@@ -1,0 +1,159 @@
+.filterBuilderContainer {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.matchTypeToggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.matchLabel {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.matchSelect {
+    padding: 4px 8px;
+    border: 1px solid var(--border-main);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 13px;
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.matchSelect:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.1);
+}
+
+.rulesList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ruleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: white;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+}
+
+.filterSelect {
+    flex: 1;
+    min-width: 120px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-main);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-main);
+    background-color: white;
+    cursor: pointer;
+}
+
+.filterSelect:focus,
+.filterInput:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.filterInput {
+    flex: 2;
+    padding: 8px 12px;
+    border: 1px solid var(--border-main);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-main);
+}
+
+.emptyValuePlaceholder {
+    flex: 2;
+    background-color: #f1f5f9;
+    border: 1px dashed var(--border-main);
+    border-radius: 6px;
+    height: 35px;
+    /* Matches input height roughly */
+}
+
+.removeRuleBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: none;
+    border: none;
+    color: var(--text-lighter);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.removeRuleBtn:hover {
+    color: var(--error);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.addRuleRowBtn {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px dashed var(--border-main);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addRuleRowBtn:hover {
+    background-color: white;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Base button when no rules exist */
+.addFilterBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: white;
+    border: 1px solid var(--border-main);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.addFilterBtn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}

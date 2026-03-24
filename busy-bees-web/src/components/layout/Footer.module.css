@@ -1,0 +1,28 @@
+.footer {
+    height: 48px;
+    background-color: white;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    color: var(--text-secondary-light);
+    font-size: 12px;
+    margin-top: auto;
+    /* Push to bottom if content is short */
+}
+
+.links {
+    display: flex;
+    gap: 16px;
+}
+
+.link {
+    color: var(--text-secondary-light);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link:hover {
+    color: var(--primary);
+}
