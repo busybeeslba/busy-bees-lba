@@ -1,11 +1,18 @@
 :root {
   /* Brand Colors */
-  --primary: #FFC107;
+  --primary: #5ce1e6;
   --on-primary: #000000;
 
   /* Backgrounds */
   --background-light: #f6f7f8;
   --background-dark: #101922;
+
+  /* Sidebar Branding */
+  --sidebar-bg: #5ce1e6;
+  --sidebar-text: #061c1d;
+  --sidebar-text-muted: rgba(6, 28, 29, 0.7);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.3);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.5);
 
   /* Text */
   --text-light: #0d141b;
@@ -16,6 +23,7 @@
   /* Borders */
   --border-light: #dadce0;
   --border-dark: #1e293b;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
 
   /* Status */
   --success: #34A853;

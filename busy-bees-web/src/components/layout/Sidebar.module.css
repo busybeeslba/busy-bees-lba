@@ -1,11 +1,11 @@
 .sidebar {
     width: 260px;
     height: 100vh;
-    background-color: var(--background-dark);
-    color: var(--text-dark);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border-dark);
+    border-right: 1px solid var(--sidebar-border);
     position: fixed;
     left: 0;
     top: 0;
@@ -43,19 +43,20 @@
     padding: 24px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
-    border-bottom: 1px solid var(--border-dark);
+    border-bottom: 1px solid var(--sidebar-border);
 }
 
-.logoIcon {
-    font-size: 24px;
+.logoImage {
+    width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+    transition: all 0.3s ease;
 }
 
-.logo h1 {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--primary);
+.collapsed .logoImage {
+    max-height: 40px;
 }
 
 .nav {
@@ -78,7 +79,7 @@
     gap: 12px;
     padding: 12px 16px;
     border-radius: 8px;
-    color: var(--text-secondary-dark);
+    color: var(--sidebar-text-muted);
     transition: all 0.2s ease;
     font-weight: 500;
     width: 100%;
@@ -90,13 +91,13 @@
 }
 
 .navItem:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-dark);
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-text);
 }
 
 .navItem.active {
-    background-color: var(--primary);
-    color: var(--on-primary);
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-text);
 }
 
 .subMenu {
@@ -111,7 +112,7 @@
 .subMenuItem {
     display: flex;
     padding: 10px 12px;
-    color: var(--text-secondary-dark);
+    color: var(--sidebar-text-muted);
     font-weight: 500;
     font-size: 14px;
     border-radius: 6px;
@@ -119,19 +120,19 @@
 }
 
 .subMenuItem:hover {
-    color: var(--text-dark);
-    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--sidebar-text);
+    background-color: var(--sidebar-hover-bg);
 }
 
 .subMenuItem.activeSubMenu {
-    color: var(--primary);
-    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--sidebar-text);
+    background-color: var(--sidebar-active-bg);
     /* Subtle primary tint */
 }
 
 .footer {
     padding: 24px;
-    border-top: 1px solid var(--border-dark);
+    border-top: 1px solid var(--sidebar-border);
 }
 
 .logoutBtn {
@@ -142,7 +143,7 @@
     padding: 12px;
     background: none;
     border: none;
-    color: var(--error);
+    color: #DC2626; /* Deep Red for logout on cyan bg */
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
@@ -151,5 +152,5 @@
 }
 
 .logoutBtn:hover {
-    background-color: rgba(234, 67, 53, 0.1);
+    background-color: rgba(220, 38, 38, 0.15);
 }

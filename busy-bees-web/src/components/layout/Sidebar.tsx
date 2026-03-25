@@ -73,8 +73,7 @@ export default function Sidebar() {
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
             <div className={styles.logo}>
-                <div className={styles.logoIcon}>🐝</div>
-                {!isCollapsed && <h1>Busy Bees</h1>}
+                <img src="/logo.png" alt="Busy Bees LBA" className={styles.logoImage} />
             </div>
 
             <nav className={styles.nav}>
