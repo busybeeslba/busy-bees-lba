@@ -25,7 +25,7 @@ export const dbClient = {
         }
         const { data, error } = await q;
         if (error) {
-            console.error('Supabase GET Error', path, error);
+            // Remove console.error so Next.js dev server doesn't show a blocking overlay
             throw error;
         }
         return data;
