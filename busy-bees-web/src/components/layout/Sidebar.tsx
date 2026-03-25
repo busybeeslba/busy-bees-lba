@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/context/SidebarContext';
+import { createClient } from '@/utils/supabase/client';
 import styles from './Sidebar.module.css';
 
 const MENU_ITEMS = [
@@ -50,12 +51,20 @@ const MENU_ITEMS = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { isCollapsed } = useSidebar();
+    const supabase = createClient();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
         '/employees': pathname.startsWith('/employees'),
         '/services': pathname.startsWith('/services'),
         '/forms': pathname.startsWith('/forms')
     });
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+        router.refresh();
+    };
 
     const toggleMenu = (path: string) => {
         setOpenMenus(prev => ({ ...prev, [path]: !prev[path] }));
@@ -124,7 +133,7 @@ export default function Sidebar() {
             </nav>
 
             <div className={styles.footer}>
-                <button className={styles.logoutBtn} title={isCollapsed ? 'Logout' : ''}>
+                <button className={styles.logoutBtn} onClick={handleLogout} title={isCollapsed ? 'Logout' : ''}>
                     <LogOut size={18} />
                     {!isCollapsed && <span>Logout</span>}
                 </button>

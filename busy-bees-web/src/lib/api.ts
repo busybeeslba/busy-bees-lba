@@ -9,7 +9,12 @@ import { dbClient } from './dbClient';
 
 // Helper: make a GET request (read data)
 async function get<T>(path: string): Promise<T> {
-    return await dbClient.get(path) as T;
+    try {
+        return await dbClient.get(path) as T;
+    } catch (err) {
+        console.warn('API get error fallback triggered for', path);
+        return [] as any as T;
+    }
 }
 
 // Helper: make a POST request (add new data)
