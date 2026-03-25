@@ -7,13 +7,13 @@ import { dbClient } from '@/lib/dbClient';
 
 interface AvailabilitySlot {
     id: string;
-    employeeId: string;
+    userId: string;
     date: string; // YYYY-MM-DD
     startTime: string; // HH:MM AM/PM
     endTime: string; // HH:MM AM/PM
 }
 
-export default function AvailabilityCalendar({ employeeId }: { employeeId: string }) {
+export default function AvailabilityCalendar({ userId }: { userId: string }) {
     const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +23,7 @@ export default function AvailabilityCalendar({ employeeId }: { employeeId: strin
     useEffect(() => {
         const fetchAvailability = async () => {
             try {
-                const res = await dbClient.get(`/availability?employeeId=${employeeId}`);
+                const res = await dbClient.get(`/availability?employeeId=${userId}`);
                 if (!res.ok) throw new Error('Failed to fetch availability');
                 const data = res; // Was .json()
                 setSlots(data);
@@ -35,7 +35,7 @@ export default function AvailabilityCalendar({ employeeId }: { employeeId: strin
         };
 
         fetchAvailability();
-    }, [employeeId]);
+    }, [userId]);
 
     // Helpers
     const prevPeriod = () => {

@@ -8,7 +8,7 @@ import FilterDrawer from '@/components/ui/FilterDrawer';
 import styles from './page.module.css';
 
 // Extended Mock Data
-const MOCK_STAFF = [
+const MOCK_USERS = [
     {
         id: 1,
         employeeId: 'EPM-1001',
@@ -87,7 +87,7 @@ const MOCK_STAFF = [
     },
 ];
 
-export default function StaffPage() {
+export default function UsersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterRules, setFilterRules] = useState<FilterRule[]>([]);
     const [matchType, setMatchType] = useState<MatchType>('AND');
@@ -102,11 +102,11 @@ export default function StaffPage() {
         setSortConfig({ key, direction });
     };
 
-    const filteredByRules = useDataFilter({ data: MOCK_STAFF, rules: filterRules, matchType });
+    const filteredByRules = useDataFilter({ data: MOCK_USERS, rules: filterRules, matchType });
 
-    const sortedStaff = useMemo(() => {
-        let sortableItems = filteredByRules.filter((staff: any) =>
-            Object.values(staff).join(' ').toLowerCase().includes(searchQuery.toLowerCase())
+    const sortedUsers = useMemo(() => {
+        let sortableItems = filteredByRules.filter((user: any) =>
+            Object.values(user).join(' ').toLowerCase().includes(searchQuery.toLowerCase())
         );
 
         if (sortConfig !== null) {
@@ -130,7 +130,7 @@ export default function StaffPage() {
                         <Search size={20} color="var(--text-secondary-light)" />
                         <input
                             type="text"
-                            placeholder="Search employees..."
+                            placeholder="Search users..."
                             className={styles.searchInput}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -141,7 +141,7 @@ export default function StaffPage() {
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <button className={styles.addBtn}>
                         <Plus size={20} />
-                        <span>Add New Employee</span>
+                        <span>Add New User</span>
                     </button>
 
                     {/* Filter Drawer Toggle */}
@@ -156,7 +156,7 @@ export default function StaffPage() {
             <FilterDrawer
                 isOpen={showFilterDrawer}
                 onClose={() => setShowFilterDrawer(false)}
-                storageKey="staff_list"
+                storageKey="users_list"
                 columns={[
                     { id: 'employeeId', label: 'Employee ID' },
                     { id: 'firstName', label: 'First Name' },
@@ -273,56 +273,56 @@ export default function StaffPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedStaff.map((staff) => (
-                            <tr key={staff.id}>
-                                <td><span style={{ fontWeight: 600 }}>{staff.employeeId}</span></td>
-                                <td>{staff.firstName}</td>
-                                <td>{staff.lastName}</td>
-                                <td>{staff.phone}</td>
-                                <td>{staff.email}</td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{staff.address}</span></td>
-                                <td><span style={{ padding: '4px 8px', backgroundColor: 'var(--background-light)', borderRadius: '4px', fontSize: '12px' }}>{staff.role}</span></td>
+                        {sortedUsers.map((user: any) => (
+                            <tr key={user.id}>
+                                <td><span style={{ fontWeight: 600 }}>{user.employeeId}</span></td>
+                                <td>{user.firstName}</td>
+                                <td>{user.lastName}</td>
+                                <td>{user.phone}</td>
+                                <td>{user.email}</td>
+                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.address}</span></td>
+                                <td><span style={{ padding: '4px 8px', backgroundColor: 'var(--background-light)', borderRadius: '4px', fontSize: '12px' }}>{user.role}</span></td>
                                 <td>
                                     <div className={styles.locationCell}>
                                         <MapPin size={14} color="var(--text-secondary-light)" />
-                                        {staff.location}
+                                        {user.location}
                                     </div>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}>
                                         <Globe size={12} />
-                                        {staff.externalIp}
+                                        {user.externalIp}
                                     </div>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}>
                                         <Monitor size={12} />
-                                        {staff.browser}
+                                        {user.browser}
                                     </div>
                                 </td>
                                 <td>
-                                    <span className={`${styles.statusBadge} ${staff.status === 'Active' ? styles.active : styles.offline}`}>
-                                        {staff.status}
+                                    <span className={`${styles.statusBadge} ${user.status === 'Active' ? styles.active : styles.offline}`}>
+                                        {user.status}
                                     </span>
                                 </td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{staff.createdAt}</span></td>
-                                <td><span style={{ fontSize: '12px' }}>{staff.createdBy}</span></td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{staff.updatedAt}</span></td>
-                                <td><span style={{ fontSize: '12px' }}>{staff.updatedBy}</span></td>
+                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.createdAt}</span></td>
+                                <td><span style={{ fontSize: '12px' }}>{user.createdBy}</span></td>
+                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.updatedAt}</span></td>
+                                <td><span style={{ fontSize: '12px' }}>{user.updatedBy}</span></td>
                                 <td style={{ position: 'sticky', right: 0, backgroundColor: 'white', borderLeft: '1px solid var(--border-light)' }}>
                                     <div className={styles.contactIcons}>
-                                        <Link href={`/employees/${staff.id}`} title="View Profile">
+                                        <Link href={`/users/${user.id}`} title="View Profile">
                                             <button style={{ cursor: 'pointer', background: 'none', border: 'none', color: 'var(--primary)' }}>
                                                 <User size={16} />
                                             </button>
                                         </Link>
-                                        <button title="Call" onClick={() => window.open(`tel:${staff.phone}`)}>
+                                        <button title="Call" onClick={() => window.open(`tel:${user.phone}`)}>
                                             <Phone size={16} />
                                         </button>
-                                        <button title="Email" onClick={() => window.open(`mailto:${staff.email}`)}>
+                                        <button title="Email" onClick={() => window.open(`mailto:${user.email}`)}>
                                             <Mail size={16} />
                                         </button>
-                                        <button title="More Options" onClick={() => alert(`Open settings for ${staff.firstName} ${staff.lastName}`)}>
+                                        <button title="More Options" onClick={() => alert(`Open settings for ${user.firstName} ${user.lastName}`)}>
                                             <MoreHorizontal size={16} />
                                         </button>
                                     </div>
@@ -332,7 +332,7 @@ export default function StaffPage() {
                     </tbody>
                 </table>
                 <div style={{ position: 'sticky', bottom: 0, zIndex: 10, padding: '16px 24px', color: 'var(--text-secondary-light)', fontSize: '13px', borderTop: '1px solid var(--border-light)', backgroundColor: '#f9fafb', fontWeight: 500 }}>
-                    Showing {sortedStaff.length} rows
+                    Showing {sortedUsers.length} users
                 </div>
             </div>
         </div>

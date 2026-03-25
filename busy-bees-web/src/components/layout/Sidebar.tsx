@@ -12,12 +12,12 @@ import styles from './Sidebar.module.css';
 const MENU_ITEMS = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
     {
-        name: 'Employees',
+        name: 'Users',
         icon: Users,
-        path: '/employees',
+        path: '/users',
         subItems: [
-            { name: 'Staff List', path: '/employees' },
-            { name: 'Role Management', path: '/employees/roles' },
+            { name: 'User Directory', path: '/users' },
+            { name: 'Role Management', path: '/users/roles' },
         ],
     },
 
@@ -64,7 +64,7 @@ export default function Sidebar() {
     const { logoBase64, logoCollapsedBase64, logoZoom, logoCollapsedZoom } = useBrand();
     const supabase = createClient();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-        '/employees': pathname.startsWith('/employees'),
+        '/users': pathname.startsWith('/users'),
         '/services': pathname.startsWith('/services'),
         '/forms': pathname.startsWith('/forms'),
         '/settings': pathname.startsWith('/settings')

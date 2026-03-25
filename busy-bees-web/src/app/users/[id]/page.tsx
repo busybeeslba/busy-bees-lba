@@ -4,10 +4,11 @@ import AvailabilityCalendar from './AvailabilityCalendar';
 import styles from './page.module.css';
 
 // Mock DB wrapper for dynamic route data
+// Mock DB wrapper for dynamic route data
 // In a real app, this is fetched via API or ORM based on params.id
-const fetchEmployee = async (id: string) => {
-    // Shared mock structure with the Employees list page
-    const MOCK_STAFF = [
+const fetchUser = async (id: string) => {
+    // Shared mock structure with the Users list page
+    const MOCK_USERS = [
         {
             id: 1,
             employeeId: 'EPM-1001',
@@ -47,26 +48,31 @@ const fetchEmployee = async (id: string) => {
             avatar: 'KR'
         },
     ];
-    return MOCK_STAFF.find(e => e.id.toString() === id) || MOCK_STAFF[0];
+    return MOCK_USERS.find(e => e.id.toString() === id) || MOCK_USERS[0];
 };
 
-export default async function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
     // Next.js 15+ async params
     const resolvedParams = await params;
-    const employee = await fetchEmployee(resolvedParams.id);
+    const user = await fetchUser(resolvedParams.id);
 
     return (
         <div className={styles.container}>
             {/* Header / Breadcrumb */}
             <div className={styles.header}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <Link href="/employees" className={styles.backButton}>
+                    <Link href="/users" className={styles.backButton}>
                         <ArrowLeft size={20} />
                     </Link>
-                    <h1 className={styles.title}>Employee Profile</h1>
+                    <h1 className={styles.title}>User Profile</h1>
                 </div>
-                <div className={styles.statusBadge} data-status={employee.status.toLowerCase()}>
-                    {employee.status}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className={styles.statusBadge} data-status={user.status.toLowerCase()}>
+                        {user.status}
+                    </div>
+                    <button className={styles.editBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', backgroundColor: 'var(--primary)', color: '#000', borderRadius: '6px', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}>
+                        <User size={14} /> Edit Profile
+                    </button>
                 </div>
             </div>
 
@@ -74,19 +80,19 @@ export default async function EmployeeProfilePage({ params }: { params: Promise<
                 {/* Left Column: Overview Card */}
                 <div className={styles.overviewCard}>
                     <div className={styles.profileHeader}>
-                        <div className={styles.avatarLarge}>{employee.avatar}</div>
+                        <div className={styles.avatarLarge}>{user.avatar}</div>
                         <div className={styles.profileTitles}>
-                            <h2>{employee.firstName} {employee.lastName}</h2>
-                            <p className={styles.primaryRole}>{employee.role}</p>
-                            <p className={styles.employeeId}>ID: {employee.employeeId}</p>
+                            <h2>{user.firstName} {user.lastName}</h2>
+                            <p className={styles.primaryRole}>{user.role}</p>
+                            <p className={styles.employeeId}>ID: {user.employeeId}</p>
                         </div>
                     </div>
 
                     <div className={styles.actionButtons}>
-                        <a href={`tel:${employee.phone}`} className={styles.actionBtn}>
+                        <a href={`tel:${user.phone}`} className={styles.actionBtn}>
                             <Phone size={18} /> Call
                         </a>
-                        <a href={`mailto:${employee.email}`} className={styles.actionBtn}>
+                        <a href={`mailto:${user.email}`} className={styles.actionBtn}>
                             <Mail size={18} /> Email
                         </a>
                     </div>
@@ -96,35 +102,35 @@ export default async function EmployeeProfilePage({ params }: { params: Promise<
                             <Phone size={16} className={styles.detailIcon} />
                             <div>
                                 <span className={styles.detailLabel}>Phone Number</span>
-                                <span className={styles.detailValue}>{employee.phone}</span>
+                                <span className={styles.detailValue}>{user.phone}</span>
                             </div>
                         </div>
                         <div className={styles.detailItem}>
                             <Mail size={16} className={styles.detailIcon} />
                             <div>
                                 <span className={styles.detailLabel}>Email Address</span>
-                                <span className={styles.detailValue}>{employee.email}</span>
+                                <span className={styles.detailValue}>{user.email}</span>
                             </div>
                         </div>
                         <div className={styles.detailItem}>
                             <MapPin size={16} className={styles.detailIcon} />
                             <div>
                                 <span className={styles.detailLabel}>Address</span>
-                                <span className={styles.detailValue}>{employee.address}</span>
+                                <span className={styles.detailValue}>{user.address}</span>
                             </div>
                         </div>
                         <div className={styles.detailItem}>
                             <Building2 size={16} className={styles.detailIcon} />
                             <div>
                                 <span className={styles.detailLabel}>Current Location</span>
-                                <span className={styles.detailValue}>{employee.location}</span>
+                                <span className={styles.detailValue}>{user.location}</span>
                             </div>
                         </div>
                         <div className={styles.detailItem}>
                             <Globe size={16} className={styles.detailIcon} />
                             <div>
                                 <span className={styles.detailLabel}>External IP</span>
-                                <span className={styles.detailValue}>{employee.externalIp}</span>
+                                <span className={styles.detailValue}>{user.externalIp}</span>
                             </div>
                         </div>
                     </div>
@@ -132,7 +138,7 @@ export default async function EmployeeProfilePage({ params }: { params: Promise<
 
                 {/* Right Column: Calendar / Availability Panel */}
                 <div className={styles.calendarCard}>
-                    <AvailabilityCalendar employeeId={employee.employeeId} />
+                    <AvailabilityCalendar userId={user.employeeId} />
                 </div>
             </div>
         </div>
