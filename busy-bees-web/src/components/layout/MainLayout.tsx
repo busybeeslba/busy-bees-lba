@@ -4,10 +4,16 @@ import { useSidebar } from '@/context/SidebarContext';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
+import { usePathname } from 'next/navigation';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const { isCollapsed } = useSidebar();
+    const pathname = usePathname();
     const sidebarWidth = isCollapsed ? '80px' : '260px';
+
+    if (pathname && (pathname.startsWith('/login') || pathname.startsWith('/auth'))) {
+        return <>{children}</>;
+    }
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
