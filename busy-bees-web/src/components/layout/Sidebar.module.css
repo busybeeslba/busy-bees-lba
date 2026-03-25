@@ -46,13 +46,15 @@
     justify-content: center;
     gap: 12px;
     border-bottom: 1px solid var(--sidebar-border);
+    overflow: hidden; /* Prevent zoomed logo bleeding */
 }
 
 .logoImage {
     width: 100%;
     max-height: 80px;
     object-fit: contain;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, all 0.3s ease;
+    transform-origin: center center;
 }
 
 .collapsed .logoImage {

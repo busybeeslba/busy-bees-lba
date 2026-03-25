@@ -11,34 +11,65 @@ export default function BrandSettingsPage() {
         sidebarBg,
         logoBase64,
         logoCollapsedBase64,
+        logoZoom,
+        logoCollapsedZoom,
         setPrimaryColor,
         setSidebarBg,
         setLogoBase64,
         setLogoCollapsedBase64,
+        setLogoZoom,
+        setLogoCollapsedZoom,
         resetToDefaults
     } = useBrand();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const collapsedFileInputRef = useRef<HTMLInputElement>(null);
 
+    // Advanced canvas-based image resizing to bypass LocalStorage limits
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isCollapsedLogo: boolean = false) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Check file size (e.g., max 2MB to avoid huge base64 strings)
-        if (file.size > 2 * 1024 * 1024) {
-            alert('File too large. Please upload an image under 2MB.');
-            return;
-        }
+        // Immediately clear the input so the same file can be selected again
+        e.target.value = '';
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            const base64String = reader.result as string;
-            if (isCollapsedLogo) {
-                setLogoCollapsedBase64(base64String);
-            } else {
-                setLogoBase64(base64String);
-            }
+            const img = new Image();
+            img.onload = () => {
+                // Dynamically constrain dimensions to prevent localStorage QuotaExceeded errors
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                // Highly compressed PNG or WebP wrapper bounds the memory cost to <500kb
+                const base64String = canvas.toDataURL('image/webp', 0.9);
+
+                if (isCollapsedLogo) {
+                    setLogoCollapsedBase64(base64String);
+                } else {
+                    setLogoBase64(base64String);
+                }
+            };
+            img.src = reader.result as string;
         };
         reader.readAsDataURL(file);
     };
@@ -64,79 +95,100 @@ export default function BrandSettingsPage() {
                     
                     <div className={styles.logoGrid}>
                         {/* Primary Logo */}
-                        <div className={styles.logoUploadArea}>
-                            <div className={styles.logoUploadHeader}>
-                                <h3>Full Logo</h3>
-                                <span>Shown when sidebar is expanded</span>
+                        <div className={styles.logoUploadRow}>
+                            <div className={styles.rowInfo}>
+                                <h3>Full Application Logo</h3>
+                                <p>Shown when the sidebar is expanded. Best used for wide, horizontal logos featuring your brand text.</p>
+                                
+                                <div className={styles.uploadControls}>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        ref={fileInputRef}
+                                        onChange={(e) => handleFileChange(e, false)}
+                                        style={{ display: 'none' }}
+                                        id="logo-upload"
+                                    />
+                                    <button 
+                                        className={styles.uploadBtn}
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <Upload size={18} />
+                                        Browse Image
+                                    </button>
+                                </div>
+                                <div className={styles.zoomControl}>
+                                    <label>Zoom Level ({logoZoom}%)</label>
+                                    <input 
+                                        type="range" 
+                                        min="20" 
+                                        max="250" 
+                                        value={logoZoom}
+                                        onChange={(e) => setLogoZoom(parseInt(e.target.value, 10))}
+                                    />
+                                </div>
                             </div>
+
                             <div className={styles.currentLogoPreview}>
                                 <img 
                                     src={logoBase64 || "/logo.png"} 
                                     alt="Current Full Logo" 
+                                    style={{ transform: `scale(${logoZoom / 100})` }}
                                     className={styles.previewImg} 
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).style.display = 'none';
                                     }}
                                 />
-                            </div>
-                            
-                            <div className={styles.uploadControls}>
-                                <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    ref={fileInputRef}
-                                    onChange={(e) => handleFileChange(e, false)}
-                                    style={{ display: 'none' }}
-                                    id="logo-upload"
-                                />
-                                <button 
-                                    className={styles.uploadBtn}
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <Upload size={18} />
-                                    Upload Full Logo
-                                </button>
-                                <span className={styles.uploadHint}>Recommended: Wide transparent PNG.</span>
                             </div>
                         </div>
 
                         {/* Collapsed Logo */}
-                        <div className={styles.logoUploadArea}>
-                            <div className={styles.logoUploadHeader}>
-                                <h3>Secondary Icon</h3>
-                                <span>Shown when sidebar is collapsed</span>
+                        <div className={styles.logoUploadRow}>
+                            <div className={styles.rowInfo}>
+                                <h3>Collapsed Secondary Icon</h3>
+                                <p>Shown when the sidebar is collapsed. Best for a square standalone icon graphic, like an emblem or simplified logo mark.</p>
+                                
+                                <div className={styles.uploadControls}>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        ref={collapsedFileInputRef}
+                                        onChange={(e) => handleFileChange(e, true)}
+                                        style={{ display: 'none' }}
+                                        id="logo-collapsed-upload"
+                                    />
+                                    <button 
+                                        className={styles.uploadBtn}
+                                        onClick={() => collapsedFileInputRef.current?.click()}
+                                    >
+                                        <Upload size={18} />
+                                        Browse Icon
+                                    </button>
+                                </div>
+                                <div className={styles.zoomControl}>
+                                    <label>Zoom Level ({logoCollapsedZoom}%)</label>
+                                    <input 
+                                        type="range" 
+                                        min="20" 
+                                        max="250" 
+                                        value={logoCollapsedZoom}
+                                        onChange={(e) => setLogoCollapsedZoom(parseInt(e.target.value, 10))}
+                                    />
+                                </div>
                             </div>
-                            <div className={styles.currentLogoPreview} style={{ width: '100px', margin: '0 auto' }}>
+                            
+                            <div className={styles.currentLogoPreview} style={{ width: '120px', height: '120px', flex: 'none' }}>
                                 <img 
                                     src={logoCollapsedBase64 || "/logo_small.png"} 
                                     alt="Current Collapsed Icon" 
+                                    style={{ transform: `scale(${logoCollapsedZoom / 100})` }}
                                     className={styles.previewImg} 
                                     onError={(e) => {
-                                        // Fallback to text if missing
                                         (e.target as HTMLImageElement).style.display = 'none';
                                         (e.target as HTMLImageElement).parentElement!.innerText = '🐝';
-                                        (e.target as HTMLImageElement).parentElement!.style.fontSize = '32px';
+                                        (e.target as HTMLImageElement).parentElement!.style.fontSize = '48px';
                                     }}
                                 />
-                            </div>
-                            
-                            <div className={styles.uploadControls}>
-                                <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    ref={collapsedFileInputRef}
-                                    onChange={(e) => handleFileChange(e, true)}
-                                    style={{ display: 'none' }}
-                                    id="logo-collapsed-upload"
-                                />
-                                <button 
-                                    className={styles.uploadBtn}
-                                    onClick={() => collapsedFileInputRef.current?.click()}
-                                >
-                                    <Upload size={18} />
-                                    Upload Icon
-                                </button>
-                                <span className={styles.uploadHint}>Recommended: Square icon PNG (e.g. 80x80px).</span>
                             </div>
                         </div>
                     </div>

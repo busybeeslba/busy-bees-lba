@@ -61,7 +61,7 @@ export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { isCollapsed } = useSidebar();
-    const { logoBase64, logoCollapsedBase64 } = useBrand();
+    const { logoBase64, logoCollapsedBase64, logoZoom, logoCollapsedZoom } = useBrand();
     const supabase = createClient();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
         '/employees': pathname.startsWith('/employees'),
@@ -84,12 +84,18 @@ export default function Sidebar() {
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
             <div className={styles.logo}>
                 {!isCollapsed ? (
-                    <img src={logoBase64 || "/logo.png"} alt="Busy Bees LBA" className={styles.logoImage} />
+                    <img 
+                        src={logoBase64 || "/logo.png"} 
+                        alt="Busy Bees LBA" 
+                        className={styles.logoImage} 
+                        style={{ transform: `scale(${logoZoom / 100})` }}
+                    />
                 ) : (
                     <img 
                         src={logoCollapsedBase64 || "/logo_small.png"} 
                         alt="Icon" 
                         className={styles.logoImage} 
+                        style={{ transform: `scale(${logoCollapsedZoom / 100})` }}
                         onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                             (e.target as HTMLImageElement).parentElement!.innerText = '🐝';
