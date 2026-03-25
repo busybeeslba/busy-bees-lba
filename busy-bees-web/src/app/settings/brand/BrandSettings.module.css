@@ -87,14 +87,33 @@
 }
 
 /* Logo Upload */
+.logoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
 .logoUploadArea {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 32px;
+    gap: 20px;
     padding: 24px;
     background-color: var(--background-light);
     border-radius: 12px;
     border: 1px dashed var(--border-light);
+    text-align: center;
+}
+
+.logoUploadHeader h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: var(--text-light);
+}
+
+.logoUploadHeader span {
+    font-size: 13px;
+    color: var(--text-secondary-light);
 }
 
 .currentLogoPreview {
@@ -118,6 +137,7 @@
 .uploadControls {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 12px;
 }
 

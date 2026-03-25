@@ -10,15 +10,18 @@ export default function BrandSettingsPage() {
         primaryColor,
         sidebarBg,
         logoBase64,
+        logoCollapsedBase64,
         setPrimaryColor,
         setSidebarBg,
         setLogoBase64,
+        setLogoCollapsedBase64,
         resetToDefaults
     } = useBrand();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const collapsedFileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isCollapsedLogo: boolean = false) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -31,7 +34,11 @@ export default function BrandSettingsPage() {
         const reader = new FileReader();
         reader.onloadend = () => {
             const base64String = reader.result as string;
-            setLogoBase64(base64String);
+            if (isCollapsedLogo) {
+                setLogoCollapsedBase64(base64String);
+            } else {
+                setLogoBase64(base64String);
+            }
         };
         reader.readAsDataURL(file);
     };
@@ -52,39 +59,85 @@ export default function BrandSettingsPage() {
             <div className={styles.content}>
                 {/* Logo Upload Section */}
                 <section className={styles.card}>
-                    <h2 className={styles.cardTitle}>Company Logo</h2>
-                    <p className={styles.cardDesc}>Upload your company logo. This will appear at the top of the sidebar.</p>
+                    <h2 className={styles.cardTitle}>Company Logos</h2>
+                    <p className={styles.cardDesc}>Upload your company logos. These appear at the top of the sidebar.</p>
                     
-                    <div className={styles.logoUploadArea}>
-                        <div className={styles.currentLogoPreview}>
-                            <img 
-                                src={logoBase64 || "/logo.png"} 
-                                alt="Current Logo" 
-                                className={styles.previewImg} 
-                                onError={(e) => {
-                                    // Fallback if no logo.png exists yet
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                            />
+                    <div className={styles.logoGrid}>
+                        {/* Primary Logo */}
+                        <div className={styles.logoUploadArea}>
+                            <div className={styles.logoUploadHeader}>
+                                <h3>Full Logo</h3>
+                                <span>Shown when sidebar is expanded</span>
+                            </div>
+                            <div className={styles.currentLogoPreview}>
+                                <img 
+                                    src={logoBase64 || "/logo.png"} 
+                                    alt="Current Full Logo" 
+                                    className={styles.previewImg} 
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                            
+                            <div className={styles.uploadControls}>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    ref={fileInputRef}
+                                    onChange={(e) => handleFileChange(e, false)}
+                                    style={{ display: 'none' }}
+                                    id="logo-upload"
+                                />
+                                <button 
+                                    className={styles.uploadBtn}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <Upload size={18} />
+                                    Upload Full Logo
+                                </button>
+                                <span className={styles.uploadHint}>Recommended: Wide transparent PNG.</span>
+                            </div>
                         </div>
-                        
-                        <div className={styles.uploadControls}>
-                            <input 
-                                type="file" 
-                                accept="image/*" 
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                                id="logo-upload"
-                            />
-                            <button 
-                                className={styles.uploadBtn}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <Upload size={18} />
-                                Upload New Logo
-                            </button>
-                            <span className={styles.uploadHint}>Recommended: Transparent PNG, max 2MB.</span>
+
+                        {/* Collapsed Logo */}
+                        <div className={styles.logoUploadArea}>
+                            <div className={styles.logoUploadHeader}>
+                                <h3>Secondary Icon</h3>
+                                <span>Shown when sidebar is collapsed</span>
+                            </div>
+                            <div className={styles.currentLogoPreview} style={{ width: '100px', margin: '0 auto' }}>
+                                <img 
+                                    src={logoCollapsedBase64 || "/logo_small.png"} 
+                                    alt="Current Collapsed Icon" 
+                                    className={styles.previewImg} 
+                                    onError={(e) => {
+                                        // Fallback to text if missing
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        (e.target as HTMLImageElement).parentElement!.innerText = '🐝';
+                                        (e.target as HTMLImageElement).parentElement!.style.fontSize = '32px';
+                                    }}
+                                />
+                            </div>
+                            
+                            <div className={styles.uploadControls}>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    ref={collapsedFileInputRef}
+                                    onChange={(e) => handleFileChange(e, true)}
+                                    style={{ display: 'none' }}
+                                    id="logo-collapsed-upload"
+                                />
+                                <button 
+                                    className={styles.uploadBtn}
+                                    onClick={() => collapsedFileInputRef.current?.click()}
+                                >
+                                    <Upload size={18} />
+                                    Upload Icon
+                                </button>
+                                <span className={styles.uploadHint}>Recommended: Square icon PNG (e.g. 80x80px).</span>
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -6,9 +6,11 @@ type BrandContextType = {
     primaryColor: string;
     sidebarBg: string;
     logoBase64: string | null;
+    logoCollapsedBase64: string | null;
     setPrimaryColor: (color: string) => void;
     setSidebarBg: (color: string) => void;
     setLogoBase64: (base64: string | null) => void;
+    setLogoCollapsedBase64: (base64: string | null) => void;
     resetToDefaults: () => void;
 };
 
@@ -22,6 +24,7 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
     const [primaryColor, setPrimaryColor] = useState(DEFAULT_PRIMARY);
     const [sidebarBg, setSidebarBg] = useState(DEFAULT_SIDEBAR);
     const [logoBase64, setLogoBase64] = useState<string | null>(null);
+    const [logoCollapsedBase64, setLogoCollapsedBase64] = useState<string | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from localStorage on mount
@@ -29,10 +32,12 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
         const savedPrimary = localStorage.getItem('brand_primaryColor');
         const savedSidebar = localStorage.getItem('brand_sidebarBg');
         const savedLogo = localStorage.getItem('brand_logoBase64');
+        const savedLogoCollapsed = localStorage.getItem('brand_logoCollapsedBase64');
 
         if (savedPrimary) setPrimaryColor(savedPrimary);
         if (savedSidebar) setSidebarBg(savedSidebar);
         if (savedLogo) setLogoBase64(savedLogo);
+        if (savedLogoCollapsed) setLogoCollapsedBase64(savedLogoCollapsed);
         
         setIsLoaded(true);
     }, []);
@@ -42,17 +47,25 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
         if (!isLoaded) return;
         localStorage.setItem('brand_primaryColor', primaryColor);
         localStorage.setItem('brand_sidebarBg', sidebarBg);
+        
         if (logoBase64) {
             localStorage.setItem('brand_logoBase64', logoBase64);
         } else {
             localStorage.removeItem('brand_logoBase64');
         }
-    }, [primaryColor, sidebarBg, logoBase64, isLoaded]);
+
+        if (logoCollapsedBase64) {
+            localStorage.setItem('brand_logoCollapsedBase64', logoCollapsedBase64);
+        } else {
+            localStorage.removeItem('brand_logoCollapsedBase64');
+        }
+    }, [primaryColor, sidebarBg, logoBase64, logoCollapsedBase64, isLoaded]);
 
     const resetToDefaults = () => {
         setPrimaryColor(DEFAULT_PRIMARY);
         setSidebarBg(DEFAULT_SIDEBAR);
         setLogoBase64(null);
+        setLogoCollapsedBase64(null);
     };
 
     return (
@@ -61,9 +74,11 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
                 primaryColor,
                 sidebarBg,
                 logoBase64,
+                logoCollapsedBase64,
                 setPrimaryColor,
                 setSidebarBg,
                 setLogoBase64,
+                setLogoCollapsedBase64,
                 resetToDefaults
             }}
         >

@@ -61,7 +61,7 @@ export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { isCollapsed } = useSidebar();
-    const { logoBase64 } = useBrand();
+    const { logoBase64, logoCollapsedBase64 } = useBrand();
     const supabase = createClient();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
         '/employees': pathname.startsWith('/employees'),
@@ -83,7 +83,20 @@ export default function Sidebar() {
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
             <div className={styles.logo}>
-                <img src={logoBase64 || "/logo.png"} alt="Busy Bees LBA" className={styles.logoImage} />
+                {!isCollapsed ? (
+                    <img src={logoBase64 || "/logo.png"} alt="Busy Bees LBA" className={styles.logoImage} />
+                ) : (
+                    <img 
+                        src={logoCollapsedBase64 || "/logo_small.png"} 
+                        alt="Icon" 
+                        className={styles.logoImage} 
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).parentElement!.innerText = '🐝';
+                            (e.target as HTMLImageElement).parentElement!.style.fontSize = '24px';
+                        }}
+                    />
+                )}
             </div>
 
             <nav className={styles.nav}>
