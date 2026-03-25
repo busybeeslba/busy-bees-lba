@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Next.js optimizes Google Fonts
 import "./globals.css";
 import { SidebarProvider } from "@/context/SidebarContext";
+import { BrandProvider } from "@/context/BrandContext";
 import MainLayout from "@/components/layout/MainLayout";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <SidebarProvider>
-          <MainLayout>
-            {children}
-          </MainLayout>
-        </SidebarProvider>
+        <BrandProvider>
+          <SidebarProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </SidebarProvider>
+        </BrandProvider>
       </body>
     </html>
   );

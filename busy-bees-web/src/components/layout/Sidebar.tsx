@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight, Palette } from 'lucide-react';
 import { useSidebar } from '@/context/SidebarContext';
+import { useBrand } from '@/context/BrandContext';
 import { createClient } from '@/utils/supabase/client';
 import styles from './Sidebar.module.css';
 
@@ -46,18 +47,27 @@ const MENU_ITEMS = [
     { name: 'Session Summary', icon: FileText, path: '/session-summary' },
     { name: 'Calendar', icon: Calendar, path: '/calendar' },
     { name: 'Reports', icon: FileText, path: '/reports' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+    { 
+        name: 'Settings', 
+        icon: Settings, 
+        path: '/settings',
+        subItems: [
+            { name: 'Brand', path: '/settings/brand' }
+        ]
+    },
 ];
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { isCollapsed } = useSidebar();
+    const { logoBase64 } = useBrand();
     const supabase = createClient();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
         '/employees': pathname.startsWith('/employees'),
         '/services': pathname.startsWith('/services'),
-        '/forms': pathname.startsWith('/forms')
+        '/forms': pathname.startsWith('/forms'),
+        '/settings': pathname.startsWith('/settings')
     });
 
     const handleLogout = async () => {
@@ -73,7 +83,7 @@ export default function Sidebar() {
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
             <div className={styles.logo}>
-                <img src="/logo.png" alt="Busy Bees LBA" className={styles.logoImage} />
+                <img src={logoBase64 || "/logo.png"} alt="Busy Bees LBA" className={styles.logoImage} />
             </div>
 
             <nav className={styles.nav}>
