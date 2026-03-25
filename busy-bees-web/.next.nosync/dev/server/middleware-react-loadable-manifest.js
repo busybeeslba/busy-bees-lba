@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/forms/transaction-sheet/[id]/view/page.tsx -> html2pdf.js\":{\"id\":\"app/forms/transaction-sheet/[id]/view/page.tsx -> html2pdf.js\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_html2pdf_js_dist_html2pdf_js.js\"]}}"

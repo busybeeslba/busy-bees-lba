@@ -1,7 +1,0 @@
-{
-  "/forms/transaction-sheet/[id]/page": "app/forms/transaction-sheet/[id]/page.js",
-  "/forms/transaction-sheet/page": "app/forms/transaction-sheet/page.js",
-  "/clients/[id]/page": "app/clients/[id]/page.js",
-  "/forms/transaction-sheet/[id]/view/page": "app/forms/transaction-sheet/[id]/view/page.js",
-  "/forms/baseline-sheet/page": "app/forms/baseline-sheet/page.js"
-}
