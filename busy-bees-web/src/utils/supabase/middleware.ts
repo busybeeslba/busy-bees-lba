@@ -46,6 +46,27 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Database Presence & Status Verification Firewall
+  if (user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
+    const { data: dbUser, error } = await supabase
+      .from('users')
+      .select('status')
+      .eq('email', user.email)
+      .single()
+
+    // If their email isn't in our DB, or their status is Offline/Suspended
+    if (error || !dbUser || dbUser.status !== 'Active') {
+      await supabase.auth.signOut()
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'unauthorized')
+      // Important to return a fully new response to dump cookies
+      const redirectResponse = NextResponse.redirect(url)
+      redirectResponse.cookies.delete('sb-cyhyoexagdqdshouclej-auth-token')
+      return redirectResponse
+    }
+  }
+
   // If user is logged in and tries to access /login, redirect to dashboard
   if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()

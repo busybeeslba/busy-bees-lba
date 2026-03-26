@@ -1,13 +1,31 @@
 'use client'
 
 import { createClient } from '@/utils/supabase/client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import styles from './login.module.css'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className={styles.container}>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'unauthorized') {
+      setError('Access Denied. Your Google account is not registered as an Active Employee. Please contact an Administrator.')
+      router.replace('/login')
+    }
+  }, [searchParams, router])
 
   const handleGoogleLogin = async () => {
     try {
@@ -89,7 +107,7 @@ export default function LoginPage() {
           <div>
             {error && (
               <div className={styles.errorBanner}>
-                <svg className={styles.errorIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className={styles.errorIcon} style={{ width: '20px', height: '20px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 {error}

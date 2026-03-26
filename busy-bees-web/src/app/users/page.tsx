@@ -5,12 +5,11 @@ import { Search, Plus, MoreHorizontal, Phone, Mail, MapPin, Globe, Monitor, Filt
 import type { CSSProperties } from 'react';
 import Autocomplete from 'react-google-autocomplete';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
-// Extended Mock Data
 const formatPhone = (val: string) => {
     const cleaned = val.replace(/\D/g, '');
     const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
@@ -23,85 +22,6 @@ const capitalizeName = (str: string) => {
     return str.replace(/\b\w/g, c => c.toUpperCase());
 };
 
-const MOCK_USERS = [
-    {
-        id: 1,
-        employeeId: 'EPM-1001',
-        firstName: 'Sarah',
-        lastName: 'Connor',
-        phone: '555-0101',
-        email: 'sarah@busybees.com',
-        address: '123 SkyNet Blvd, LA',
-        role: 'Senior Technician',
-        location: '38.8951, -77.0364',
-        externalIp: '192.168.1.5',
-        browser: 'Chrome 120',
-        status: 'Active',
-        createdAt: '2025-01-10 08:00',
-        createdBy: 'Admin',
-        updatedAt: '2025-10-24 09:15',
-        updatedBy: 'Self',
-        avatar: 'SC'
-    },
-    {
-        id: 2,
-        employeeId: 'EPM-1002',
-        firstName: 'Kyle',
-        lastName: 'Reese',
-        phone: '555-0102',
-        email: 'kyle@busybees.com',
-        address: '45 Future Ln, LA',
-        role: 'Field Specialist',
-        location: '39.0221, -77.1009',
-        externalIp: '172.16.0.2',
-        browser: 'Safari 17',
-        status: 'Offline',
-        createdAt: '2025-02-15 10:30',
-        createdBy: 'Sarah Connor',
-        updatedAt: '2025-10-24 08:00',
-        updatedBy: 'System',
-        avatar: 'KR'
-    },
-    {
-        id: 3,
-        employeeId: 'EPM-1003',
-        firstName: 'John',
-        lastName: 'Doe',
-        phone: '555-0103',
-        email: 'john@busybees.com',
-        address: '88 Generic Rd, NY',
-        role: 'Trainee',
-        location: 'Transit',
-        externalIp: '10.0.0.50',
-        browser: 'Firefox 121',
-        status: 'Active',
-        createdAt: '2025-05-20 14:00',
-        createdBy: 'Admin',
-        updatedAt: '2025-10-24 10:45',
-        updatedBy: 'Self',
-        avatar: 'JD'
-    },
-    {
-        id: 4,
-        employeeId: 'EPM-1004',
-        firstName: 'Ellen',
-        lastName: 'Ripley',
-        phone: '555-0104',
-        email: 'ellen@busybees.com',
-        address: '99 Nostromo Way, Space',
-        role: 'Supervisor',
-        location: 'Last seen: Warehouse',
-        externalIp: '192.168.100.1',
-        browser: 'Edge 119',
-        status: 'Offline',
-        createdAt: '2025-01-05 09:00',
-        createdBy: 'Admin',
-        updatedAt: '2025-10-23 18:30',
-        updatedBy: 'Self',
-        avatar: 'ER'
-    },
-];
-
 export default function UsersPage() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
@@ -109,7 +29,7 @@ export default function UsersPage() {
     const [matchType, setMatchType] = useState<MatchType>('AND');
     const [showFilterDrawer, setShowFilterDrawer] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
-    const [users, setUsers] = useState(MOCK_USERS);
+    const [users, setUsers] = useState<any[]>([]);
     const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
     
     // Edit Modal State
@@ -183,23 +103,20 @@ export default function UsersPage() {
             );
         }
 
-        const hydrated = MOCK_USERS.map(u => {
-            const saved = localStorage.getItem(`user_profile_${u.id}`);
-            return saved ? JSON.parse(saved) : u;
-        }).filter(u => !localStorage.getItem(`deleted_user_${u.id}`));
-        
-        const customSaved = localStorage.getItem('custom_users');
-        const customUsers = customSaved ? JSON.parse(customSaved) : [];
-
-        // Mix hydrated mocks and custom appended users
-        const allUsers = [...hydrated, ...customUsers].map(u => {
-            // Also check individual custom user profile edits just in case
-            const saved = localStorage.getItem(`user_profile_${u.id}`);
-            return saved ? JSON.parse(saved) : u;
-        }).filter(u => !localStorage.getItem(`deleted_user_${u.id}`));
-        
-        setUsers(allUsers);
-        setIsMounted(true);
+        const fetchUsers = async () => {
+            const { data, error } = await supabase.from('users').select('*').order('createdAt', { ascending: false });
+            if (!error && data) {
+                // Ensure dates format nicely
+                const formatted = data.map(u => ({
+                    ...u,
+                    createdAt: u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : '',
+                    updatedAt: u.lastEditAt ? new Date(u.lastEditAt).toISOString().split('T')[0] : ''
+                }));
+                setUsers(formatted);
+            }
+            setIsMounted(true);
+        };
+        fetchUsers();
     }, []);
 
     const handleSort = (key: string) => {
@@ -475,12 +392,12 @@ export default function UsersPage() {
                                                     </button>
                                                     <button 
                                                         style={{ padding: '8px 16px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--text-main)', width: '100%' }}
-                                                        onClick={(e) => {
+                                                        onClick={async (e) => {
                                                             e.stopPropagation();
                                                             const newStatus = user.status === 'Active' ? 'Suspended' : 'Active';
                                                             const updated = { ...user, status: newStatus };
-                                                            localStorage.setItem(`user_profile_${user.id}`, JSON.stringify(updated));
                                                             setUsers(prev => prev.map(u => u.id === user.id ? updated : u));
+                                                            await supabase.from('users').update({ status: newStatus, lastEditAt: new Date().toISOString() }).eq('id', user.id);
                                                         }}
                                                     >
                                                         {user.status === 'Active' ? 'Disable User' : 'Enable User'}
@@ -488,11 +405,11 @@ export default function UsersPage() {
                                                     <div style={{ height: '1px', backgroundColor: 'var(--border-light)', margin: '4px 0' }}></div>
                                                     <button 
                                                         style={{ padding: '8px 16px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--error)', width: '100%' }}
-                                                        onClick={(e) => {
+                                                        onClick={async (e) => {
                                                             e.stopPropagation();
                                                             if (confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
-                                                                localStorage.setItem(`deleted_user_${user.id}`, 'true');
                                                                 setUsers(prev => prev.filter(u => u.id !== user.id));
+                                                                await supabase.from('users').delete().eq('id', user.id);
                                                             }
                                                         }}
                                                     >
@@ -591,11 +508,12 @@ export default function UsersPage() {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px' }}>
                             <button onClick={() => setEditingUser(null)} style={cancelBtnStyle}>Cancel</button>
-                            <button onClick={() => {
-                                const updated = { ...editingUser, ...formData };
-                                localStorage.setItem(`user_profile_${editingUser.id}`, JSON.stringify(updated));
+                            <button onClick={async () => {
+                                const payload = { ...formData, lastEditAt: new Date().toISOString(), lastEditBy: 'Admin' };
+                                const updated = { ...editingUser, ...payload };
                                 setUsers(prev => prev.map(u => u.id === editingUser.id ? updated : u));
                                 setEditingUser(null);
+                                await supabase.from('users').update(payload).eq('id', editingUser.id);
                             }} style={saveBtnStyle}>
                                 <Save size={16} /> Save Changes
                             </button>
@@ -694,10 +612,8 @@ export default function UsersPage() {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px' }}>
                             <button onClick={() => setIsAddModalOpen(false)} style={cancelBtnStyle}>Cancel</button>
-                            <button onClick={() => {
-                                // Add ID and defaults
+                            <button onClick={async () => {
                                 const newUser = {
-                                    id: Date.now(),
                                     employeeId: 'BB-' + Math.floor(Math.random() * 10000),
                                     firstName: addFormData.firstName || 'Unknown',
                                     lastName: addFormData.lastName || 'User',
@@ -709,24 +625,29 @@ export default function UsersPage() {
                                     role: addFormData.role || 'Employee',
                                     browser: realTelemetry.browser,
                                     externalIp: realTelemetry.ip,
-                                    createdAt: new Date().toISOString().split('T')[0],
                                     createdBy: 'Admin',
-                                    updatedAt: new Date().toISOString().split('T')[0],
-                                    updatedBy: 'Admin',
-                                    avatar: addFormData.avatar || ((addFormData.firstName[0] || 'U') + (addFormData.lastName[0] || 'U'))
+                                    lastEditBy: 'Admin',
+                                    avatar: addFormData.avatar || null
                                 };
 
-                                const customSaved = localStorage.getItem('custom_users');
-                                const customUsers = customSaved ? JSON.parse(customSaved) : [];
-                                customUsers.push(newUser);
-                                localStorage.setItem('custom_users', JSON.stringify(customUsers));
-
-                                setUsers(prev => [...prev, newUser]);
+                                // Optimistic UI update without a UUID yet
+                                const optimisticUser = { ...newUser, id: 'temp-' + Date.now(), createdAt: new Date().toISOString() };
+                                setUsers(prev => [optimisticUser, ...prev]);
                                 setIsAddModalOpen(false);
                                 setAddFormData({
                                     firstName: '', lastName: '', phone: '', email: '', 
                                     address: '', location: '', status: 'Active', role: 'Trainee', avatar: ''
                                 });
+
+                                // Perform live DB insert
+                                const { data } = await supabase.from('users').insert(newUser).select().single();
+                                if (data) {
+                                    setUsers(prev => prev.map(u => u.id === optimisticUser.id ? {
+                                        ...data,
+                                        createdAt: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : '',
+                                        updatedAt: data.lastEditAt ? new Date(data.lastEditAt).toISOString().split('T')[0] : ''
+                                    } : u));
+                                }
                             }} style={saveBtnStyle}>
                                 <Plus size={16} /> Create User
                             </button>
