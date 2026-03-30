@@ -5,6 +5,7 @@ import { Mail, Phone, MapPin, Building2, User, Globe, ArrowLeft, X, Save, Camera
 import Link from 'next/link';
 import Autocomplete from 'react-google-autocomplete';
 import AvailabilityCalendar from './AvailabilityCalendar';
+import { createClient } from '@/utils/supabase/client';
 import styles from './page.module.css';
 import type { CSSProperties } from 'react';
 
@@ -53,47 +54,47 @@ export default function UserProfileClient({ initialUser }: { initialUser: UserDa
         avatar: user.avatar || ''
     });
 
-    const saveToStorage = (newData: UserData) => {
-        localStorage.setItem(`user_profile_${newData.id}`, JSON.stringify(newData));
-    };
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        let hydratedUser = user;
+        // Sync incoming server props to state if they change
+        setUser(initialUser);
+        setFormData({
+            firstName: initialUser.firstName || '',
+            lastName: initialUser.lastName || '',
+            phone: initialUser.phone || '',
+            email: initialUser.email || '',
+            address: initialUser.address || '',
+            location: initialUser.location || '',
+            status: initialUser.status || 'Active',
+            avatar: initialUser.avatar || ''
+        });
+    }, [initialUser.id, initialUser]);
 
-        // 1. Scan custom users first
-        const customSaved = localStorage.getItem('custom_users');
-        if (customSaved) {
-            const customUsers = JSON.parse(customSaved);
-            const foundCustom = customUsers.find((u: any) => u.id.toString() === user.id.toString());
-            if (foundCustom) hydratedUser = foundCustom;
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const supabase = createClient();
+            const newData = { ...user, ...formData };
+            
+            // Push changes to Database
+            const { error } = await supabase
+                .from('users')
+                .update(formData)
+                .eq('id', user.id);
+            
+            if (error) {
+                console.error("Failed to save user:", error);
+                alert("Failed to save changes.");
+            } else {
+                setUser(newData);
+                setIsEditing(false);
+            }
+        } catch (err) {
+            console.error("Error during save:", err);
+        } finally {
+            setIsSaving(false);
         }
-
-        // 2. Override with individual profile saves if they exist
-        const individualSave = localStorage.getItem(`user_profile_${user.id}`);
-        if (individualSave) {
-            hydratedUser = JSON.parse(individualSave);
-        }
-
-        if (hydratedUser.id) {
-            setUser(hydratedUser);
-            setFormData({
-                firstName: hydratedUser.firstName || '',
-                lastName: hydratedUser.lastName || '',
-                phone: hydratedUser.phone || '',
-                email: hydratedUser.email || '',
-                address: hydratedUser.address || '',
-                location: hydratedUser.location || '',
-                status: hydratedUser.status || 'Active',
-                avatar: hydratedUser.avatar || ''
-            });
-        }
-    }, [user.id]);
-
-    const handleSave = () => {
-        const newData = { ...user, ...formData };
-        setUser(newData);
-        saveToStorage(newData);
-        setIsEditing(false);
     };
 
     const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,9 +285,9 @@ export default function UserProfileClient({ initialUser }: { initialUser: UserDa
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px' }}>
-                            <button onClick={() => setIsEditing(false)} style={cancelBtnStyle}>Cancel</button>
-                            <button onClick={handleSave} style={saveBtnStyle}>
-                                <Save size={16} /> Save Changes
+                            <button onClick={() => setIsEditing(false)} style={cancelBtnStyle} disabled={isSaving}>Cancel</button>
+                            <button onClick={handleSave} style={saveBtnStyle} disabled={isSaving}>
+                                <Save size={16} /> {isSaving ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
                     </div>

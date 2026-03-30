@@ -23,12 +23,10 @@ export default function AvailabilityCalendar({ userId }: { userId: string }) {
     useEffect(() => {
         const fetchAvailability = async () => {
             try {
-                const res = await dbClient.get(`/availability?employeeId=${userId}`);
-                if (!res.ok) throw new Error('Failed to fetch availability');
-                const data = res; // Was .json()
-                setSlots(data);
+                const data = await dbClient.get(`/availability?employeeId=${userId}`);
+                setSlots(data || []);
             } catch (err) {
-                console.error(err);
+                console.error("Failed to fetch availability:", err);
             } finally {
                 setLoading(false);
             }
