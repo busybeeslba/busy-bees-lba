@@ -49,10 +49,18 @@ export const SessionDetailsScreen = () => {
             (c.guardianLastName || '').toLowerCase().includes(q)
         );
     });
-    const filteredServices = availableServices.filter(s =>
-        (s.name || '').toLowerCase().includes(serviceSearch.toLowerCase()) ||
-        (s.provider || '').toLowerCase().includes(serviceSearch.toLowerCase())
-    );
+    const filteredServices = availableServices.filter(s => {
+        const matchesSearch = (s.name || '').toLowerCase().includes(serviceSearch.toLowerCase()) ||
+                              (s.provider || '').toLowerCase().includes(serviceSearch.toLowerCase());
+                              
+        if (!clientId) return false; // Require a client to be selected first
+        
+        const selectedClient = clients.find(c => String(c.id) === String(clientId).replace('CLI-', ''));
+        if (!selectedClient || !selectedClient.services) return false;
+        
+        const assignedServiceIds = selectedClient.services.map((cs: any) => cs.serviceId);
+        return matchesSearch && assignedServiceIds.includes(s.serviceId);
+    });
 
     // Timer Logic
     const [elapsed, setElapsed] = useState(0);
@@ -202,8 +210,8 @@ export const SessionDetailsScreen = () => {
                         <View style={styles.section}>
                             <Text style={[styles.label, { color: colors.secondaryText }]}>SERVICE TYPE</Text>
                             <TouchableOpacity style={dropdownStyle} onPress={() => setShowServicePicker(true)}>
-                                <Text style={[dropdownTextStyle, !service && { color: colors.secondaryText }]}>
-                                    {service || (availableServices.length === 0 ? 'Loading services...' : 'Select a service...')}
+                                <Text style={[dropdownTextStyle, !service && { color: colors.secondaryText }, { flex: 1, marginRight: 8 }]} numberOfLines={1}>
+                                    {service || (availableServices.length === 0 ? 'Loading services...' : 'Select service(s)...')}
                                 </Text>
                                 <ChevronDown size={20} color={colors.secondaryText} />
                             </TouchableOpacity>
@@ -419,15 +427,21 @@ export const SessionDetailsScreen = () => {
                             keyExtractor={item => String(item.id)}
                             keyboardShouldPersistTaps="handled"
                             renderItem={({ item }) => {
-                                const isSelected = item.name === service;
+                                const currentServices = service ? service.split(', ') : [];
+                                const isSelected = currentServices.includes(item.name);
                                 return (
                                     <TouchableOpacity
                                         style={[pickerStyles.item, isSelected && { backgroundColor: COLORS.primary + '22' }]}
                                         onPress={() => {
-                                            setService(item.name);
+                                            const newServices = isSelected
+                                                ? currentServices.filter(s => s !== item.name)
+                                                : [...currentServices, item.name];
+                                            const newServiceString = newServices.join(', ');
+                                            
+                                            setService(newServiceString);
                                             // ✅ Sync into the Zustand store so forms can pre-populate
-                                            updateActiveSession({ serviceType: item.name });
-                                            setShowServicePicker(false);
+                                            updateActiveSession({ serviceType: newServiceString });
+                                            // Multi-select: do not auto-close modal
                                         }}
                                     >
                                         <View style={{ flex: 1 }}>
@@ -440,12 +454,12 @@ export const SessionDetailsScreen = () => {
                             }}
                             ListEmptyComponent={
                                 <Text style={[pickerStyles.itemSub, { textAlign: 'center', padding: 24, color: colors.secondaryText }]}>
-                                    No services found.
+                                    {clientId ? "No services assigned to this client." : "Please select a client first."}
                                 </Text>
                             }
                         />
                         <TouchableOpacity style={pickerStyles.cancelBtn} onPress={() => { setShowServicePicker(false); setServiceSearch(''); }}>
-                            <Text style={pickerStyles.cancelText}>Cancel</Text>
+                            <Text style={pickerStyles.cancelText}>Done</Text>
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>

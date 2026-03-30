@@ -25,7 +25,7 @@
     width: 36px;
     height: 36px;
     border: 3px solid #e2e8f0;
-    border-top-color: #FFC107;
+    border-top-color: var(--secondary);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
 }
@@ -67,8 +67,8 @@
 }
 
 .backBtn:hover {
-    background: #fffbeb;
-    border-color: #FFC107;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
+    border-color: var(--secondary);
     color: #92400e;
 }
 
@@ -112,7 +112,7 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: #FFC107;
+    background: var(--secondary);
     color: #000;
     border: none;
     border-radius: 9px;
@@ -123,20 +123,20 @@
 }
 
 .editBtn:hover {
-    background: #e6ac00;
+    background: color-mix(in srgb, var(--secondary) 90%, #000000);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--secondary) 35%, transparent);
 }
 
 /* ─── Hero Card ─── */
 .heroCard {
-    background: linear-gradient(135deg, #ffb300 0%, #FFC107 45%, #ffd54f 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 90%, #000), var(--secondary) 45%, color-mix(in srgb, var(--secondary) 85%, #fff) 100%);
     border-radius: 20px;
     padding: 28px 32px;
     display: flex;
     align-items: center;
     gap: 24px;
-    box-shadow: 0 8px 32px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--secondary) 30%, transparent);
     position: relative;
     overflow: hidden;
 }
@@ -312,7 +312,7 @@
 .card[draggable='true']:active {
     cursor: grabbing;
     opacity: 0.88;
-    box-shadow: 0 8px 24px rgba(255, 193, 7, 0.25);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--secondary) 25%, transparent);
     transform: scale(1.01);
 }
 
@@ -324,9 +324,9 @@
     font-size: 12px;
     font-weight: 700;
     color: #92400e;
-    background: linear-gradient(135deg, #fffde7, #fff8e1);
-    border-bottom: 1px solid #ffe082;
-    border-left: 4px solid #FFC107;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 15%, #ffffff), color-mix(in srgb, var(--secondary) 25%, #ffffff));
+    border-bottom: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
+    border-left: 4px solid var(--secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -339,14 +339,14 @@
 }
 
 .cardIcon {
-    color: #e6ac00;
+    color: color-mix(in srgb, var(--secondary) 90%, #000000);
     flex-shrink: 0;
 }
 
 .cardBadge {
-    background: #fff8e1;
+    background: color-mix(in srgb, var(--secondary) 25%, #ffffff);
     color: #92400e;
-    border: 1px solid #ffe082;
+    border: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
     font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
@@ -373,7 +373,7 @@
 .dragHandle {
     display: flex;
     align-items: center;
-    color: #d1b53a;
+    color: color-mix(in srgb, var(--secondary) 85%, #000000);
     cursor: grab;
     margin-right: 2px;
     transition: color 0.15s;
@@ -425,7 +425,7 @@
     font-size: 8px;
     font-weight: 800;
     color: #92400e;
-    background: #fffde7;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
     width: 18px;
     height: 18px;
     border-radius: 4px;
@@ -434,7 +434,7 @@
     justify-content: center;
     letter-spacing: 0.2px;
     flex-shrink: 0;
-    border: 1px solid #ffe082;
+    border: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
 }
 
 .primaryDotEmpty {
@@ -472,17 +472,17 @@
     width: 26px;
     height: 26px;
     border-radius: 7px;
-    background: #fffde7;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
     color: #92400e;
-    border: 1px solid #ffe082;
+    border: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
     transition: all 0.15s;
     text-decoration: none;
 }
 
 .contactAction:hover {
-    background: #FFC107;
+    background: var(--secondary);
     color: #1a1a1a;
-    border-color: #FFC107;
+    border-color: var(--secondary);
 }
 
 /* ─── Details Grid ─── */
@@ -526,8 +526,8 @@
 }
 
 .programCatCard {
-    background: #fffde7;
-    border: 1px solid #ffe082;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
     border-radius: 10px;
     padding: 10px 14px;
 }
@@ -547,12 +547,12 @@
 
 .programCatTarget {
     font-size: 11px;
-    background: #fff8e1;
+    background: color-mix(in srgb, var(--secondary) 25%, #ffffff);
     color: #78350f;
     padding: 2px 8px;
     border-radius: 100px;
     font-weight: 600;
-    border: 1px solid #fcd34d;
+    border: 1px solid color-mix(in srgb, var(--secondary) 80%, #ffffff);
 }
 
 /* ─── Services Table ─── */
@@ -563,8 +563,8 @@
 }
 
 .servicesTable thead tr {
-    background: #fffde7;
-    border-bottom: 2px solid #ffe082;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
+    border-bottom: 2px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
 }
 
 .servicesTable th {
@@ -590,12 +590,12 @@
 }
 
 .servicesTable tbody tr:hover {
-    background: #fffde7;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
 }
 
 .providerChip {
     display: inline-block;
-    background: #fef3c7;
+    background: color-mix(in srgb, var(--secondary) 30%, #ffffff);
     color: #92400e;
     padding: 3px 10px;
     border-radius: 100px;
@@ -654,7 +654,7 @@
 }
 
 .formTabActive {
-    border-bottom-color: #FFC107;
+    border-bottom-color: var(--secondary);
     color: #92400e;
 }
 
@@ -667,8 +667,8 @@
 
 /* Chart */
 .chartWrap {
-    background: #fffde7;
-    border: 1px solid #ffe082;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 20px;
@@ -691,8 +691,8 @@
 }
 
 .formsTable thead tr {
-    background: #fffde7;
-    border-bottom: 2px solid #ffe082;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
+    border-bottom: 2px solid color-mix(in srgb, var(--secondary) 60%, #ffffff);
 }
 
 .formsTable th {
@@ -718,7 +718,7 @@
 }
 
 .formsTable tbody tr:hover {
-    background: #fffde7;
+    background: color-mix(in srgb, var(--secondary) 15%, #ffffff);
 }
 
 .rowId {

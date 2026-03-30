@@ -44,8 +44,10 @@ export interface AppState {
   // User State
   user: User | null;
   isLoggedIn: boolean;
+  isInitializingAuth: boolean;
+  initializeAuth: () => Promise<void>;
   login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   availability: any[];
   setAvailability: (slots: any[]) => void;
@@ -58,6 +60,9 @@ export interface AppState {
   // Session State
   activeSession: Session | null;
   completedSessions: Session[];
+  isClockedIn: boolean;
+  clockInRecord: { time: string; location: string } | null;
+  setClockedIn: (status: boolean, record?: { time: string; location: string }) => void;
 
   // Actions
   startSession: (arg1: any, arg2?: string, arg3?: string) => void;

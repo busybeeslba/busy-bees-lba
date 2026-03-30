@@ -4,21 +4,26 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type BrandContextType = {
     primaryColor: string;
+    secondaryColor: string;
     sidebarBg: string;
     logoBase64: string | null;
     logoCollapsedBase64: string | null;
     logoZoom: number;
     logoCollapsedZoom: number;
     setPrimaryColor: (color: string) => void;
+    setSecondaryColor: (color: string) => void;
     setSidebarBg: (color: string) => void;
     setLogoBase64: (base64: string | null) => void;
     setLogoCollapsedBase64: (base64: string | null) => void;
     setLogoZoom: (zoom: number) => void;
     setLogoCollapsedZoom: (zoom: number) => void;
+    staffAvatarSize: number;
+    setStaffAvatarSize: (size: number) => void;
     resetToDefaults: () => void;
 };
 
 const DEFAULT_PRIMARY = '#5ce1e6';
+const DEFAULT_SECONDARY = '#fef08a';
 const DEFAULT_SIDEBAR = '#5ce1e6';
 const DEFAULT_LOGO = '/logo.png'; // Fallback to public asset if no base64 is set
 
@@ -26,28 +31,34 @@ const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
 export function BrandProvider({ children }: { children: React.ReactNode }) {
     const [primaryColor, setPrimaryColor] = useState(DEFAULT_PRIMARY);
+    const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY);
     const [sidebarBg, setSidebarBg] = useState(DEFAULT_SIDEBAR);
     const [logoBase64, setLogoBase64] = useState<string | null>(null);
     const [logoCollapsedBase64, setLogoCollapsedBase64] = useState<string | null>(null);
     const [logoZoom, setLogoZoom] = useState<number>(100);
     const [logoCollapsedZoom, setLogoCollapsedZoom] = useState<number>(100);
+    const [staffAvatarSize, setStaffAvatarSize] = useState<number>(36);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from localStorage on mount
     useEffect(() => {
         const savedPrimary = localStorage.getItem('brand_primaryColor');
+        const savedSecondary = localStorage.getItem('brand_secondaryColor');
         const savedSidebar = localStorage.getItem('brand_sidebarBg');
         const savedLogo = localStorage.getItem('brand_logoBase64');
         const savedLogoCollapsed = localStorage.getItem('brand_logoCollapsedBase64');
         const savedZoom = localStorage.getItem('brand_logoZoom');
         const savedZoomC = localStorage.getItem('brand_logoCollapsedZoom');
+        const savedAvatarSize = localStorage.getItem('brand_staffAvatarSize');
 
         if (savedPrimary) setPrimaryColor(savedPrimary);
+        if (savedSecondary) setSecondaryColor(savedSecondary);
         if (savedSidebar) setSidebarBg(savedSidebar);
         if (savedLogo) setLogoBase64(savedLogo);
         if (savedLogoCollapsed) setLogoCollapsedBase64(savedLogoCollapsed);
         if (savedZoom) setLogoZoom(parseInt(savedZoom, 10));
         if (savedZoomC) setLogoCollapsedZoom(parseInt(savedZoomC, 10));
+        if (savedAvatarSize) setStaffAvatarSize(parseInt(savedAvatarSize, 10));
         
         setIsLoaded(true);
     }, []);
@@ -56,9 +67,11 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         localStorage.setItem('brand_primaryColor', primaryColor);
+        localStorage.setItem('brand_secondaryColor', secondaryColor);
         localStorage.setItem('brand_sidebarBg', sidebarBg);
         localStorage.setItem('brand_logoZoom', logoZoom.toString());
         localStorage.setItem('brand_logoCollapsedZoom', logoCollapsedZoom.toString());
+        localStorage.setItem('brand_staffAvatarSize', staffAvatarSize.toString());
         
         // Use try-catch for base64 storage in case of QuotaExceededError
         try {
@@ -77,32 +90,38 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
             console.error('LocalStorage quota exceeded saving logo:', e);
             alert('Your logo image is too large properties to save to local storage. Try uploading a smaller size image.');
         }
-    }, [primaryColor, sidebarBg, logoBase64, logoCollapsedBase64, logoZoom, logoCollapsedZoom, isLoaded]);
+    }, [primaryColor, secondaryColor, sidebarBg, logoBase64, logoCollapsedBase64, logoZoom, logoCollapsedZoom, staffAvatarSize, isLoaded]);
 
     const resetToDefaults = () => {
         setPrimaryColor(DEFAULT_PRIMARY);
+        setSecondaryColor(DEFAULT_SECONDARY);
         setSidebarBg(DEFAULT_SIDEBAR);
         setLogoBase64(null);
         setLogoCollapsedBase64(null);
         setLogoZoom(100);
         setLogoCollapsedZoom(100);
+        setStaffAvatarSize(36);
     };
 
     return (
         <BrandContext.Provider
             value={{
                 primaryColor,
+                secondaryColor,
                 sidebarBg,
                 logoBase64,
                 logoCollapsedBase64,
                 logoZoom,
                 logoCollapsedZoom,
                 setPrimaryColor,
+                setSecondaryColor,
                 setSidebarBg,
                 setLogoBase64,
                 setLogoCollapsedBase64,
                 setLogoZoom,
                 setLogoCollapsedZoom,
+                staffAvatarSize,
+                setStaffAvatarSize,
                 resetToDefaults
             }}
         >
@@ -110,6 +129,7 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
             <style jsx global>{`
                 :root {
                     --primary: ${primaryColor} !important;
+                    --secondary: ${secondaryColor} !important;
                     --sidebar-bg: ${sidebarBg} !important;
                 }
             `}</style>

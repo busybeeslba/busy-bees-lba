@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { X, Plus, Trash2, Check } from 'lucide-react';
 import styles from './AddClientModal.module.css';
 import { MOCK_AVAILABLE_SERVICES } from '@/lib/mockData';
+import { dbClient } from '@/lib/dbClient';
+import Autocomplete from 'react-google-autocomplete';
 
 interface MultiEntry {
     id: string;
@@ -16,6 +18,7 @@ interface ServiceEntry {
     id: string;
     serviceId: string;
     hours: string;
+    providerId?: string;
 }
 
 interface AddClientModalProps {
@@ -29,7 +32,7 @@ const ADDRESS_TYPES = ['Home', 'School', 'Work', 'Other'];
 const PHONE_TYPES = ['Mobile', 'Home', 'Work', 'Emergency'];
 const EMAIL_TYPES = ['Personal', 'Work', 'School', 'Other'];
 
-// Address Input Component with Photon Autocomplete
+// Address Input Component with Google Maps Autocomplete
 const AddressInput = ({
     value,
     onChange,
@@ -41,83 +44,26 @@ const AddressInput = ({
     placeholder: string;
     className: string;
 }) => {
-    const [suggestions, setSuggestions] = useState<any[]>([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const wrapperRef = useRef<HTMLDivElement>(null);
-
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (value && value.length > 2 && showSuggestions) {
-                const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
-                if (!apiKey) {
-                    console.warn("Geoapify API Key is missing");
-                    return;
-                }
-
-                fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&apiKey=${apiKey}&limit=5&filter=countrycode:us`)
-                    .then(res => res.json())
-                    .then(data => {
-                        setSuggestions(data.features || []);
-                    })
-                    .catch(err => console.error("Geoapify API Error:", err));
-            } else if (!value) {
-                setSuggestions([]);
-            }
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [value, showSuggestions]);
-
-    // Handle outside click
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                setShowSuggestions(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleSelect = (feature: any) => {
-        const props = feature.properties;
-        const formattedAddress = props.formatted;
-        onChange(formattedAddress);
-        setShowSuggestions(false);
-    };
-
     return (
-        <div className={styles.addressWrapper} ref={wrapperRef}>
-            <input
-                type="text"
-                className={className}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => {
-                    onChange(e.target.value);
-                    setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                style={{ width: '100%' }}
-            />
-            {showSuggestions && suggestions.length > 0 && (
-                <ul className={styles.suggestionsList}>
-                    {suggestions.map((suggestion, index) => {
-                        const props = suggestion.properties;
-                        return (
-                            <li
-                                key={index}
-                                className={styles.suggestionItem}
-                                onClick={() => handleSelect(suggestion)}
-                            >
-                                {props.formatted}
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </div>
+        <Autocomplete
+            apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+            onPlaceSelected={(place: any) => {
+                if (place && place.formatted_address) {
+                    onChange(place.formatted_address);
+                } else if (place && place.name) {
+                    onChange(place.name);
+                }
+            }}
+            options={{
+                types: ['address'],
+                componentRestrictions: { country: "us" },
+            }}
+            defaultValue={value}
+            onChange={(e: any) => onChange(e.target.value)}
+            className={className}
+            placeholder={placeholder}
+            style={{ width: '100%' }}
+        />
     );
 };
 
@@ -138,6 +84,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
     const [assignedPrograms, setAssignedPrograms] = useState('');
     const [iepMeeting, setIepMeeting] = useState('');
     const [availableServices, setAvailableServices] = useState<any[]>([]);
+    const [usersList, setUsersList] = useState<any[]>([]);
 
     // Program Categories
     interface ProgTarget { id: string; name: string; }
@@ -204,6 +151,13 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
         } else {
             setAvailableServices(MOCK_AVAILABLE_SERVICES);
         }
+
+        // Fetch users to populate the service provider dropdown
+        if (isOpen) {
+            dbClient.get('/users').then(data => {
+                setUsersList(data);
+            }).catch(e => console.error("Could not load users for provider list", e));
+        }
     }, [isOpen]);
 
     // Multi-entry Arrays
@@ -231,13 +185,13 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
             setStatus(initialData.status || 'Active');
             setTeacher(initialData.teacher || '');
             if (initialData.services && Array.isArray(initialData.services)) {
-                setClientServices(initialData.services.length > 0 ? initialData.services : [{ id: '1', serviceId: '', hours: '0h' }]);
+                setClientServices(initialData.services.length > 0 ? initialData.services : [{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
             } else if (initialData.services && typeof initialData.services === 'string') {
                 // Fallback for old string format based on name lookup
                 // Complex resolution omitted for brevity, fallback to empty selection
-                setClientServices([{ id: '1', serviceId: '', hours: '0h' }]);
+                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
             } else {
-                setClientServices([{ id: '1', serviceId: '', hours: '0h' }]);
+                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
             }
             setAssignedPrograms(initialData.assignedPrograms || '');
             setIepMeeting(initialData.iepMeeting || '');
@@ -280,7 +234,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
             setDob('');
             setStatus('Active');
             setTeacher('');
-            setClientServices([{ id: '1', serviceId: '', hours: '0h' }]);
+            setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
             setAssignedPrograms('');
             setIepMeeting('');
             setProgramCategories([]);
@@ -294,6 +248,11 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
     // Helpers
     const capitalizeWords = (str: string) => {
         return str.replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const capitalizeFirst = (str: string) => {
+        if (!str) return str;
+        return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
     const handleNameChange = (setter: (val: string) => void, value: string) => {
@@ -368,7 +327,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
     const addServiceEntry = () => {
         setClientServices(prev => [
             ...prev,
-            { id: Date.now().toString(), serviceId: '', hours: '0h' }
+            { id: Date.now().toString(), serviceId: '', hours: '0h', providerId: '' }
         ]);
     };
 
@@ -470,14 +429,32 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
                                 </option>
                             ))}
                         </select>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            placeholder="e.g. 12h"
-                            value={entry.hours}
-                            onChange={(e) => updateServiceEntry(entry.id, 'hours', e.target.value)}
-                            style={{ flex: 1, minWidth: '80px' }}
-                        />
+                        <select
+                            className={styles.select}
+                            style={{ flex: 1.5 }}
+                            value={entry.providerId || ''}
+                            onChange={(e) => updateServiceEntry(entry.id, 'providerId', e.target.value)}
+                        >
+                            <option value="">Select a provider...</option>
+                            {usersList.map(u => (
+                                <option key={u.id} value={u.id}>
+                                    {u.firstName} {u.lastName}
+                                </option>
+                            ))}
+                        </select>
+                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '80px', position: 'relative' }}>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                placeholder="12"
+                                value={entry.hours.replace(/[^0-9]/g, '')}
+                                onChange={(e) => updateServiceEntry(entry.id, 'hours', e.target.value ? `${e.target.value.replace(/[^0-9]/g, '')}h` : '')}
+                                style={{ width: '100%', paddingRight: '24px' }}
+                            />
+                            <span style={{ position: 'absolute', right: '10px', color: 'var(--text-secondary-light)', fontSize: '14px', pointerEvents: 'none', fontWeight: 500 }}>
+                                h
+                            </span>
+                        </div>
                         <div className={styles.entryControls}>
                             {clientServices.length > 1 && (
                                 <button
@@ -627,7 +604,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
                                     className={styles.textarea}
                                     rows={3}
                                     value={assignedPrograms}
-                                    onChange={(e) => setAssignedPrograms(e.target.value)}
+                                    onChange={(e) => setAssignedPrograms(capitalizeFirst(e.target.value))}
                                 />
                             </div>
 
@@ -670,7 +647,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
                                                     </span>
                                                 ))}
                                                 {catNameTags.length === 0 && (
-                                                    <input ref={catNameInputRef} value={catNameInput} onChange={e => setCatNameInput(e.target.value)}
+                                                    <input ref={catNameInputRef} value={catNameInput} onChange={e => setCatNameInput(capitalizeFirst(e.target.value))}
                                                         onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); addCatNameTag(); } }}
                                                         onBlur={addCatNameTag} placeholder="e.g. Colors…"
                                                         style={{ border: 'none', outline: 'none', fontSize: '13px', color: '#1e293b', background: 'transparent', flex: 1, minWidth: '120px' }}
@@ -687,7 +664,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
                                                         <button type="button" onClick={() => setCatSubTags(p => p.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7c3aed', padding: 0, display: 'flex', alignItems: 'center' }}><X size={11} /></button>
                                                     </span>
                                                 ))}
-                                                <input ref={catSubInputRef} value={catSubInput} onChange={e => setCatSubInput(e.target.value)}
+                                                <input ref={catSubInputRef} value={catSubInput} onChange={e => setCatSubInput(capitalizeFirst(e.target.value))}
                                                     onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); addCatSubTag(); } if (e.key === 'Backspace' && catSubInput === '' && catSubTags.length > 0) setCatSubTags(p => p.slice(0, -1)); }}
                                                     onBlur={addCatSubTag} placeholder={catSubTags.length === 0 ? 'Type and press Enter…' : ''}
                                                     style={{ border: 'none', outline: 'none', fontSize: '13px', color: '#1e293b', background: 'transparent', flex: 1, minWidth: '120px' }}

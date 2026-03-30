@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
 import { supabase } from '@/lib/supabase';
+import { usePresence } from '@/context/PresenceContext';
 import styles from './page.module.css';
 
 const formatPhone = (val: string) => {
@@ -31,6 +32,7 @@ export default function UsersPage() {
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+    const { onlineUsers } = usePresence();
     
     // Edit Modal State
     const [editingUser, setEditingUser] = useState<any | null>(null);
@@ -338,9 +340,14 @@ export default function UsersPage() {
                                     </div>
                                 </td>
                                 <td>
-                                    <span className={`${styles.statusBadge} ${user.status === 'Active' ? styles.active : styles.offline}`}>
-                                        {user.status}
-                                    </span>
+                                    {(() => {
+                                        const liveStatus = user.status === 'Suspended' ? 'Suspended' : onlineUsers.some(u => u.email === String(user.email).toLowerCase()) ? 'Online' : 'Offline';
+                                        return (
+                                            <span className={`${styles.statusBadge} ${liveStatus === 'Online' ? styles.active : styles.offline}`}>
+                                                {liveStatus}
+                                            </span>
+                                        );
+                                    })()}
                                 </td>
                                 <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.createdAt}</span></td>
                                 <td><span style={{ fontSize: '12px' }}>{user.createdBy}</span></td>

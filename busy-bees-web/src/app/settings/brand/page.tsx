@@ -8,17 +8,21 @@ import styles from './BrandSettings.module.css';
 export default function BrandSettingsPage() {
     const {
         primaryColor,
+        secondaryColor,
         sidebarBg,
         logoBase64,
         logoCollapsedBase64,
         logoZoom,
         logoCollapsedZoom,
         setPrimaryColor,
+        setSecondaryColor,
         setSidebarBg,
         setLogoBase64,
         setLogoCollapsedBase64,
         setLogoZoom,
         setLogoCollapsedZoom,
+        staffAvatarSize,
+        setStaffAvatarSize,
         resetToDefaults
     } = useBrand();
 
@@ -136,7 +140,13 @@ export default function BrandSettingsPage() {
                                     style={{ transform: `scale(${logoZoom / 100})` }}
                                     className={styles.previewImg} 
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        const img = e.target as HTMLImageElement;
+                                        const parent = img.parentElement;
+                                        img.style.display = 'none';
+                                        if (parent) {
+                                            parent.innerText = '🐝';
+                                            parent.style.fontSize = '48px';
+                                        }
                                     }}
                                 />
                             </div>
@@ -184,9 +194,13 @@ export default function BrandSettingsPage() {
                                     style={{ transform: `scale(${logoCollapsedZoom / 100})` }}
                                     className={styles.previewImg} 
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
-                                        (e.target as HTMLImageElement).parentElement!.innerText = '🐝';
-                                        (e.target as HTMLImageElement).parentElement!.style.fontSize = '48px';
+                                        const img = e.target as HTMLImageElement;
+                                        const parent = img.parentElement;
+                                        img.style.display = 'none';
+                                        if (parent) {
+                                            parent.innerText = '🐝';
+                                            parent.style.fontSize = '48px';
+                                        }
                                     }}
                                 />
                             </div>
@@ -225,6 +239,27 @@ export default function BrandSettingsPage() {
                         </div>
 
                         <div className={styles.colorControl}>
+                            <label htmlFor="secondary-color" className={styles.colorLabel}>Secondary Color</label>
+                            <div className={styles.colorInputWrapper}>
+                                <input 
+                                    type="color" 
+                                    id="secondary-color"
+                                    value={secondaryColor}
+                                    onChange={(e) => setSecondaryColor(e.target.value)}
+                                    className={styles.colorPicker}
+                                />
+                                <input 
+                                    type="text" 
+                                    value={secondaryColor.toUpperCase()}
+                                    onChange={(e) => setSecondaryColor(e.target.value)}
+                                    className={styles.hexInput}
+                                    placeholder="#FEF08A"
+                                />
+                            </div>
+                            <span className={styles.colorHint}>Used for decorative dashboard highlights, table accents, and special badges.</span>
+                        </div>
+
+                        <div className={styles.colorControl}>
                             <label htmlFor="sidebar-bg" className={styles.colorLabel}>Sidebar Background</label>
                             <div className={styles.colorInputWrapper}>
                                 <input 
@@ -242,7 +277,28 @@ export default function BrandSettingsPage() {
                                     placeholder="#5CE1E6"
                                 />
                             </div>
-                            <span className={styles.colorHint}>The background color of the left navigation sidebar.</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Dashboard Widgets Section */}
+                <section className={styles.card}>
+                    <h2 className={styles.cardTitle}>Dashboard Widgets</h2>
+                    <p className={styles.cardDesc}>Customize the visual sizing and layout of components on the Live Dashboard.</p>
+                    
+                    <div className={styles.colorGrid}>
+                        <div className={styles.colorControl}>
+                            <label className={styles.colorLabel}>Online Staff Avatar Size ({staffAvatarSize}px)</label>
+                            <input 
+                                type="range" 
+                                min="24" 
+                                max="64" 
+                                step="2"
+                                value={staffAvatarSize}
+                                onChange={(e) => setStaffAvatarSize(parseInt(e.target.value, 10))}
+                                style={{ width: '100%', marginTop: '8px' }}
+                            />
+                            <span className={styles.colorHint}>Adjusts the profile picture dimensions inside the Online Staff analytics box.</span>
                         </div>
                     </div>
                 </section>

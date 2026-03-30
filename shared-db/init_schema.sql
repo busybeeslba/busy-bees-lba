@@ -1,21 +1,25 @@
 -- Supabase Schema and Data Migration
 
-DROP TABLE IF EXISTS public."users";
+DROP TABLE IF EXISTS public."users" CASCADE;
 CREATE TABLE public."users" (
-  "id" TEXT PRIMARY KEY,
-  "name" TEXT,
-  "email" TEXT,
-  "avatarUrl" TEXT,
-  "phoneNumber" TEXT,
-  "employeeId" TEXT,
-  "role" TEXT,
-  "status" TEXT
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "employeeId" TEXT UNIQUE,
+    "firstName" TEXT,
+    "lastName" TEXT,
+    "phone" TEXT,
+    "email" TEXT UNIQUE,
+    "address" TEXT,
+    "role" TEXT,
+    "location" TEXT,
+    "externalIp" TEXT,
+    "browser" TEXT,
+    "status" TEXT DEFAULT 'Active',
+    "avatar" TEXT, -- Base64 encoded or URL
+    "createdAt" TIMESTAMPTZ DEFAULT now(),
+    "createdBy" TEXT,
+    "lastEditAt" TIMESTAMPTZ,
+    "lastEditBy" TEXT
 );
-
-INSERT INTO public."users" ("id", "name", "email", "avatarUrl", "phoneNumber", "employeeId", "role", "status") VALUES ('u1', 'Alex Bee', 'alex@busybees.com', 'https://ui-avatars.com/api/?name=Alex+Bee&background=00E3BF&color=000', '+1 (555) 123-4567', 'BB-1001', 'field_worker', 'active');
-INSERT INTO public."users" ("id", "name", "email", "avatarUrl", "phoneNumber", "employeeId", "role", "status") VALUES ('u2', 'Maria Santos', 'maria@busybees.com', 'https://ui-avatars.com/api/?name=Maria+Santos&background=CC026F&color=fff', '+1 (555) 234-5678', 'BB-1002', 'field_worker', 'active');
-INSERT INTO public."users" ("id", "name", "email", "avatarUrl", "phoneNumber", "employeeId", "role", "status") VALUES ('u3', 'James Okafor', 'james@busybees.com', 'https://ui-avatars.com/api/?name=James+Okafor&background=00E3BF&color=000', '+1 (555) 345-6789', 'BB-1003', 'field_worker', 'offline');
-INSERT INTO public."users" ("id", "name", "email", "avatarUrl", "phoneNumber", "employeeId", "role", "status") VALUES ('u4', 'Linda Chen', 'linda@busybees.com', 'https://ui-avatars.com/api/?name=Linda+Chen&background=CC026F&color=fff', '+1 (555) 456-7890', 'BB-1004', 'supervisor', 'active');
 
 DROP TABLE IF EXISTS public."clients";
 CREATE TABLE public."clients" (

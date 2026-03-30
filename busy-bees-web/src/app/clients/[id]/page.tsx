@@ -55,6 +55,7 @@ export default function ClientDashboardPage() {
     const [activeFormTab, setActiveFormTab] = useState<'Baseline Sheet' | 'Mass Trial / DTT' | 'Daily Routines' | 'Transaction Sheet'>('Baseline Sheet');
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [usersList, setUsersList] = useState<any[]>([]);
 
     // Two explicit columns — any number of cards per column
     const [leftCards, setLeftCards] = useState<CardId[]>(['contact', 'personal', 'education', 'program']);
@@ -141,8 +142,10 @@ export default function ClientDashboardPage() {
             dbClient.get('/mass_trials').catch(() => []),
             dbClient.get('/daily_routines').catch(() => []),
             dbClient.get('/transaction-sheets').catch(() => []),
-        ]).then(([clients, mastery, dtt, daily, transaction]) => {
+            dbClient.get('/users').catch(() => []),
+        ]).then(([clients, mastery, dtt, daily, transaction, users]) => {
             const allClients = Array.isArray(clients) ? clients : [];
+            setUsersList(Array.isArray(users) ? users : []);
 
             // Match by clientId string OR numeric id (for clients created without a clientId field)
             let found = allClients.find((c: any) =>
@@ -420,7 +423,7 @@ export default function ClientDashboardPage() {
             <table className={styles.servicesTable}>
                 <thead>
                     <tr>
-                        <th>Provider</th>
+                        <th>Assigned Provider</th>
                         <th>Service</th>
                         <th>Hours</th>
                         <th>Used</th>
@@ -430,7 +433,14 @@ export default function ClientDashboardPage() {
                 <tbody>
                     {clientServices.map((srv: any, i: number) => (
                         <tr key={i}>
-                            <td><span className={styles.providerChip}>{getProviderName(srv.serviceId)}</span></td>
+                            <td>
+                                <span className={styles.providerChip}>
+                                    {(() => {
+                                        const user = usersList.find((u: any) => u.id === srv.providerId);
+                                        return user ? `${user.firstName} ${user.lastName}` : getProviderName(srv.serviceId);
+                                    })()}
+                                </span>
+                            </td>
                             <td className={styles.srvName}>{getServiceName(srv.serviceId)}</td>
                             <td><span className={styles.hoursBadge}><Clock size={12} /> {srv.hours}</span></td>
                             <td className={styles.usedCell}>0h</td>

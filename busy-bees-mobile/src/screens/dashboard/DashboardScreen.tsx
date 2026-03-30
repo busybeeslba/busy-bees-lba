@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import { TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
+import { BACKGROUND_LOCATION_TASK } from '../../tasks/backgroundLocation';
 import { MapComponent } from '../../components/MapComponent';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -40,12 +41,11 @@ const fmtDate = (d: Date) =>
 // ── Component ─────────────────────────────────────────────────────────────────
 export const DashboardScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { isGPSActive, currentLocation, updateLocation, activeSession } = useAppStore();
+    const { isGPSActive, currentLocation, updateLocation, activeSession, isClockedIn, clockInRecord, setClockedIn } = useAppStore();
     const locationInterval = useRef<NodeJS.Timeout | null>(null);
     const [permissionStatus, setPermissionStatus] = useState<string>('undetermined');
 
     // ── Clock In ──────────────────────────────────────────────────────────────
-    const [clockInRecord, setClockInRecord] = useState<ClockInRecord | null>(null);
     const [clockingIn, setClockingIn] = useState(false);
     const [nowStr, setNowStr] = useState('');
 
@@ -64,8 +64,23 @@ export const DashboardScreen = () => {
             let lng: number | null = null;
             let address: string | null = null;
 
-            const { status } = await Location.getForegroundPermissionsAsync();
+            const { status } = await Location.requestForegroundPermissionsAsync();
             if (status === 'granted') {
+                const { status: bgStatus } = await Location.requestBackgroundPermissionsAsync();
+                if (bgStatus === 'granted') {
+                    await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+                        accuracy: Location.Accuracy.Balanced,
+                        timeInterval: 60000,
+                        distanceInterval: 10,
+                        deferredUpdatesInterval: 60000,
+                        showsBackgroundLocationIndicator: true,
+                        foregroundService: {
+                            notificationTitle: 'Busy Bees Tracking',
+                            notificationBody: 'Active session location is tracking in the background.',
+                            notificationColor: '#eab308',
+                        }
+                    });
+                }
                 const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
                 lat = loc.coords.latitude;
                 lng = loc.coords.longitude;
@@ -79,7 +94,7 @@ export const DashboardScreen = () => {
             }
 
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-            setClockInRecord({ time: new Date(), address, lat, lng });
+            setClockedIn(true, { time: new Date().toISOString(), location: address || `${lat}, ${lng}` });
         } catch {
             Alert.alert('Error', 'Could not capture location. Please try again.');
         } finally {
@@ -94,9 +109,17 @@ export const DashboardScreen = () => {
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                    text: 'Clock Out', style: 'destructive', onPress: () => {
+                    text: 'Clock Out', style: 'destructive', onPress: async () => {
+                        try {
+                            const isRegistered = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+                            if (isRegistered) {
+                                await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+                            }
+                        } catch (e) {
+                            console.log('Error stopping background location:', e);
+                        }
                         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                        setClockInRecord(null);
+                        setClockedIn(false);
                     },
                 },
             ]
@@ -110,11 +133,38 @@ export const DashboardScreen = () => {
 
     useEffect(() => {
         (async () => {
+            const fallbackLocation = () => updateLocation({
+                latitude: 37.7749, // San Francisco Dummy
+                longitude: -122.4194,
+                accuracy: 50,
+                timestamp: Date.now(),
+            });
+
             try {
                 const { status } = await Location.requestForegroundPermissionsAsync();
                 setPermissionStatus(status);
-                if (status !== 'granted') return;
-                const loc = await Location.getCurrentPositionAsync({});
+                
+                if (status !== 'granted') {
+                    console.log('Location permissions denied, using dummy coordinates');
+                    return fallbackLocation();
+                }
+                
+                // 1. Immediately grab cached location so the Web WebSocket gets an instant payload
+                const cachedLoc = await Location.getLastKnownPositionAsync();
+                if (cachedLoc) {
+                    updateLocation({
+                        latitude: cachedLoc.coords.latitude,
+                        longitude: cachedLoc.coords.longitude,
+                        accuracy: cachedLoc.coords.accuracy || 0,
+                        timestamp: cachedLoc.timestamp,
+                    });
+                } else {
+                    // Push a dummy location while waiting for satellite lock just so the pin renders instantly
+                    fallbackLocation();
+                }
+                
+                // 2. Fetch fresh high-accuracy location from satellites natively
+                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
                 updateLocation({
                     latitude: loc.coords.latitude,
                     longitude: loc.coords.longitude,
@@ -122,7 +172,8 @@ export const DashboardScreen = () => {
                     timestamp: loc.timestamp,
                 });
             } catch (error) {
-                console.log('Error requesting permissions:', error);
+                console.log('Error catching high accuracy bounds GPS. Triggering explicit fallback:', error);
+                fallbackLocation();
             }
         })();
     }, []);
@@ -236,11 +287,11 @@ export const DashboardScreen = () => {
                                 <View style={{ marginLeft: 10 }}>
                                     <Text style={styles.clockedCardTitle}>Clocked In</Text>
                                     <Text style={styles.clockedCardTime}>
-                                        {fmtDate(clockInRecord.time)} · {fmtTime(clockInRecord.time)}
+                                        {fmtDate(new Date(clockInRecord.time))} · {fmtTime(new Date(clockInRecord.time))}
                                     </Text>
-                                    {clockInRecord.address && (
+                                    {clockInRecord.location && (
                                         <Text style={styles.clockedCardAddr} numberOfLines={1}>
-                                            📍 {clockInRecord.address}
+                                            📍 {clockInRecord.location}
                                         </Text>
                                     )}
                                 </View>

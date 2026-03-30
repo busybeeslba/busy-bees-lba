@@ -34,17 +34,73 @@ function deg2rad(deg: number) {
 export const useAppStore = create<AppState>((set, get) => ({
     user: null,
     isLoggedIn: false,
+    isInitializingAuth: true,
     activeSession: null,
     completedSessions: [],
     isGPSActive: false,
     currentLocation: null,
     showCoordinates: false, // Default off
+    isClockedIn: false,
+    clockInRecord: null,
 
-    login: () => set({ user: MOCK_USER, isLoggedIn: true }),
-    logout: () => set({ user: null, isLoggedIn: false, activeSession: null }),
+    login: (userData) => set({ user: userData, isLoggedIn: true }),
+    logout: async () => {
+        const { supabase } = await import('../lib/supabase');
+        await supabase.auth.signOut();
+        set({ user: null, isLoggedIn: false, activeSession: null, isClockedIn: false, clockInRecord: null });
+    },
     updateUser: (updates) => set((state) => ({
         user: state.user ? { ...state.user, ...updates } : null
     })),
+    setClockedIn: (status, record) => set({ isClockedIn: status, clockInRecord: status ? record : null }),
+
+    initializeAuth: async () => {
+        try {
+            const { supabase } = await import('../lib/supabase');
+
+            const applySession = async (session: any) => {
+                if (session?.user?.email) {
+                    const { data: dbUser, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('email', session.user.email)
+                        .single();
+
+                    if (!error && dbUser && dbUser.status === 'Active') {
+                        set({
+                            user: {
+                                id: String(dbUser.id),
+                                name: `${dbUser.firstName} ${dbUser.lastName}`,
+                                email: dbUser.email,
+                                avatarUrl: dbUser.avatar || null,
+                                phoneNumber: dbUser.phone || '',
+                                employeeId: dbUser.employeeId || '',
+                            },
+                            isLoggedIn: true
+                        });
+                    } else {
+                        await supabase.auth.signOut();
+                    }
+                }
+            };
+
+            const { data: { session } } = await supabase.auth.getSession();
+            await applySession(session);
+
+            // Note: We intentionally avoid .onAuthStateChange('SIGNED_IN') here to prevent React Native 
+            // concurrent networking bridge deadlocks during OAuth redirects! LoginScreen handles it manually.
+            supabase.auth.onAuthStateChange(async (event, newSession) => {
+                if (event === 'SIGNED_OUT') {
+                    set({ user: null, isLoggedIn: false, activeSession: null });
+                }
+            });
+
+        } catch (e) {
+            console.warn('Auth initialization error:', e);
+        } finally {
+            set({ isInitializingAuth: false });
+        }
+    },
 
     availability: [],
     setAvailability: (slots) => set({ availability: slots }),

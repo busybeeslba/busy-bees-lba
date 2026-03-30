@@ -60,8 +60,13 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.searchParams.set('error', 'unauthorized')
-      // Important to return a fully new response to dump cookies
+      
       const redirectResponse = NextResponse.redirect(url)
+      // Copy the cookie deletion headers from supabaseResponse so they actually reach the browser
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+      })
+      // Also forcibly clear the known Supabase cookie just in case
       redirectResponse.cookies.delete('sb-cyhyoexagdqdshouclej-auth-token')
       return redirectResponse
     }
@@ -71,7 +76,12 @@ export async function updateSession(request: NextRequest) {
   if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    // Always preserve cookies that auth.getUser() or generic cookie manipulation might have touched
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    return redirectResponse
   }
 
   return supabaseResponse

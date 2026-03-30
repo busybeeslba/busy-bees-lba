@@ -22,10 +22,27 @@ function LoginForm() {
 
   useEffect(() => {
     if (searchParams.get('error') === 'unauthorized') {
-      setError('Access Denied. Your Google account is not registered as an Active Employee. Please contact an Administrator.')
-      router.replace('/login')
+      // The server tried to log us out via cookies, but the client might still have localStorage
+      // which @supabase/ssr uses to aggressively resurrect cookies. We must forcibly purge it here.
+      supabase.auth.signOut().then(() => {
+        setError('Access Denied. Your Google account is not registered as an Active Employee. Please contact an Administrator.')
+        router.replace('/login')
+      })
     }
-  }, [searchParams, router])
+
+    // Capture standard background PKCE resolutions triggered by `@supabase/ssr` client internally
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Use a hard reload boundary to force the Server Components to re-fetch the session block 
+        // after the browser has synced the cookies internally.
+        window.location.href = '/';
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [searchParams, router, supabase])
 
   const handleGoogleLogin = async () => {
     try {

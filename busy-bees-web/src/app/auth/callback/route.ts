@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-// The client you created from the Server-Side Auth instructions
+import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: Request) {
@@ -13,17 +13,27 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+      const forwardedHost = request.headers.get('x-forwarded-host') 
       const isLocalEnv = process.env.NODE_ENV === 'development'
       
+      let response: NextResponse;
+      
       if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
+        response = NextResponse.redirect(`${origin}${next}`)
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        response = NextResponse.redirect(`https://${forwardedHost}${next}`)
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        response = NextResponse.redirect(`${origin}${next}`)
       }
+      
+      // CRITICAL NEXT.JS FIX: NextResponse.redirect creates a fresh Response object
+      // that loses the cookies set by exchangeCodeForSession implicitly. 
+      // We MUST manually attach the cookieStore back to the outgoing redirect response!
+      (await cookies()).getAll().forEach((cookie: any) => {
+        response.cookies.set(cookie.name, cookie.value, cookie)
+      });
+      
+      return response;
     }
   }
 

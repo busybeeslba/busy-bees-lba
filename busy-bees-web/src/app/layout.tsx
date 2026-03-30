@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"; // Next.js optimizes Google Fonts
 import "./globals.css";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { BrandProvider } from "@/context/BrandContext";
+import { PresenceProvider } from "@/context/PresenceContext";
 import MainLayout from "@/components/layout/MainLayout";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,11 +22,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <BrandProvider>
-          <SidebarProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
-          </SidebarProvider>
+          <PresenceProvider>
+            <SidebarProvider>
+              <MainLayout>
+                {children}
+              </MainLayout>
+            </SidebarProvider>
+          </PresenceProvider>
         </BrandProvider>
       </body>
     </html>

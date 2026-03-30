@@ -27,6 +27,7 @@ export default function ClientsPage() {
     const sidebarRef = useRef<HTMLDivElement>(null);
     const [availableServices, setAvailableServices] = useState<any[]>(MOCK_AVAILABLE_SERVICES);
     const [providers, setProviders] = useState<any[]>([]);
+    const [usersList, setUsersList] = useState<any[]>([]);
 
     const [editingClient, setEditingClient] = useState<typeof MOCK_CLIENTS[0] | null>(null);
 
@@ -232,6 +233,10 @@ export default function ClientsPage() {
         if (savedProviders) {
             try { setProviders(JSON.parse(savedProviders)); } catch { }
         }
+
+        dbClient.get('/users')
+            .then(data => setUsersList(data))
+            .catch(() => console.warn('Could not fetch users for employee resolution'));
     }, []);
 
 
@@ -242,7 +247,7 @@ export default function ClientsPage() {
 
         const dbPayload = {
             // shared-db / mobile-friendly fields
-            id: clientData.id || undefined,
+            id: clientData.id || Date.now(),
             name: `${clientData.firstName} ${clientData.lastName}`,
             // clients-page display fields
             kidsName: `${clientData.firstName} ${clientData.lastName}`,
@@ -478,6 +483,7 @@ export default function ClientsPage() {
                                                 </div>
                                             </th>
                                             <th>Services</th>
+                                            <th>Service Provider</th>
                                             <th onClick={() => handleSort('assignedPrograms')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                     Program Description
@@ -532,20 +538,41 @@ export default function ClientsPage() {
                                                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                                         {Array.isArray(client.services)
                                                             ? client.services.map((s: any, idx: number) => {
-                                                                const providerName = getServiceProvider(s.serviceId);
-                                                                const providerStyle = getProviderStyle(providerName);
                                                                 return (
                                                                     <span
                                                                         key={idx}
                                                                         className={styles.serviceBubble}
-                                                                        style={providerStyle}
-                                                                        title={`Provider: ${providerName}`}
+                                                                        style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}
                                                                     >
                                                                         {getServiceName(s.serviceId)}
                                                                     </span>
                                                                 );
                                                             })
                                                             : <span className={styles.cellText}>{client.services || 'None'}</span>}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                        {Array.isArray(client.services)
+                                                            ? Array.from(new Set(client.services.map((s: any) => {
+                                                                const srvAssignedUser = usersList.find(u => u.id === s.providerId);
+                                                                return srvAssignedUser 
+                                                                    ? `${srvAssignedUser.firstName} ${srvAssignedUser.lastName}` 
+                                                                    : getServiceProvider(s.serviceId);
+                                                            }))).map((providerName: unknown, idx: number) => {
+                                                                const name = providerName as string;
+                                                                const providerStyle = getProviderStyle(name);
+                                                                return (
+                                                                    <span
+                                                                        key={idx}
+                                                                        className={styles.serviceBubble}
+                                                                        style={providerStyle}
+                                                                    >
+                                                                        {name}
+                                                                    </span>
+                                                                );
+                                                            })
+                                                            : <span className={styles.cellText}>—</span>}
                                                     </div>
                                                 </td>
                                                 {/* Program Description (old assignedPrograms text) */}
@@ -816,7 +843,7 @@ export default function ClientsPage() {
                                                 <table className={styles.detailServicesTable}>
                                                     <thead>
                                                         <tr>
-                                                            <th>Service Provider</th>
+                                                            <th>Assigned Provider</th>
                                                             <th>Service Name</th>
                                                             <th>Hours</th>
                                                             <th>Used</th>
@@ -825,7 +852,10 @@ export default function ClientsPage() {
                                                     </thead>
                                                     <tbody>
                                                         {(selectedClient.services as any[]).map((srv, idx) => {
-                                                            const providerName = getServiceProvider(srv.serviceId);
+                                                            const srvAssignedUser = usersList.find(u => u.id === srv.providerId);
+                                                            const providerName = srvAssignedUser 
+                                                                ? `${srvAssignedUser.firstName} ${srvAssignedUser.lastName}` 
+                                                                : getServiceProvider(srv.serviceId);
                                                             const providerStyle = getProviderStyle(providerName);
                                                             const color = providerStyle.backgroundColor;
 

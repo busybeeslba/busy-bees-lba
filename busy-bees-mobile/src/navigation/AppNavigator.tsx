@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform } from 'react-native';
+import { Platform, View, ActivityIndicator, AppState } from 'react-native';
 import { LucideIcon, Home, Clock, Settings, FileText, Calendar } from 'lucide-react-native';
 import { RootStackParamList, AuthStackParamList, MainTabParamList } from '../types/navigation';
 import { useAppStore } from '../store/useAppStore';
@@ -95,9 +95,80 @@ function MainTabs() {
     );
 }
 
+import { supabase } from '../lib/supabase';
+
 export default function AppNavigator() {
     const { colors } = useTheme();
     const isLoggedIn = useAppStore((state) => state.isLoggedIn);
+    const user = useAppStore((state) => state.user);
+    const isInitializingAuth = useAppStore((state) => state.isInitializingAuth);
+    const initializeAuth = useAppStore((state) => state.initializeAuth);
+    const currentLocation = useAppStore((state) => state.currentLocation);
+    const isClockedIn = useAppStore((state) => state.isClockedIn);
+    const channelRef = React.useRef<any>(null);
+
+    React.useEffect(() => {
+        initializeAuth();
+    }, []);
+
+    // 1. Establish Presence WebSocket Base Connection
+    React.useEffect(() => {
+        const connectUser = () => {
+            if (isLoggedIn && user?.email) {
+                if (channelRef.current) {
+                    supabase.removeChannel(channelRef.current);
+                    channelRef.current = null;
+                }
+                
+                channelRef.current = supabase.channel('online-users');
+                channelRef.current.subscribe(async (status: string) => {
+                    if (status === 'SUBSCRIBED') {
+                        // Access the freshest location state unconditionally
+                        const latestLocation = useAppStore.getState().currentLocation;
+                        const activelyClockedIn = useAppStore.getState().isClockedIn;
+                        await channelRef.current.track({ 
+                            email: user.email,
+                            location: activelyClockedIn ? latestLocation : null,
+                            deviceType: 'mobile'
+                        });
+                    }
+                });
+            }
+        };
+
+        connectUser();
+
+        const subscription = AppState.addEventListener('change', (nextAppState) => {
+            if (nextAppState === 'active') { connectUser(); }
+        });
+
+        return () => {
+            subscription.remove();
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+            }
+        };
+    }, [isLoggedIn, user?.email]);
+
+    // 2. Dynamic GPS Broadcast (Update WebSocket when Location changes)
+    React.useEffect(() => {
+        if (channelRef.current && isLoggedIn && user?.email) {
+            channelRef.current.track({
+                email: user.email,
+                location: isClockedIn ? currentLocation : null,
+                deviceType: 'mobile'
+            }).catch(() => {});
+        }
+    }, [currentLocation, isLoggedIn, user?.email, isClockedIn]);
+
+    if (isInitializingAuth) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+        );
+    }
 
     return (
         <NavigationContainer>

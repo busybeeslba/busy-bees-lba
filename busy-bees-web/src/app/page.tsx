@@ -1,11 +1,17 @@
 import { Activity, Users, Clock, FileText, CheckCircle2, MapPin } from 'lucide-react';
 import styles from '@/components/dashboard/Dashboard.module.css';
 import StatCard from '@/components/dashboard/StatCard';
+import OnlineStaff from '@/components/dashboard/OnlineStaff';
+import LiveMap from '@/components/dashboard/LiveMap';
+import LiveSessionsWidget from '@/components/dashboard/LiveSessionsWidget';
+import { createClient } from '@/utils/supabase/server';
 import {
   fetchAllSessions,
-  fetchFieldWorkers,
   fetchActivityFeed,
 } from '@/lib/api';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Choose the right icon for each type of activity
 function getActivityIcon(type: string) {
@@ -28,21 +34,27 @@ function timeAgo(isoString: string): string {
 }
 
 export default async function Home() {
+  const supabase = await createClient();
 
-  // Fetch live data from our shared database (running at localhost:3011)
+  // Fetch live data
   let sessions: any[] = [];
   let workers: any[] = [];
   let activityFeed: any[] = [];
 
   try {
-    [sessions, workers, activityFeed] = await Promise.all([
+    const [sessionsData, activityRes, { data: usersData }] = await Promise.all([
       fetchAllSessions(),
-      fetchFieldWorkers(),
       fetchActivityFeed(),
+      supabase.from('users').select('*')
     ]);
-  } catch {
-    // If the shared DB isn't running, fall back to empty arrays gracefully
-    console.warn('⚠️  Shared database not reachable. Is it running on port 3011?');
+    
+    sessions = sessionsData || [];
+    activityFeed = activityRes || [];
+    workers = usersData || [];
+    
+  } catch (e) {
+    // Fallback if shared DB isn't running
+    console.warn('⚠️ Shared database or Supabase not reachable.', e);
   }
 
   // Calculate stats from live data
@@ -51,12 +63,15 @@ export default async function Home() {
     return sessionDate === new Date().toDateString() && s.status === 'completed';
   }).length;
 
+  const liveToday = sessions.filter((s) => {
+    const sessionDate = new Date(s.startTime).toDateString();
+    return sessionDate === new Date().toDateString() && s.status === 'active';
+  }).length;
+
   const totalHoursToday = sessions
     .filter((s) => new Date(s.startTime).toDateString() === new Date().toDateString())
     .reduce((acc, s) => acc + (s.durationSeconds || 0) / 3600, 0)
     .toFixed(1);
-
-  const onlineWorkers = workers.filter((w) => w.status === 'active').length;
 
   return (
     <div className={styles.container}>
@@ -70,21 +85,16 @@ export default async function Home() {
         <StatCard
           title="Sessions Today"
           value={String(completedToday)}
-          trend="Live"
+          trend="Completed"
           isPositive={true}
-          icon={Activity}
+          icon={CheckCircle2}
         />
-        <StatCard
-          title="Online Staff"
-          value={String(onlineWorkers)}
-          trend="Live"
-          isPositive={true}
-          icon={Users}
-        />
+        <LiveSessionsWidget defaultCount={liveToday} />
+        <OnlineStaff workers={workers} />
         <StatCard
           title="Total Hours (Today)"
           value={totalHoursToday}
-          trend="Live"
+          trend="Completed"
           isPositive={true}
           icon={Clock}
         />
@@ -95,37 +105,9 @@ export default async function Home() {
         <section className={styles.mapSection}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Live Map</h3>
-            <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: '#666' }}>
-              <span>🟢 Active ({onlineWorkers})</span>
-              <span>⚪ Offline ({workers.length - onlineWorkers})</span>
-            </div>
           </div>
-          <div className={styles.mapContainer}>
-            <div style={{ textAlign: 'center', color: '#666' }}>
-              <MapPin size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p>Interactive Map — Coming Soon</p>
-              <p style={{ fontSize: '12px' }}>({onlineWorkers} workers active)</p>
-            </div>
-            {/* Animated worker pins — one per active worker */}
-            {workers.filter(w => w.status === 'active').map((worker, i) => (
-              <div
-                key={worker.id}
-                title={`${worker.name} — Active`}
-                style={{
-                  position: 'absolute',
-                  top: `${30 + i * 20}%`,
-                  left: `${25 + i * 20}%`,
-                  backgroundColor: 'var(--primary)',
-                  padding: '8px',
-                  borderRadius: '50%',
-                  boxShadow: '0 2px 12px rgba(0,227,191,0.5)',
-                  cursor: 'pointer',
-                  animation: 'pulse 2s infinite',
-                }}
-              >
-                <Users size={16} color="black" />
-              </div>
-            ))}
+          <div className={styles.mapContainer} style={{ background: 'none' }}>
+            <LiveMap workers={workers} />
           </div>
         </section>
 
