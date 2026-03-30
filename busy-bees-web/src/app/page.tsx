@@ -1,9 +1,10 @@
-import { Activity, Users, Clock, FileText, CheckCircle2, MapPin } from 'lucide-react';
+import { Activity, Clock, FileText, CheckCircle2 } from 'lucide-react';
 import styles from '@/components/dashboard/Dashboard.module.css';
-import StatCard from '@/components/dashboard/StatCard';
 import OnlineStaff from '@/components/dashboard/OnlineStaff';
 import LiveMap from '@/components/dashboard/LiveMap';
 import LiveSessionsWidget from '@/components/dashboard/LiveSessionsWidget';
+import TodaySessionsWidget from '@/components/dashboard/TodaySessionsWidget';
+import TotalHoursWidget from '@/components/dashboard/TotalHoursWidget';
 import { createClient } from '@/utils/supabase/server';
 import {
   fetchAllSessions,
@@ -58,20 +59,16 @@ export default async function Home() {
   }
 
   // Calculate stats from live data
-  const completedToday = sessions.filter((s) => {
-    const sessionDate = new Date(s.startTime).toDateString();
-    return sessionDate === new Date().toDateString() && s.status === 'completed';
-  }).length;
 
   const liveToday = sessions.filter((s) => {
     const sessionDate = new Date(s.startTime).toDateString();
     return sessionDate === new Date().toDateString() && s.status === 'active';
   }).length;
 
-  const totalHoursToday = sessions
-    .filter((s) => new Date(s.startTime).toDateString() === new Date().toDateString())
-    .reduce((acc, s) => acc + (s.durationSeconds || 0) / 3600, 0)
-    .toFixed(1);
+  const allToday = sessions.filter((s) => {
+    const sessionDate = new Date(s.startTime).toDateString();
+    return sessionDate === new Date().toDateString();
+  }).length;
 
   return (
     <div className={styles.container}>
@@ -82,22 +79,10 @@ export default async function Home() {
 
       {/* Stats Row — now pulling from the shared database */}
       <div className={styles.statsGrid}>
-        <StatCard
-          title="Sessions Today"
-          value={String(completedToday)}
-          trend="Completed"
-          isPositive={true}
-          icon={CheckCircle2}
-        />
+        <TodaySessionsWidget defaultCount={allToday} />
         <LiveSessionsWidget defaultCount={liveToday} />
         <OnlineStaff workers={workers} />
-        <StatCard
-          title="Total Hours (Today)"
-          value={totalHoursToday}
-          trend="Completed"
-          isPositive={true}
-          icon={Clock}
-        />
+        <TotalHoursWidget />
       </div>
 
       <div className={styles.contentGrid}>

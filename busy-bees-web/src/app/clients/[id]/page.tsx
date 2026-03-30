@@ -148,8 +148,12 @@ export default function ClientDashboardPage() {
             setUsersList(Array.isArray(users) ? users : []);
 
             // Match by clientId string OR numeric id (for clients created without a clientId field)
+            const cleanClientId = clientId.replace(/^CLI-/, '');
             let found = allClients.find((c: any) =>
-                c.clientId === clientId || String(c.id) === clientId
+                c.clientId === clientId || 
+                String(c.id) === clientId ||
+                String(c.id) === cleanClientId ||
+                c.clientId === cleanClientId
             ) || null;
 
             // Defensive: parse programCategories if stored as JSON string

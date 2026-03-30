@@ -35,6 +35,8 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         let currentChannel: any;
+        let isConnecting = false;
+        let connectionActive = true;
 
         const connectPresence = async (email: string) => {
             // First, vigorously destroy any existing cached instances of this channel to prevent React StrictMode crashing
@@ -72,7 +74,17 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
             }
 
             // 2. Open the EXACT named channel that the Mobile App broadcasts to
+            
+            // To be completely safe against React StrictMode races:
+            if (!connectionActive) return;
+            
             currentChannel = supabase.channel('online-users');
+            
+            // If somehow the channel was already joined by a race condition, nuke it
+            if (currentChannel.state !== 'closed') {
+                await supabase.removeChannel(currentChannel);
+                currentChannel = supabase.channel('online-users');
+            }
             
             // Listen to Foreground App users (Screen is ON)
             currentChannel.on('presence', { event: 'sync' }, () => {
@@ -122,15 +134,19 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
 
         // Initialize immediately if session exists
         supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user?.email) {
-                connectPresence(session.user.email);
+            if (session?.user?.email && !isConnecting) {
+                isConnecting = true;
+                connectPresence(session.user.email).finally(() => { isConnecting = false; });
             }
         });
 
         // Listen for auth changes (login/logout) to track dynamically without remounting RootLayout
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session?.user?.email) {
-                connectPresence(session.user.email);
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user?.email) {
+                if (!isConnecting) {
+                    isConnecting = true;
+                    connectPresence(session.user.email).finally(() => { isConnecting = false; });
+                }
             } else if (event === 'SIGNED_OUT') {
                 if (currentChannel) {
                     supabase.removeChannel(currentChannel);
@@ -142,6 +158,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => {
+            connectionActive = false;
             subscription.unsubscribe();
             if (currentChannel) {
                 supabase.removeChannel(currentChannel);

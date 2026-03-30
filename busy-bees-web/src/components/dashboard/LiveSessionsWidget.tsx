@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Activity, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { dbClient } from '../../lib/dbClient';
 import styles from './Dashboard.module.css';
 
 interface LiveSessionsWidgetProps {
@@ -13,26 +15,29 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
     const [count, setCount] = useState(defaultCount);
     // Track if we successfully fetched at least once so we don't flash default states if possible
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         const fetchLive = async () => {
             try {
-                // Map to the dashboard's current hostname dynamically
-                const hostname = window.location.hostname;
-                const res = await fetch(`http://${hostname}:6011/sessions?status=active`);
-                if (res.ok) {
-                    const data = await res.json();
-                    
-                    // Count only today's sessions!
-                    const todayDate = new Date().toDateString();
-                    const live = data.filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
-                    
-                    setSessions(live);
-                    setCount(live.length);
-                    setHasLoaded(true);
-                }
+                // Fetch directly from our newly migrated Supabase architecture!
+                const data = await dbClient.get('/sessions?status=active');
+                
+                // Count only today's sessions!
+                const todayDate = new Date().toDateString();
+                const live = data.filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
+                
+                setSessions(live);
+                setCount(live.length);
+                setHasLoaded(true);
             } catch (e) {
                 // Ignore API connection errors gracefully (will retry on next poll)
+                console.error("Widget fetch error:", e);
             }
         };
 
@@ -49,6 +54,24 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
         if (!isoString) return '';
         try {
             return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return '';
+        }
+    };
+
+    const getElapsedTime = (isoString?: string) => {
+        if (!isoString) return '';
+        try {
+            const start = new Date(isoString).getTime();
+            const diffSeconds = Math.floor((now - start) / 1000);
+            if (diffSeconds < 0) return '0m 0s';
+            
+            const hours = Math.floor(diffSeconds / 3600);
+            const minutes = Math.floor((diffSeconds % 3600) / 60);
+            const seconds = diffSeconds % 60;
+            
+            if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+            return `${minutes}m ${seconds}s`;
         } catch {
             return '';
         }
@@ -84,19 +107,36 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
                 )}
                 
                 {sessions.map(s => (
-                    <div 
+                    <Link 
                         key={s.id} 
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px', 
-                            background: '#f8fafc', 
-                            padding: '10px 12px', 
-                            borderRadius: '8px', 
-                            border: '1px solid #e2e8f0',
-                            animation: 'fadeIn 0.3s ease-out'
-                        }}
+                        href={`/clients/${s.clientId}`}
+                        style={{ textDecoration: 'none', display: 'block' }}
                     >
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '12px', 
+                                background: '#f8fafc', 
+                                padding: '10px 12px', 
+                                borderRadius: '8px', 
+                                border: '1px solid #e2e8f0',
+                                animation: 'fadeIn 0.3s ease-out',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                                e.currentTarget.style.borderColor = 'var(--primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                            }}
+                        >
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {/* Pulsing indicator */}
                             <div style={{ 
@@ -118,11 +158,16 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
                             <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <Clock size={10} />
                                 {formatTime(s.startTime)}
+                                <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span>
+                                <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{getElapsedTime(s.startTime)}</span>
+                                <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span> 
+                                <span style={{ fontWeight: '500' }}>{s.serviceType}</span>
                                 <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span> 
                                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.clientName}</span>
                             </span>
                         </div>
                     </div>
+                    </Link>
                 ))}
             </div>
             {/* Adding generic keyframes inline for simplicity */}
