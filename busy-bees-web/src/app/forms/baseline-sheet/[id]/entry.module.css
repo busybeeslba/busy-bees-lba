@@ -49,7 +49,7 @@
 
 .backBtn:hover {
     background: #fffbeb;
-    border-color: #FFC107;
+    border-color: var(--primary);
     color: #92400e;
 }
 
@@ -84,7 +84,7 @@
     align-items: center;
     gap: 6px;
     padding: 9px 20px;
-    background: #FFC107;
+    background: var(--primary);
     color: #000;
     border: none;
     border-radius: 10px;
@@ -96,8 +96,9 @@
 }
 
 .saveBtn:hover:not(:disabled) {
-    background: #e6ac00;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+    background: var(--primary);
+    filter: brightness(0.9);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 .saveBtn:disabled {
@@ -148,7 +149,7 @@
 
 .select:focus,
 .input:focus {
-    border-color: #FFC107;
+    border-color: var(--primary);
 }
 
 .metaValue {
@@ -179,7 +180,7 @@
     padding: 14px 20px;
     background: linear-gradient(135deg, #fffde7, #fff8e1);
     border-bottom: 2px solid #ffe082;
-    border-left: 4px solid #FFC107;
+    border-left: 4px solid var(--primary);
     flex-wrap: wrap;
 }
 
@@ -192,7 +193,7 @@
 }
 
 .programBadge {
-    background: #FFC107;
+    background: var(--primary);
     color: #000;
     font-size: 11px;
     font-weight: 700;
@@ -203,7 +204,7 @@
 .historyNote {
     font-size: 11px;
     color: #92400e;
-    background: rgba(255, 193, 7, 0.15);
+    background: rgba(var(--primary-rgb, 246, 168, 0), 0.15);
     padding: 2px 10px;
     border-radius: 100px;
     margin-left: auto;
@@ -439,7 +440,7 @@
 
 .unchecked:hover {
     background: #fffde7;
-    border-color: #FFC107;
+    border-color: var(--primary);
 }
 
 .cellPass {
@@ -599,8 +600,8 @@
     padding: 8px 6px;
     text-align: center;
     background: #fffbeb;
-    border-left: 2px solid #FFC107;
-    border-right: 2px solid #FFC107;
+    border-left: 2px solid var(--primary);
+    border-right: 2px solid var(--primary);
     min-width: 80px;
 }
 
@@ -623,7 +624,7 @@
 .editColBtn:hover {
     background: #fffde7;
     color: #92400e;
-    border-color: #FFC107;
+    border-color: var(--primary);
 }
 
 .editingCell {
@@ -650,7 +651,7 @@
     font-weight: 700;
     padding: 1px 8px;
     border-radius: 100px;
-    border: 1px solid #FFC107;
+    border: 1px solid var(--primary);
 }
 
 .cancelBtn {
@@ -684,9 +685,9 @@
 .pctScore {
     font-size: 10px;
     font-weight: 700;
-    color: #6366f1;
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
+    color: var(--primary);
+    background: var(--background-light);
+    border: 1px solid var(--primary);
     padding: 1px 5px;
     border-radius: 5px;
 }
@@ -709,8 +710,8 @@
 
 .addStepBtn {
     background: none;
-    border: 1.5px dashed #c7d2fe;
-    color: #6366f1;
+    border: 1.5px dashed var(--primary);
+    color: var(--primary);
     font-size: 13px;
     font-weight: 700;
     padding: 7px 16px;
@@ -720,8 +721,8 @@
 }
 
 .addStepBtn:hover {
-    background: #eef2ff;
-    border-color: #6366f1;
+    background: var(--background-light);
+    border-color: var(--primary);
 }
 
 .addStepRow {
@@ -734,7 +735,7 @@
     flex: 1;
     padding: 8px 12px;
     font-size: 13px;
-    border: 1.5px solid #c7d2fe;
+    border: 1.5px solid var(--primary);
     border-radius: 8px;
     outline: none;
     background: white;
@@ -743,12 +744,12 @@
 }
 
 .addStepInput:focus {
-    border-color: #6366f1;
+    border-color: var(--primary);
 }
 
 .addStepConfirm {
     padding: 8px 16px;
-    background: #6366f1;
+    background: var(--primary);
     color: white;
     font-size: 13px;
     font-weight: 700;
@@ -759,7 +760,7 @@
 }
 
 .addStepConfirm:hover:not(:disabled) {
-    background: #4f46e5;
+    background: var(--primary);
 }
 
 .addStepConfirm:disabled {

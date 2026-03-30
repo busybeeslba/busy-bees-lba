@@ -275,10 +275,10 @@ export default function MassTrialEntryPage() {
   .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 28px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
   .btn-print { background: #1e293b; color: #fff; }
-  .doc-header { border-bottom: 3px solid #6366f1; padding-bottom: 16px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .doc-header { border-bottom: 3px solid var(--primary); padding-bottom: 16px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
   .org-name { font-size: 26px; font-weight: 900; }
-  .org-name .purple { color: #6366f1; }
-  .doc-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #6366f1; border: 2px solid #6366f1; padding: 4px 12px; border-radius: 6px; }
+  .org-name .purple { color: var(--primary); }
+  .doc-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary); border: 2px solid var(--primary); padding: 4px 12px; border-radius: 6px; }
   .meta { display: flex; gap: 0; margin-bottom: 24px; border: 1px solid #dde3ec; border-radius: 10px; overflow: hidden; }
   .meta-item { flex: 1; padding: 14px 18px; border-right: 1px solid #dde3ec; }
   .meta-item:last-child { border-right: none; }
@@ -289,12 +289,12 @@ export default function MassTrialEntryPage() {
   thead th.th-sto { text-align: left; }
   thead th .day-label { font-size: 11px; font-weight: 800; color: #1e293b; display: block; }
   thead th .day-date { font-size: 9px; color: #64748b; display: block; margin-top: 1px; }
-  thead th .day-emp { font-size: 9px; font-weight: 700; color: #6366f1; display: block; margin-top: 1px; }
+  thead th .day-emp { font-size: 9px; font-weight: 700; color: var(--primary); display: block; margin-top: 1px; }
   td { padding: 8px 10px; border: 1px solid #dde3ec; text-align: center; vertical-align: middle; }
   td.td-num { color: #94a3b8; font-size: 10px; font-weight: 600; width: 36px; }
   td.td-sto { text-align: left; font-weight: 700; font-size: 12px; color: #1e293b; }
   td.td-trials { font-size: 13px; font-weight: 700; white-space: nowrap; }
-  td.td-pct, .td-pct { font-size: 10px; color: #6366f1; font-weight: 700; }
+  td.td-pct, .td-pct { font-size: 10px; color: var(--primary); font-weight: 700; }
   td.td-total { white-space: nowrap; font-size: 11px; }
   td.td-nil { color: #d1d5db; }
   .t-plus { color: #16a34a; font-weight: 900; }
@@ -302,7 +302,7 @@ export default function MassTrialEntryPage() {
   .t-blank { color: #d1d5db; }
   .pass-txt { color: #16a34a; font-weight: 800; }
   .fail-txt { color: #dc2626; font-weight: 800; }
-  .pct-txt { color: #6366f1; font-weight: 800; }
+  .pct-txt { color: var(--primary); font-weight: 800; }
   .doc-footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
   @media print { .action-bar { display: none !important; } .page { padding: 0; max-width: 100%; } @page { margin: 15mm 12mm; size: A4 landscape; } }
 </style></head><body>
@@ -607,7 +607,7 @@ export default function MassTrialEntryPage() {
                                                         <span style={{ color: '#94a3b8' }}> / </span>
                                                         <span style={{ color: '#dc2626' }}>{oTotal - oPlus}−</span>
                                                         <span style={{ color: '#94a3b8' }}> · </span>
-                                                        <span style={{ color: '#6366f1', fontWeight: 800 }}>{oPct}%</span>
+                                                        <span style={{ color: 'var(--primary)', fontWeight: 800 }}>{oPct}%</span>
                                                     </span>
                                                 ) : <span className={styles.emptyScore}>—</span>}
                                             </td>

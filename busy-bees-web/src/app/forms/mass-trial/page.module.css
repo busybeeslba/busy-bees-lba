@@ -21,7 +21,7 @@
 }
 
 .headerIcon {
-    color: #6366f1;
+    color: var(--primary);
 }
 
 .pageTitle {
@@ -42,7 +42,7 @@
     align-items: center;
     gap: 6px;
     padding: 9px 18px;
-    background: #6366f1;
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -53,9 +53,9 @@
 }
 
 .addBtn:hover {
-    background: #4f46e5;
+    background: var(--primary);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 .toolbar {
@@ -77,7 +77,7 @@
 }
 
 .searchInput:focus {
-    border-color: #6366f1;
+    border-color: var(--primary);
 }
 
 .countBadge {
@@ -108,8 +108,8 @@
 }
 
 .table thead tr {
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    border-bottom: 2px solid #c7d2fe;
+    background: linear-gradient(135deg, var(--background-light), #e0e7ff);
+    border-bottom: 2px solid var(--primary);
 }
 
 .table th {
@@ -117,7 +117,7 @@
     text-align: left;
     font-size: 10px;
     font-weight: 700;
-    color: #4338ca;
+    color: var(--primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -140,7 +140,7 @@
 }
 
 .clickableRow:hover {
-    background: #eef2ff;
+    background: var(--background-light);
 }
 
 .clientCell {
@@ -154,7 +154,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #6366f1;
+    background: var(--primary);
     color: white;
     font-size: 12px;
     font-weight: 800;
@@ -166,9 +166,9 @@
 
 .programChip {
     display: inline-block;
-    background: #eef2ff;
-    color: #4338ca;
-    border: 1px solid #c7d2fe;
+    background: var(--background-light);
+    color: var(--primary);
+    border: 1px solid var(--primary);
     padding: 3px 10px;
     border-radius: 100px;
     font-size: 12px;
@@ -204,13 +204,13 @@
 }
 
 .editBtn {
-    background: #eef2ff;
-    color: #4338ca;
-    border: 1px solid #c7d2fe;
+    background: var(--background-light);
+    color: var(--primary);
+    border: 1px solid var(--primary);
 }
 
 .editBtn:hover {
-    background: #6366f1;
+    background: var(--primary);
     color: #fff;
 }
 

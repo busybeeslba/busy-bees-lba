@@ -155,7 +155,7 @@ export default function DailyRoutinesListPage() {
                                                 return (
                                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
                                                         <span style={{ color: '#0f766e', background: '#eefcf5', border: '1px solid #6ee7b7', borderRadius: 6, padding: '2px 7px' }}>{filled} entries</span>
-                                                        {highestPct !== null && <span style={{ color: '#6366f1', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 6, padding: '2px 7px' }}>High: {highestPct}%</span>}
+                                                        {highestPct !== null && <span style={{ color: 'var(--primary)', background: 'var(--background-light)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '2px 7px' }}>High: {highestPct}%</span>}
                                                     </span>
                                                 );
                                             })()}

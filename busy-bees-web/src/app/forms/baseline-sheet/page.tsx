@@ -144,7 +144,7 @@ export default function BaselineSheetListPage() {
                                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
                                                         <span style={{ color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, padding: '2px 7px' }}>✓{pass}</span>
                                                         <span style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, padding: '2px 7px' }}>✗{fail}</span>
-                                                        {pct !== null && <span style={{ color: '#6366f1', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 6, padding: '2px 7px' }}>{pct}%</span>}
+                                                        {pct !== null && <span style={{ color: 'var(--primary)', background: 'var(--background-light)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '2px 7px' }}>{pct}%</span>}
                                                     </span>
                                                 );
                                             })()}

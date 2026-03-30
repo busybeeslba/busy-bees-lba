@@ -364,7 +364,7 @@ export default function TransactionSheetEntryPage() {
                     <div className={styles.gridHeader}>
                         <span className={styles.gridTitle}>Transaction Locations</span>
                         {sheet.program && <span className={styles.programBadge}>{sheet.program}</span>}
-                        <span style={{ marginLeft: 'auto', fontSize: 11, color: '#92400e', background: 'rgba(255, 193, 7, 0.15)', padding: '2px 10px', borderRadius: 100 }}>{sheet.locations.length} location{sheet.locations.length !== 1 ? 's' : ''} added</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 11, color: '#92400e', background: 'rgba(var(--primary-rgb, 246, 168, 0), 0.15)', padding: '2px 10px', borderRadius: 100 }}>{sheet.locations.length} location{sheet.locations.length !== 1 ? 's' : ''} added</span>
                     </div>
                     <table className={styles.dataTable}>
                         <thead>

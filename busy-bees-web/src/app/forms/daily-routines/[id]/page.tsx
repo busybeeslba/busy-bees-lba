@@ -316,16 +316,16 @@ export default function DailyRoutinesEntryPage() {
          border: none; transition: opacity .15s; }
   .btn:hover { opacity: .8; }
   .btn-print { background: #1e293b; color: #fff; }
-  .btn-dl    { background: #FFC107; color: #1e293b; }
+  .btn-dl    { background: var(--primary); color: #1e293b; }
 
   /* ── Header ── */
-  .doc-header { border-bottom: 3px solid #FFC107; padding-bottom: 16px; margin-bottom: 22px;
+  .doc-header { border-bottom: 3px solid var(--primary); padding-bottom: 16px; margin-bottom: 22px;
                 display: flex; justify-content: space-between; align-items: flex-end; }
   .org-name   { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
-  .org-name .yellow { color: #e6a800; }
+  .org-name .yellow { color: var(--primary); }
   .doc-date   { font-size: 11px; color: #777; margin-top: 3px; }
   .doc-label  { font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
-                text-transform: uppercase; color: #e6a800; border: 2px solid #FFC107;
+                text-transform: uppercase; color: var(--primary); border: 2px solid var(--primary);
                 padding: 4px 12px; border-radius: 6px; }
 
   /* ── Meta section ── */
@@ -337,7 +337,7 @@ export default function DailyRoutinesEntryPage() {
                 text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
   .meta-val   { font-size: 15px; font-weight: 800; color: #111; }
   .meta-badge { display: inline-block; background: #fffbeb; color: #92400e;
-                border: 1.5px solid #FFC107; border-radius: 20px; padding: 2px 12px;
+                border: 1.5px solid var(--primary); border-radius: 20px; padding: 2px 12px;
                 font-size: 12px; font-weight: 700; }
 
   /* ── Table ── */
@@ -355,7 +355,7 @@ export default function DailyRoutinesEntryPage() {
   thead th.th-sto { text-align: left; }
   thead th .day-label { font-size: 12px; font-weight: 800; color: #1e293b; display: block; }
   thead th .day-date  { font-size: 10px; font-weight: 400; color: #64748b; display: block; margin-top: 1px; }
-  thead th .day-emp   { font-size: 10px; font-weight: 700; color: #e6a800; display: block; margin-top: 1px; }
+  thead th .day-emp   { font-size: 10px; font-weight: 700; color: var(--primary); display: block; margin-top: 1px; }
 
   tbody tr:nth-child(even) td { background: #fafbff; }
   tbody tr:hover td { background: #f0f9ff; }
@@ -382,7 +382,7 @@ export default function DailyRoutinesEntryPage() {
 
   .pass-txt { color: #16a34a; font-weight: 800; }
   .fail-txt { color: #dc2626; font-weight: 800; }
-  .pct-txt  { color: #4f46e5; font-weight: 800; }
+  .pct-txt  { color: var(--primary-dark); font-weight: 800; }
   .sep      { color: #94a3b8; margin: 0 3px; }
 
   /* ── Footer ── */
@@ -687,7 +687,7 @@ export default function DailyRoutinesEntryPage() {
                                                         <span style={{ color: '#94a3b8' }}> · </span>
                                                         <span style={{ color: '#dc2626', fontWeight: 700 }}>✗ {totalFail} Fail</span>
                                                         <span style={{ color: '#94a3b8' }}> · </span>
-                                                        <span style={{ color: '#6366f1', fontWeight: 700 }}>{Math.round(totalPass / (totalPass + totalFail) * 100)}%</span>
+                                                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{Math.round(totalPass / (totalPass + totalFail) * 100)}%</span>
                                                     </span>
                                                 ) : <span className={styles.emptyScore}>—</span>}
                                             </td>
@@ -722,7 +722,7 @@ export default function DailyRoutinesEntryPage() {
                                                         <span style={{ color: '#94a3b8' }}> · </span>
                                                         <span style={{ color: '#dc2626', fontWeight: 700 }}>✗ {dayFail} Fail</span>
                                                         <span style={{ color: '#94a3b8' }}> · </span>
-                                                        <span style={{ color: '#6366f1', fontWeight: 700 }}>{Math.round(dayPass / dayTotal * 100)}%</span>
+                                                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{Math.round(dayPass / dayTotal * 100)}%</span>
                                                     </span>
                                                 ) : <span className={styles.emptyScore}>—</span>}
                                             </td>
@@ -740,7 +740,7 @@ export default function DailyRoutinesEntryPage() {
                                                         <span style={{ color: '#94a3b8' }}> · </span>
                                                         <span style={{ color: '#dc2626', fontWeight: 700 }}>✗ {newFail} Fail</span>
                                                         <span style={{ color: '#94a3b8' }}> · </span>
-                                                        <span style={{ color: '#6366f1', fontWeight: 700 }}>{Math.round(newPass / newTotal * 100)}%</span>
+                                                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{Math.round(newPass / newTotal * 100)}%</span>
                                                     </span>
                                                 ) : <span className={styles.emptyScore}>—</span>}
                                             </td>
@@ -768,7 +768,7 @@ export default function DailyRoutinesEntryPage() {
                                                             <span style={{ color: '#94a3b8' }}> · </span>
                                                             <span style={{ color: '#dc2626', fontWeight: 700 }}>✗ {gFail} Fail</span>
                                                             <span style={{ color: '#94a3b8' }}> · </span>
-                                                            <span style={{ color: '#6366f1', fontWeight: 700 }}>{Math.round(gPass / gTotal * 100)}%</span>
+                                                            <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{Math.round(gPass / gTotal * 100)}%</span>
                                                         </>
                                                     ) : <span className={styles.emptyScore}>—</span>}
                                                 </span>
