@@ -534,13 +534,13 @@
 .sectionTitle {
     font-size: 11px;
     text-transform: uppercase;
-    color: #92400e;
+    color: #0f766e;
     font-weight: 800;
     letter-spacing: 0.9px;
     margin: 0;
     padding: 12px 20px;
-    background: linear-gradient(to right, #fffde7, #fffbf0);
-    border-bottom: 1px solid #ffe082;
+    background: linear-gradient(to right, #f0fdfa, #fffbf0);
+    border-bottom: 1px solid #99f6e4;
     border-left: 4px solid #FFC107;
     display: flex;
     align-items: center;
@@ -604,8 +604,8 @@
 .primaryBadge {
     font-size: 9px;
     font-weight: 800;
-    color: #92400e;
-    background-color: #fffde7;
+    color: #0f766e;
+    background-color: #f0fdfa;
     width: 18px;
     height: 18px;
     border-radius: 4px;
@@ -616,7 +616,7 @@
     line-height: 1;
     letter-spacing: 0.3px;
     flex-shrink: 0;
-    border: 1px solid #ffe082;
+    border: 1px solid #99f6e4;
 }
 
 .multiEntryValue {
@@ -649,9 +649,9 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: #fffde7;
-    color: #92400e;
-    border: 1px solid #ffe082;
+    background: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
     cursor: pointer;
     text-decoration: none;
     flex-shrink: 0;

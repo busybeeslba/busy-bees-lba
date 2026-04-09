@@ -27,7 +27,7 @@ export const dbClient = {
         
         const { data, error } = await q;
         if (error) {
-            console.error(`[Supabase GET ${table}] Error:`, error);
+            console.error(`[Supabase GET ${table}] Error:`, error.message || error.code || JSON.stringify(error));
             throw error;
         }
         return data;

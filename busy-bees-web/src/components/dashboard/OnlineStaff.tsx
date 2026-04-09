@@ -17,15 +17,14 @@ export default function OnlineStaff({ workers }: { workers: any[] }) {
 
     return (
         <div className={styles.statCard} style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '160px' }}>
-            <div className={styles.statHeader} style={{ marginBottom: '8px' }}>
-                <span className={styles.statTitle}>Online Staff</span>
+            <div className={styles.statHeader} style={{ marginBottom: currentOnlineStaff.length > 0 ? '12px' : '0', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span className={styles.statValue} style={{ margin: 0, lineHeight: 1 }}>{currentOnlineStaff.length}</span>
+                    <span className={styles.statTitle} style={{ margin: 0, fontSize: '13px' }}>Online Staff</span>
+                </div>
                 <div className={styles.iconBox}>
                     <Users size={20} color="var(--primary)" />
                 </div>
-            </div>
-            
-            <div className={styles.statValue} style={{ marginBottom: currentOnlineStaff.length > 0 ? '12px' : '0' }}>
-                {currentOnlineStaff.length}
             </div>
             
             {/* Real-time scrolling list of online staff */}
@@ -125,7 +124,7 @@ export default function OnlineStaff({ workers }: { workers: any[] }) {
                                 </span>
                                 <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <span style={{ color: 'var(--success)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }} />
+                                        <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }} />
                                         Live
                                     </span>
                                     <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span>

@@ -27,7 +27,7 @@
 }
 
 .headerIcon {
-    color: #d97706;
+    color: #0d9488;
     flex-shrink: 0;
 }
 
@@ -72,8 +72,8 @@
     gap: 7px;
     padding: 8px 18px;
     border-radius: 8px;
-    border: 1.5px solid #ffe082;
-    background: #fffde7;
+    border: 1.5px solid #99f6e4;
+    background: #f0fdfa;
     color: #b45309;
     font-size: 13px;
     font-weight: 700;
@@ -83,9 +83,9 @@
 }
 
 .exportBtn:hover {
-    background: #d97706;
+    background: #0d9488;
     color: #fff;
-    border-color: #d97706;
+    border-color: #0d9488;
 }
 
 /* ── Toolbar ── */
@@ -126,7 +126,7 @@
 }
 
 .search:focus {
-    border-color: #d97706;
+    border-color: #0d9488;
 }
 
 .clearBtn {
@@ -166,7 +166,7 @@
 }
 
 .select:focus {
-    border-color: #d97706;
+    border-color: #0d9488;
 }
 
 .filterBtn {
@@ -186,13 +186,13 @@
 }
 
 .filterBtn:hover {
-    border-color: #d97706;
+    border-color: #0d9488;
     color: #b45309;
 }
 
 .filterBtnActive {
-    border-color: #d97706;
-    background: #fffde7;
+    border-color: #0d9488;
+    background: #f0fdfa;
     color: #b45309;
 }
 
@@ -203,7 +203,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #d97706;
+    background: #0d9488;
     color: #fff;
     font-size: 10px;
     font-weight: 800;
@@ -211,11 +211,11 @@
 
 /* ── Filter panel ── */
 .filterPanel {
-    background: #fffde7;
+    background: #f0fdfa;
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 14px;
-    border: 1.5px solid #ffe082;
+    border: 1.5px solid #99f6e4;
 }
 
 .filterRow {
@@ -234,7 +234,7 @@
 .filterLabel {
     font-size: 11px;
     font-weight: 700;
-    color: #92400e;
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -243,7 +243,7 @@
 .filterInput {
     padding: 6px 10px;
     border-radius: 7px;
-    border: 1.5px solid #ffe082;
+    border: 1.5px solid #99f6e4;
     font-size: 12px;
     background: #fff;
     color: #1e293b;
@@ -257,7 +257,7 @@
 
 .filterSelect:focus,
 .filterInput:focus {
-    border-color: #d97706;
+    border-color: #0d9488;
 }
 
 .clearFiltersBtn {
@@ -287,7 +287,7 @@
     min-height: 0;
     background: #fff;
     border-radius: 14px;
-    border: 1.5px solid #ffe082;
+    border: 1.5px solid #99f6e4;
     overflow: auto;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
     display: flex;
@@ -303,13 +303,13 @@
 
 .th {
     padding: 11px 12px;
-    background: #fffde7;
-    border-bottom: 2px solid #ffe082;
-    border-right: 1px solid #fff8e1;
+    background: #f0fdfa;
+    border-bottom: 2px solid #99f6e4;
+    border-right: 1px solid #f8fafc;
     text-align: left;
     font-size: 10px;
     font-weight: 800;
-    color: #92400e;
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -319,8 +319,8 @@
 }
 
 .th:hover {
-    background: #fff8e1;
-    color: #d97706;
+    background: #f8fafc;
+    color: #0d9488;
 }
 
 .thAction {
@@ -330,8 +330,8 @@
 }
 
 .thAction:hover {
-    background: #fffde7;
-    color: #92400e;
+    background: #f0fdfa;
+    color: #0f766e;
 }
 
 .td {
@@ -357,18 +357,18 @@
 
 .rowEven:hover,
 .rowOdd:hover {
-    background: #fffbeb;
+    background: #f0fdfa;
 }
 
 /* Group header */
 .groupHeader {
-    background: linear-gradient(90deg, #fffde7, #fafaf7);
+    background: linear-gradient(90deg, #f0fdfa, #fafaf7);
     cursor: pointer;
-    border-top: 2px solid #ffe082;
+    border-top: 2px solid #99f6e4;
 }
 
 .groupHeader:hover {
-    background: linear-gradient(90deg, #fff8e1, #f1f5f9);
+    background: linear-gradient(90deg, #f8fafc, #f1f5f9);
 }
 
 .groupHeaderInner {
@@ -380,13 +380,13 @@
 
 .groupChevron {
     font-size: 10px;
-    color: #d97706;
+    color: #0d9488;
 }
 
 .groupName {
     font-weight: 800;
     font-size: 12px;
-    color: #92400e;
+    color: #0f766e;
 }
 
 .groupCount {
@@ -421,7 +421,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #d97706;
+    background: #0d9488;
     color: #fff;
     font-size: 11px;
     font-weight: 800;
@@ -442,9 +442,9 @@
 
 .dayBadge {
     display: inline-block;
-    background: #fffde7;
-    color: #d97706;
-    border: 1px solid #ffe082;
+    background: #f0fdfa;
+    color: #0d9488;
+    border: 1px solid #99f6e4;
     border-radius: 6px;
     padding: 1px 7px;
     font-size: 11px;
@@ -524,8 +524,8 @@
     display: inline-block;
     padding: 2px 8px;
     border-radius: 5px;
-    border: 1px solid #ffe082;
-    background: #fffde7;
+    border: 1px solid #99f6e4;
+    background: #f0fdfa;
     color: #b45309;
     font-size: 12px;
     font-weight: 700;
@@ -534,9 +534,9 @@
 }
 
 .editLink:hover {
-    background: #d97706;
+    background: #0d9488;
     color: #fff;
-    border-color: #d97706;
+    border-color: #0d9488;
 }
 
 /* Footer */
@@ -545,11 +545,11 @@
     align-items: center;
     gap: 14px;
     padding: 12px 16px;
-    border-top: 1.5px solid #ffe082;
+    border-top: 1.5px solid #99f6e4;
     font-size: 12px;
     font-weight: 600;
     color: #64748b;
-    background: #fffde7;
+    background: #f0fdfa;
 }
 
 /* Empty / loading */
@@ -561,7 +561,7 @@
     font-weight: 500;
     background: #fff;
     border-radius: 14px;
-    border: 1.5px solid #ffe082;
+    border: 1.5px solid #99f6e4;
 }
 
 @media (max-width: 768px) {

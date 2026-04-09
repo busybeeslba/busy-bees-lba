@@ -138,14 +138,16 @@
 }
 
 .locPillCustom {
-    background: white;
-    border: 1px dashed #94a3b8;
-    color: #64748b;
+    background: var(--primary);
+    color: #000;
+    border: none;
+    font-weight: 600;
 }
 
 .locPillCustom:hover {
-    border-color: var(--primary);
-    color: #d97706;
+    background: var(--primary);
+    filter: brightness(0.95);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 /* ── Data Table Layout ── */
@@ -164,8 +166,8 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #fffde7, #fff8e1);
-    border-bottom: 2px solid #ffe082;
+    background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+    border-bottom: 2px solid #99f6e4;
     border-left: 4px solid var(--primary);
     flex-wrap: wrap;
 }
@@ -173,7 +175,7 @@
 .gridTitle {
     font-size: 12px;
     font-weight: 800;
-    color: #92400e;
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.6px;
 }
@@ -332,10 +334,10 @@
     gap: 8px;
     width: 100%;
     padding: 16px;
-    border: 2px dashed #ffe082;
+    background: var(--primary);
+    border: none;
     border-radius: 16px;
-    background: transparent;
-    color: #92400e;
+    color: #000;
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
@@ -344,8 +346,28 @@
 }
 
 .addLocationBtn:hover {
-    border-color: var(--primary);
-    background: #fffbeb;
+    filter: brightness(0.95);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
+}
+
+.addStepBtn {
+    background: var(--primary);
+    color: #000;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.addStepBtn:hover {
+    filter: brightness(0.95);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 .printBtn {

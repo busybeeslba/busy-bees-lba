@@ -145,7 +145,11 @@ export default function AppNavigator() {
         return () => {
             subscription.remove();
             if (channelRef.current) {
-                supabase.removeChannel(channelRef.current);
+                const chan = channelRef.current;
+                (async () => {
+                    await chan.untrack();
+                    await supabase.removeChannel(chan);
+                })();
                 channelRef.current = null;
             }
         };

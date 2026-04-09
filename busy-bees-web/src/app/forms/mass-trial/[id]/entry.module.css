@@ -50,9 +50,9 @@
 }
 
 .backBtn:hover {
-    background: var(--background-light);
+    background: #f0fdfa;
     border-color: var(--primary);
-    color: var(--primary);
+    color: #0f766e;
 }
 
 .pageTitle {
@@ -72,18 +72,18 @@
 }
 
 .sessionBadge {
-    background: var(--background-light);
-    color: var(--primary);
+    background: #f0fdfa;
+    color: #0f766e;
     font-size: 11px;
     font-weight: 700;
     padding: 1px 8px;
     border-radius: 100px;
-    border: 1px solid var(--primary);
+    border: 1px solid #99f6e4;
 }
 
 .editingBadge {
-    background: #fffde7;
-    color: #d97706;
+    background: #f0fdfa;
+    color: #0d9488;
     font-size: 11px;
     font-weight: 700;
     padding: 1px 8px;
@@ -97,7 +97,7 @@
     gap: 6px;
     padding: 9px 20px;
     background: var(--primary);
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 10px;
     font-size: 13px;
@@ -109,6 +109,7 @@
 
 .saveBtn:hover:not(:disabled) {
     background: var(--primary);
+    filter: brightness(0.9);
     box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
@@ -224,8 +225,8 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    background: linear-gradient(135deg, var(--background-light), #e0e7ff);
-    border-bottom: 2px solid var(--primary);
+    background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+    border-bottom: 2px solid #99f6e4;
     border-left: 4px solid var(--primary);
     flex-wrap: wrap;
 }
@@ -233,14 +234,14 @@
 .gridTitle {
     font-size: 12px;
     font-weight: 800;
-    color: var(--primary);
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.6px;
 }
 
 .programBadge {
     background: var(--primary);
-    color: #fff;
+    color: #000;
     font-size: 11px;
     font-weight: 700;
     padding: 2px 10px;
@@ -249,10 +250,11 @@
 
 .historyNote {
     font-size: 11px;
-    color: var(--primary);
-    background: rgba(var(--primary-rgb, 246, 168, 0), 0.1);
+    color: #0f766e;
+    background: rgba(var(--primary-rgb, 246, 168, 0), 0.15);
     padding: 2px 10px;
     border-radius: 100px;
+    margin-left: auto;
 }
 
 .tableWrap {
@@ -333,9 +335,9 @@
 }
 
 .colDayLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
-    color: var(--primary);
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: center;
@@ -387,7 +389,7 @@
 .editingSessionCol {
     padding: 6px 4px;
     text-align: center;
-    background: #fffbeb;
+    background: #f0fdfa;
     border-left: 2px solid var(--primary);
     border-right: 2px solid var(--primary);
     min-width: 36px;
@@ -410,8 +412,8 @@
 }
 
 .editColBtn:hover {
-    background: #fffde7;
-    color: #92400e;
+    background: #f0fdfa;
+    color: #0f766e;
     border-color: var(--primary);
 }
 
@@ -420,7 +422,7 @@
     margin-top: 4px;
     font-size: 9px;
     font-weight: 700;
-    color: #d97706;
+    color: #0d9488;
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -475,8 +477,8 @@
 .editingCell {
     padding: 4px 2px;
     text-align: center;
-    background: #fffde7;
-    border-left: 1px solid #ffe082;
+    background: #f0fdfa;
+    border-left: 1px solid #99f6e4;
 }
 
 .milestoneCell {
@@ -529,9 +531,9 @@
 }
 
 .trialEmpty:hover {
-    background: var(--background-light);
+    background: #f0fdfa;
     border-color: var(--primary);
-    color: var(--primary);
+    color: #0f766e;
 }
 
 .pastTrialPlus {
@@ -648,13 +650,13 @@
 }
 
 .addStepBtn {
-    background: none;
-    border: 1.5px dashed var(--primary);
-    color: var(--primary);
+    background: var(--primary);
+    color: #000;
     font-size: 13px;
     font-weight: 700;
-    padding: 7px 16px;
-    border-radius: 8px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s;
     display: inline-flex;
@@ -663,8 +665,8 @@
 }
 
 .addStepBtn:hover {
-    background: var(--background-light);
-    border-color: var(--primary);
+    filter: brightness(0.9);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 .addStepRow {
@@ -692,7 +694,7 @@
 .addStepConfirm {
     padding: 8px 16px;
     background: var(--primary);
-    color: white;
+    color: #000;
     font-size: 13px;
     font-weight: 700;
     border: none;

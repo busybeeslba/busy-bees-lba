@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.busy-bees-mobile",
+      "bundleIdentifier": "com.y2kgroup.busybees",
       "infoPlist": {
         "UIBackgroundModes": [
           "location",

@@ -134,4 +134,29 @@ a {
   @page {
     margin: 15mm;
   }
+
+  body.printing-modal * {
+    visibility: hidden;
+  }
+  
+  body.printing-modal .print-modal-content,
+  body.printing-modal .print-modal-content * {
+    visibility: visible;
+  }
+  
+  body.printing-modal .print-modal-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  body.printing-modal .no-print,
+  body.printing-modal .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }

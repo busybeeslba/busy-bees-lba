@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Pencil, X, Plus } from 'lucide-react';
 import styles from './entry.module.css';
 import { dbClient } from '@/lib/dbClient';
+import { createClient } from '@/utils/supabase/client';
 
 const TRIAL_COUNT = 5;
 
@@ -84,15 +85,32 @@ export default function MassTrialEntryPage() {
     const [newStepText, setNewStepText] = useState('');
 
     useEffect(() => {
-        Promise.all([
-            dbClient.get('/clients').catch(() => []),
-            dbClient.get('/users').catch(() => []),
-        ]).then(([cls, usrs]) => {
+        const fetchInit = async () => {
+            const [cls, usrs] = await Promise.all([
+                dbClient.get('/clients').catch(() => []),
+                dbClient.get('/users').catch(() => [])
+            ]);
             setClients(Array.isArray(cls) ? cls : []);
             const userList = Array.isArray(usrs) ? usrs : [];
             setUsers(userList);
-            if (userList.length > 0) setNewEmployee({ name: userList[0].name || '', id: userList[0].employeeId || '' });
-        });
+
+            try {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const match = userList.find((u: any) => String(u.email).toLowerCase() === String(user.email).toLowerCase());
+                    if (match) {
+                        setNewEmployee({ name: match.name || `${match.firstName} ${match.lastName}`.trim(), id: match.employeeId || match.id });
+                        return;
+                    }
+                }
+            } catch (err) {}
+
+            if (userList.length > 0) {
+                setNewEmployee({ name: userList[0].name || '', id: userList[0].employeeId || '' });
+            }
+        };
+        fetchInit();
     }, []);
 
     useEffect(() => {
@@ -118,7 +136,7 @@ export default function MassTrialEntryPage() {
         setSelProgram(prog);
         if (!selectedClient || !prog) return;
         const cid = selectedClient.clientId || `CLI-${selectedClient.id}`;
-        const existing: any[] = await dbClient.get(`/mass_trials`).then(r => r.json()).catch(() => []);
+        const existing: any[] = await dbClient.get(`/mass_trials`).catch(() => []);
         const found = existing.find(s =>
             (s.clientId === cid || s.clientName === (selectedClient.kidsName || selectedClient.name)) && s.program === prog
         );
@@ -135,11 +153,6 @@ export default function MassTrialEntryPage() {
             setSheet({ clientId: cid, clientName: selectedClient.kidsName || selectedClient.name || '', program: prog, rows, sessions: [] });
             setNewResults(emptyTrials(rows));
         }
-    };
-
-    const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const u = users.find(u => u.employeeId === e.target.value);
-        setNewEmployee({ name: u?.name || '', id: u?.employeeId || '' });
     };
 
     const toggleNewTrial = (rowIdx: number, trialIdx: number) => {
@@ -163,7 +176,10 @@ export default function MassTrialEntryPage() {
         setEditDraft(draft);
     };
 
-    const cancelEdit = () => { setEditingSessionIdx(null); setEditDraft({}); };
+    const cancelEdit = () => { 
+        setEditingSessionIdx(null); 
+        setEditDraft({}); 
+    };
 
     const toggleEditTrial = (rowIdx: number, trialIdx: number) => {
         setEditDraft(prev => {
@@ -178,7 +194,10 @@ export default function MassTrialEntryPage() {
         setSaving(true);
         try {
             const updatedSessions = sheet.sessions.map((s, i) =>
-                i === editingSessionIdx ? { ...s, results: editDraft } : s
+                i === editingSessionIdx ? { 
+                    ...s, 
+                    results: editDraft
+                } : s
             );
             const updatedSheet = { ...sheet, sessions: updatedSessions };
             await dbClient.patch(`/mass_trials/${sheet.id}`, updatedSheet);
@@ -232,108 +251,14 @@ export default function MassTrialEntryPage() {
         setShowAddStep(false);
     };
 
-    const openPDF = () => {
-        if (!sheet) return;
-        const allSess = sheet.sessions || [];
-        const sheetRows = sheet.rows || [];
-        const generated = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-        const sessionHeaders = allSess.map(s =>
-            `<th><span class="day-label">Day ${s.day}</span><span class="day-date">${fmtDate(s.date)}</span><span class="day-emp">${s.employeeName || ''}</span></th>`
-        ).join('');
-
-        const bodyRows = sheetRows.map((row, ri) => {
-            const cells = allSess.map(s => {
-                const trials: TrialVal[] = s.results?.[String(ri)] || Array(TRIAL_COUNT).fill('');
-                const pct = calcPct(trials);
-                const trialStr = trials.map(t => t === '+' ? '<span class="t-plus">+</span>' : t === '-' ? '<span class="t-minus">−</span>' : '<span class="t-blank">·</span>').join(' ');
-                return `<td class="td-trials">${trialStr}${pct !== null ? `<br/><span class="td-pct">${pct}%</span>` : ''}</td>`;
-            }).join('');
-
-            // Per-STO totals across all sessions
-            let totalPlus = 0, totalTotal = 0;
-            allSess.forEach(s => {
-                const t: TrialVal[] = s.results?.[String(ri)] || [];
-                t.forEach(v => { if (v === '+' || v === '-') { totalTotal++; if (v === '+') totalPlus++; } });
-            });
-            const rPct = totalTotal > 0 ? Math.round(totalPlus / totalTotal * 100) : null;
-            const totalCell = totalTotal > 0
-                ? `<td class="td-total"><span class="pass-txt">${totalPlus}+</span> / <span class="fail-txt">${totalTotal - totalPlus}−</span>${rPct !== null ? ` <span class="pct-txt">${rPct}%</span>` : ''}</td>`
-                : `<td class="td-nil">—</td>`;
-
-            return `<tr><td class="td-num">${ri + 1}</td><td class="td-sto">${row.step || ''}</td>${cells}${totalCell}</tr>`;
-        }).join('');
-
-        const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Mass Trial / DTT – ${sheet.clientName} – ${sheet.program}</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #fff; color: #111; font-size: 12px; }
-  .page { max-width: 980px; margin: 0 auto; padding: 36px 48px; }
-  .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 28px; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
-  .btn-print { background: #1e293b; color: #fff; }
-  .doc-header { border-bottom: 3px solid var(--primary); padding-bottom: 16px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
-  .org-name { font-size: 26px; font-weight: 900; }
-  .org-name .purple { color: var(--primary); }
-  .doc-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary); border: 2px solid var(--primary); padding: 4px 12px; border-radius: 6px; }
-  .meta { display: flex; gap: 0; margin-bottom: 24px; border: 1px solid #dde3ec; border-radius: 10px; overflow: hidden; }
-  .meta-item { flex: 1; padding: 14px 18px; border-right: 1px solid #dde3ec; }
-  .meta-item:last-child { border-right: none; }
-  .meta-label { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
-  .meta-val { font-size: 15px; font-weight: 800; color: #111; }
-  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  thead th { background: #f8fafc; padding: 10px 10px; text-align: center; font-size: 11px; font-weight: 800; color: #334155; border: 1px solid #cbd5e1; }
-  thead th.th-sto { text-align: left; }
-  thead th .day-label { font-size: 11px; font-weight: 800; color: #1e293b; display: block; }
-  thead th .day-date { font-size: 9px; color: #64748b; display: block; margin-top: 1px; }
-  thead th .day-emp { font-size: 9px; font-weight: 700; color: var(--primary); display: block; margin-top: 1px; }
-  td { padding: 8px 10px; border: 1px solid #dde3ec; text-align: center; vertical-align: middle; }
-  td.td-num { color: #94a3b8; font-size: 10px; font-weight: 600; width: 36px; }
-  td.td-sto { text-align: left; font-weight: 700; font-size: 12px; color: #1e293b; }
-  td.td-trials { font-size: 13px; font-weight: 700; white-space: nowrap; }
-  td.td-pct, .td-pct { font-size: 10px; color: var(--primary); font-weight: 700; }
-  td.td-total { white-space: nowrap; font-size: 11px; }
-  td.td-nil { color: #d1d5db; }
-  .t-plus { color: #16a34a; font-weight: 900; }
-  .t-minus { color: #dc2626; font-weight: 900; }
-  .t-blank { color: #d1d5db; }
-  .pass-txt { color: #16a34a; font-weight: 800; }
-  .fail-txt { color: #dc2626; font-weight: 800; }
-  .pct-txt { color: var(--primary); font-weight: 800; }
-  .doc-footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
-  @media print { .action-bar { display: none !important; } .page { padding: 0; max-width: 100%; } @page { margin: 15mm 12mm; size: A4 landscape; } }
-</style></head><body>
-<div class="page">
-  <div class="action-bar">
-    <button class="btn btn-print" onclick="window.print()">🖨 Print / Download PDF</button>
-  </div>
-  <div class="doc-header">
-    <div>
-      <div class="org-name"><span class="purple">Busy</span> Bees LBA</div>
-      <div style="font-size:11px;color:#777;margin-top:3px">Generated on ${generated}</div>
-    </div>
-    <div class="doc-label">Mass Trial / DTT</div>
-  </div>
-  <div class="meta">
-    <div class="meta-item"><div class="meta-label">Client</div><div class="meta-val">${sheet.clientName || '—'}</div></div>
-    <div class="meta-item"><div class="meta-label">Program</div><div class="meta-val">${sheet.program || '—'}</div></div>
-    <div class="meta-item"><div class="meta-label">Total Sessions</div><div class="meta-val">${allSess.length} session${allSess.length !== 1 ? 's' : ''}</div></div>
-  </div>
-  <table>
-    <thead><tr><th style="width:36px">#</th><th class="th-sto">STO / Target</th>${sessionHeaders}<th>Overall</th></tr></thead>
-    <tbody>${bodyRows}</tbody>
-  </table>
-  <div class="doc-footer">
-    <span>Busy Bees LBA — Confidential</span>
-    <span>Generated ${generated}</span>
-  </div>
-</div></body></html>`;
-
-        const win = window.open('', '_blank');
-        if (win) { win.document.write(html); win.document.close(); }
+    const handleViewPDF = () => {
+        if (!sheet?.id && params.id === 'new') {
+            alert('Please save the sheet first before viewing/printing.');
+            return;
+        }
+        if (sheet?.id) {
+            router.push(`/forms/mass-trial/${sheet.id}/view`);
+        }
     };
 
     const availablePrograms: string[] = (() => {
@@ -381,12 +306,13 @@ export default function MassTrialEntryPage() {
                 ) : (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         {sheet && (
-                            <button className={styles.printBtn} onClick={openPDF} title="Print / Save as PDF">
-                                🖨️ Print / PDF
+                            <button className={styles.printBtn} onClick={handleViewPDF} title="View / Print / Save as PDF">
+                                🖨️ View / PDF
                             </button>
                         )}
                         <button className={styles.saveBtn} onClick={handleSave} disabled={saving || !sheet}>
-                            <Save size={15} /> {saving ? 'Saving…' : sheet?.id ? `Add Day ${nextDay}` : 'Create Sheet'}
+                            {sheet?.id ? <Plus size={15} /> : <Save size={15} />}
+                            {saving ? 'Saving…' : sheet?.id ? `Add Day ${nextDay}` : 'Create Sheet'}
                         </button>
                     </div>
                 )}
@@ -441,17 +367,15 @@ export default function MassTrialEntryPage() {
                     )}
                     {editingSessionIdx === null && (
                         <div className={styles.metaField}>
-                            <label className={styles.label}>Employee (Day {nextDay})</label>
-                            <select className={styles.select} value={newEmployee.id} onChange={handleEmployeeChange}>
-                                {users.map(u => <option key={u.employeeId} value={u.employeeId}>{u.name}</option>)}
-                            </select>
+                            <label className={styles.label}>Provider recording session</label>
+                            <div className={styles.metaValue}>{newEmployee.name || '—'}</div>
                         </div>
                     )}
                     {editingSessionIdx !== null && (
                         <div className={styles.metaField}>
                             <label className={styles.label}>Correcting</label>
-                            <div className={styles.metaValue} style={{ color: '#d97706' }}>
-                                Day {allSessions[editingSessionIdx]?.day} · {allSessions[editingSessionIdx]?.employeeName} · {fmtDate(allSessions[editingSessionIdx]?.date)}
+                            <div className={styles.metaValue} style={{ color: '#0d9488' }}>
+                                Day {allSessions[editingSessionIdx]?.day} · {allSessions[editingSessionIdx]?.employeeName || 'No Provider'} · {fmtDate(allSessions[editingSessionIdx]?.date)}
                             </div>
                         </div>
                     )}
@@ -480,7 +404,11 @@ export default function MassTrialEntryPage() {
                                             colSpan={TRIAL_COUNT + 1}>
                                             <div className={styles.colDayLabel}>Day {sess.day}</div>
                                             <div className={styles.colDateLabel}>{fmtDate(sess.date)}</div>
-                                            <div className={styles.colEmpLabel}>{sess.employeeName}</div>
+                                            {editingSessionIdx === sessIdx ? (
+                                                <div className={styles.colEmpLabel} style={{ textAlign: 'center', color: '#0d9488', fontWeight: 700 }}>{sess.employeeName || '—'}</div>
+                                            ) : (
+                                                <div className={styles.colEmpLabel}>{sess.employeeName || '—'}</div>
+                                            )}
                                             {editingSessionIdx === null && (
                                                 <button className={styles.editColBtn} onClick={() => startEdit(sessIdx)}>
                                                     <Pencil size={10} /> Edit

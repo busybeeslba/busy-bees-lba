@@ -933,7 +933,7 @@ export default function ClientsPage() {
                                             {[
                                                 { key: 'Academic Baseline', label: 'Academic Baseline', icon: '📋', color: '#2563eb', bg: '#eff6ff' },
                                                 { key: 'Probe Data', label: 'Probe Data', icon: '🔬', color: '#7c3aed', bg: '#f5f3ff' },
-                                                { key: 'Baseline Sheet', label: 'Baseline Sheet', icon: '🏆', color: '#d97706', bg: '#fffbeb' },
+                                                { key: 'Baseline Sheet', label: 'Baseline Sheet', icon: '🏆', color: '#0d9488', bg: '#f0fdfa' },
                                             ].map(ft => {
                                                 const count = clientForms.filter(f => f.formType === ft.key).length;
                                                 const isActive = selectedFormType === ft.key;
@@ -981,8 +981,8 @@ export default function ClientsPage() {
 
                 {/* Form detail panel — third column */}
                 {selectedFormType && selectedClient && (() => {
-                    const ftColor = selectedFormType === 'Academic Baseline' ? '#2563eb' : selectedFormType === 'Probe Data' ? '#7c3aed' : '#d97706';
-                    const ftBg = selectedFormType === 'Academic Baseline' ? '#eff6ff' : selectedFormType === 'Probe Data' ? '#f5f3ff' : '#fffbeb';
+                    const ftColor = selectedFormType === 'Academic Baseline' ? '#2563eb' : selectedFormType === 'Probe Data' ? '#7c3aed' : '#0d9488';
+                    const ftBg = selectedFormType === 'Academic Baseline' ? '#eff6ff' : selectedFormType === 'Probe Data' ? '#f5f3ff' : '#f0fdfa';
                     const ftIcon = selectedFormType === 'Academic Baseline' ? '📋' : selectedFormType === 'Probe Data' ? '🔬' : '🏆';
                     const ftForms = clientForms.filter(f => f.formType === selectedFormType);
 

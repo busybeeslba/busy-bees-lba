@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import { dbClient } from '../../lib/dbClient';
+import { supabase } from '../../lib/supabase';
 import styles from './Dashboard.module.css';
 
 interface TotalHoursWidgetProps {
@@ -30,7 +31,7 @@ export default function TotalHoursWidget({ defaultTotal = "0.0" }: TotalHoursWid
                 ]);
                 
                 const todayDate = new Date().toDateString();
-                const todaySessions = sessionsData.filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
+                const todaySessions = (sessionsData || []).filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
                 
                 setSessions(todaySessions);
                 setUsers(usersData || []);
@@ -41,8 +42,21 @@ export default function TotalHoursWidget({ defaultTotal = "0.0" }: TotalHoursWid
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 10000);
-        return () => clearInterval(interval);
+        
+        // Listen for realtime database changes to update instantly!
+        const channel = supabase.channel('realtime_total_hours')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'sessions' },
+                () => { fetchData(); }
+            )
+            .subscribe();
+
+        const interval = setInterval(fetchData, 60000);
+        return () => {
+            clearInterval(interval);
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // Process data to group by employee dynamically
@@ -54,6 +68,9 @@ export default function TotalHoursWidget({ defaultTotal = "0.0" }: TotalHoursWid
 
         // Calculate all session durations
         sessions.forEach(s => {
+            // Ignore non-client sessions for total hour accumulation
+            if (!s.clientName || s.clientName === 'Unknown') return;
+
             // Find base identifier - preferably email/employeeId, fallback to name
             const id = s.employeeId || s.employeeName || 'Unknown';
             if (!stats[id]) {
@@ -93,27 +110,26 @@ export default function TotalHoursWidget({ defaultTotal = "0.0" }: TotalHoursWid
     useEffect(() => {
         if (!hasLoaded) return;
         const totalSecs = employeeStats.reduce((acc, curr) => acc + curr.totalSeconds, 0);
-        setTotalHours((totalSecs / 3600).toFixed(1));
+        setTotalHours(formatHHMMSS(totalSecs));
     }, [employeeStats, hasLoaded]);
 
-    const formatHoursMinutes = (totalSeconds: number) => {
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        if (hours === 0) return `${minutes}m`;
-        return `${hours}h ${minutes}m`;
+    const formatHHMMSS = (totalSeconds: number) => {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     return (
         <div className={styles.statCard} style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '160px' }}>
-            <div className={styles.statHeader} style={{ marginBottom: '8px' }}>
-                <span className={styles.statTitle}>Total Hours (Today)</span>
+            <div className={styles.statHeader} style={{ marginBottom: employeeStats.length > 0 ? '12px' : '0', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span className={styles.statValue} style={{ margin: 0, lineHeight: 1 }}>{totalHours}</span>
+                    <span className={styles.statTitle} style={{ margin: 0, fontSize: '13px' }}>Total Hours (Today)</span>
+                </div>
                 <div className={styles.iconBox}>
                     <Clock size={20} color="var(--primary)" />
                 </div>
-            </div>
-            
-            <div className={styles.statValue} style={{ marginBottom: employeeStats.length > 0 ? '12px' : '0' }}>
-                {totalHours} <span style={{ fontSize: '14px', color: '#94a3b8', fontWeight: '500' }}>hrs</span>
             </div>
             
             {/* Real-time scrolling list of hours by staff */}
@@ -188,12 +204,12 @@ export default function TotalHoursWidget({ defaultTotal = "0.0" }: TotalHoursWid
                                         {staff.employeeName}
                                     </span>
                                     <span style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)' }}>
-                                        {(staff.totalSeconds / 3600).toFixed(1)}h
+                                        {formatHHMMSS(staff.totalSeconds)}
                                     </span>
                                 </div>
                                 <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <Clock size={10} />
-                                    {formatHoursMinutes(staff.totalSeconds)} total
+                                    Logged today
                                 </span>
                             </div>
                         </div>

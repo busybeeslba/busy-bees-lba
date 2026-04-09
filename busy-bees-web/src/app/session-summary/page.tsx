@@ -263,8 +263,12 @@ export default function SessionSummaryPage() {
                                             )}
                                         </td>
                                         <td>
-                                            <span className={`${styles.statusBadge} ${isActive ? styles.active : styles.completed}`}>
-                                                {isActive ? 'Active' : 'Completed'}
+                                            <span className={`${styles.statusBadge} ${
+                                                session.status === 'active' ? styles.active : 
+                                                session.status === 'cancelled' ? styles.cancelled : styles.completed
+                                            }`}>
+                                                {session.status === 'active' ? 'Active' : 
+                                                 session.status === 'cancelled' ? 'Cancelled' : 'Completed'}
                                             </span>
                                         </td>
                                         <td onClick={e => e.stopPropagation()}>
@@ -300,8 +304,12 @@ export default function SessionSummaryPage() {
                     <aside className={styles.detailPanel}>
                         <div className={styles.detailHeader}>
                             <div>
-                                <span className={`${styles.statusBadge} ${selectedSession.status === 'active' ? styles.active : styles.completed}`}>
-                                    {selectedSession.status === 'active' ? 'Active' : 'Completed'}
+                                <span className={`${styles.statusBadge} ${
+                                    selectedSession.status === 'active' ? styles.active : 
+                                    selectedSession.status === 'cancelled' ? styles.cancelled : styles.completed
+                                }`}>
+                                    {selectedSession.status === 'active' ? 'Active' : 
+                                     selectedSession.status === 'cancelled' ? 'Cancelled' : 'Completed'}
                                 </span>
                                 <h2 className={styles.detailTitle}>{selectedSession.sessionId}</h2>
                                 <p className={styles.detailSubtitle}>{formatDateTime(selectedSession.startTime).full}</p>

@@ -159,7 +159,7 @@ export default function DttDataTablePage() {
     const pctColor = (p: number | null) => {
         if (p === null) return { color: '#94a3b8', bg: 'transparent', border: 'transparent' };
         if (p >= 80) return { color: '#15803d', bg: '#f0fdf4', border: '#86efac' };
-        if (p >= 60) return { color: '#92400e', bg: '#fffbeb', border: '#fde68a' };
+        if (p >= 60) return { color: '#0f766e', bg: '#f0fdfa', border: '#fde68a' };
         return { color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' };
     };
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ClipboardCheck, ArrowLeft, Download, Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 import styles from './data-table.module.css';
 import { dbClient } from '@/lib/dbClient';
 
-const COLORS = ['#d97706', '#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#06b6d4', '#ef4444', '#84cc16', '#f97316', '#6366f1'];
+const COLORS = ['#0d9488', '#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#06b6d4', '#ef4444', '#84cc16', '#f97316', '#6366f1'];
 
 interface BaselineRow {
     sheetId: number | string;
@@ -313,14 +313,14 @@ export default function BaselineDataTablePage() {
                             {groups.map(({ key, rows }) => {
                                 const isCollapsed = collapsedGroups.has(key);
                                 const pct = groupPassRate(rows);
-                                const pctColor = pct === null ? '#94a3b8' : pct >= 80 ? '#15803d' : pct >= 60 ? '#92400e' : '#dc2626';
-                                const pctBg = pct === null ? 'transparent' : pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#fffbeb' : '#fef2f2';
+                                const pctColor = pct === null ? '#94a3b8' : pct >= 80 ? '#15803d' : pct >= 60 ? '#0f766e' : '#dc2626';
+                                const pctBg = pct === null ? 'transparent' : pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#f0fdfa' : '#fef2f2';
                                 const pctBorder = pct === null ? 'transparent' : pct >= 80 ? '#86efac' : pct >= 60 ? '#fde68a' : '#fca5a5';
                                 const passCount = rows.filter(r => r.result === 'pass').length;
                                 const failCount = rows.filter(r => r.result === 'fail').length;
 
                                 return (
-                                    <>
+                                    <React.Fragment key={key}>
                                         {groupBy !== 'none' && (
                                             <tr key={`gh-${key}`} className={styles.groupHeader} onClick={() => toggleGroup(key)}>
                                                 <td colSpan={99}>
@@ -388,7 +388,7 @@ export default function BaselineDataTablePage() {
                                                 </tr>
                                             );
                                         })}
-                                    </>
+                                    </React.Fragment>
                                 );
                             })}
                         </tbody>
@@ -402,7 +402,7 @@ export default function BaselineDataTablePage() {
                         <span style={{ color: '#dc2626' }}>✗ {totalFail} Fail</span>
                         {avgPct !== null && (
                             <span style={{
-                                color: avgPct >= 80 ? '#15803d' : avgPct >= 60 ? '#92400e' : '#dc2626',
+                                color: avgPct >= 80 ? '#15803d' : avgPct >= 60 ? '#0f766e' : '#dc2626',
                                 fontWeight: 800
                             }}>{avgPct}% pass rate</span>
                         )}

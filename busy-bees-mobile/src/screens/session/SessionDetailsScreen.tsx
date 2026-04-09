@@ -37,6 +37,8 @@ export const SessionDetailsScreen = () => {
     const [clientSearch, setClientSearch] = useState('');
     const [serviceSearch, setServiceSearch] = useState('');
     const [expandNotes, setExpandNotes] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
     // Whether this client already has at least 1 baseline session saved
     const [hasBaselineData, setHasBaselineData] = useState(false);
 
@@ -293,8 +295,14 @@ export const SessionDetailsScreen = () => {
                     </KeyboardAwareScrollView>
 
                     {/* Footer */}
-                    <View style={footerStyle}>
-                        <TouchableOpacity style={styles.endBtn} onPress={handleEndSession}>
+                    <View style={[footerStyle, { flexDirection: 'row', gap: 12 }]}>
+                        <TouchableOpacity 
+                            style={[styles.endBtn, { flex: 1, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.error, elevation: 0, shadowOpacity: 0 }]} 
+                            onPress={() => setShowCancelModal(true)}
+                        >
+                            <Text style={[styles.endBtnText, { color: COLORS.error, fontSize: 16 }]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.endBtn, { flex: 2 }]} onPress={handleEndSession}>
                             <Square size={20} color={COLORS.white} fill={COLORS.white} />
                             <Text style={styles.endBtnText}>End Session</Text>
                         </TouchableOpacity>
@@ -328,6 +336,51 @@ export const SessionDetailsScreen = () => {
                         onChangeText={handleUpdateNotes}
                     />
                 </View>
+            </Modal>
+
+            {/* ── Cancel Session Modal ─────────────────────────────────────── */}
+            <Modal visible={showCancelModal} transparent animationType="fade">
+                <KeyboardAvoidingView
+                    style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 }}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                >
+                    <View style={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', borderRadius: 16, padding: 24, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10, elevation: 5 }}>
+                        <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: colors.text, marginBottom: 8 }}>Cancel Session</Text>
+                        <Text style={{ fontSize: 14, fontFamily: FONTS.regular, color: colors.secondaryText, marginBottom: 16, lineHeight: 20 }}>
+                            Please provide a reason for cancelling. This session will be logged as cancelled.
+                        </Text>
+                        <TextInput
+                            style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16, fontSize: 16, fontFamily: FONTS.regular, color: colors.text, height: 120, textAlignVertical: 'top', marginBottom: 24, backgroundColor: isDarkMode ? '#374151' : '#f8fafc' }}
+                            placeholder="Reason for cancellation..."
+                            placeholderTextColor={colors.secondaryText}
+                            multiline
+                            value={cancelReason}
+                            onChangeText={setCancelReason}
+                        />
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <TouchableOpacity 
+                                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: colors.border }} 
+                                onPress={() => setShowCancelModal(false)}
+                            >
+                                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: colors.text }}>Go Back</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: COLORS.error, opacity: cancelReason.trim().length === 0 ? 0.5 : 1 }} 
+                                disabled={cancelReason.trim().length === 0}
+                                onPress={() => {
+                                    setShowCancelModal(false);
+                                    useAppStore.getState().cancelSession(cancelReason);
+                                    navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: 'Main' }],
+                                    });
+                                }}
+                            >
+                                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: COLORS.white }}>Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* ── Client Picker Modal ─────────────────────────────────────── */}

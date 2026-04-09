@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, ClipboardList, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, ClipboardList, Calendar, Eye } from 'lucide-react';
 import styles from './page.module.css';
 import { dbClient } from '@/lib/dbClient';
 
@@ -151,10 +151,13 @@ export default function BaselineSheetListPage() {
                                         </td>
                                         <td onClick={e => e.stopPropagation()}>
                                             <div className={styles.actions}>
-                                                <button className={styles.editBtn} onClick={() => router.push(`/forms/baseline-sheet/${sheet.id}`)}>
+                                                <button className={styles.editBtn} title="View" onClick={(e) => { e.stopPropagation(); window.open(`/forms/baseline-sheet/${sheet.id}/view`, '_blank'); }}>
+                                                    <Eye size={13} />
+                                                </button>
+                                                <button className={styles.editBtn} title="Edit" onClick={(e) => { e.stopPropagation(); router.push(`/forms/baseline-sheet/${sheet.id}`); }}>
                                                     <Pencil size={13} />
                                                 </button>
-                                                <button className={styles.deleteBtn} onClick={() => handleDelete(sheet.id)}>
+                                                <button className={styles.deleteBtn} title="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(sheet.id); }}>
                                                     <Trash2 size={13} />
                                                 </button>
                                             </div>

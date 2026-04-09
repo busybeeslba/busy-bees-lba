@@ -10,7 +10,7 @@ import { dbClient } from '@/lib/dbClient';
 import styles from './Header.module.css';
 
 const PAGE_TITLES: Record<string, string> = {
-    '/': 'Dashboard',
+    '/': 'Live Dashboard',
     '/employees': 'Employee Management',
     '/employees/roles': 'Role Management',
     '/clients': 'Client Management',
@@ -79,8 +79,13 @@ export default function Header() {
                 >
                     <Menu size={20} />
                 </button>
-                <div className={styles.pageTitle}>
-                    <h1>{title}</h1>
+                <div className={styles.pageTitle} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <h1 style={{ marginBottom: pathname === '/' ? '2px' : '0', lineHeight: 1 }}>{title}</h1>
+                    {pathname === '/' && (
+                        <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500, lineHeight: 1, marginTop: '4px' }}>
+                            Real-time overview of field operations.
+                        </span>
+                    )}
                 </div>
             </div>
             <div className={styles.userProfile} ref={dropdownRef} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>

@@ -492,3 +492,7 @@
     border-top: 1px solid var(--border-light);
     font-weight: 500;
 }
+.cancelled {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}

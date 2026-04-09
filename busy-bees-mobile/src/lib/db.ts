@@ -1,87 +1,63 @@
 /**
  * db.ts — shared database API for the mobile app.
- * All reads / writes go through http://localhost:6011 (json-server).
- *
- * On a real device, replace DB_BASE_URL with your machine's LAN IP, e.g.:
- *   http://192.168.1.x:6011
+ * Migrated to exclusively use Supabase Native Connections!
  */
 
 import { supabase } from './supabase';
-
-const DB_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:6011';
-
-function isSupabaseTable(table: string) {
-    return ['users', 'clients', 'available_services', 'activity_feed', 'daily_routines', 'transaction_sheets'].includes(table);
-}
 
 // ── Generic fetch helpers ────────────────────────────────────────────────────
 
 export async function dbGet<T>(path: string): Promise<T> {
     const parts = path.split('?');
-    const table = parts[0].replace('/', '');
+    let table = parts[0].replace('/', '');
+    table = table.replace(/-/g, '_');
+    const query = parts[1];
     
-    if (!isSupabaseTable(table)) {
-        const res = await fetch(`${DB_BASE_URL}${path}`);
-        if (!res.ok) throw new Error(`GET ${path} failed from json-server`);
-        return await res.json() as T;
+    let q: any = supabase.from(table).select('*');
+    
+    if (query) {
+        // Very basic query parsing if needed, but standard mobile app fetches /sessions, /clients etc.
+        const params = query.split('&');
+        for (const param of params) {
+            const [k, v] = param.split('=');
+            if (k && v && !k.startsWith('_')) {
+                q = q.eq(k, decodeURIComponent(v));
+            }
+        }
     }
 
-    const { data, error } = await supabase.from(table).select('*');
-    if (error) throw new Error(`GET ${path} failed: ${error.message}`);
+    const { data, error } = await q;
+    if (error) throw new Error(`[Supabase GET ${table}] failed: ${error.message}`);
     return data as T;
 }
 
 export async function dbPost<T>(path: string, body: object): Promise<T> {
-    const table = path.replace('/', '');
-    
-    if (!isSupabaseTable(table)) {
-        const res = await fetch(`${DB_BASE_URL}${path}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if (!res.ok) throw new Error(`POST ${path} failed from json-server`);
-        return await res.json() as T;
-    }
-
+    let table = path.replace('/', '');
+    table = table.split('?')[0].replace(/-/g, '_');
     const { data, error } = await supabase.from(table).insert(body).select().single();
-    if (error) throw new Error(`POST ${path} failed: ${error.message}`);
+    if (error) throw new Error(`[Supabase POST ${table}] failed: ${error.message}`);
     return data as T;
 }
 
 export async function dbPatch<T>(path: string, body: object): Promise<T> {
     const parts = path.split('/').filter(Boolean);
-    const table = parts[0];
+    let table = parts[0];
+    table = table.split('?')[0].replace(/-/g, '_');
     const id = parts[1];
     
-    if (!isSupabaseTable(table)) {
-        const res = await fetch(`${DB_BASE_URL}${path}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if (!res.ok) throw new Error(`PATCH ${path} failed from json-server`);
-        return await res.json() as T;
-    }
-
     const { data, error } = await supabase.from(table).update(body).eq('id', id).select().single();
-    if (error) throw new Error(`PATCH ${path} failed: ${error.message}`);
+    if (error) throw new Error(`[Supabase PATCH ${table}] failed: ${error.message}`);
     return data as T;
 }
 
 export async function dbDelete<T>(path: string): Promise<T> {
     const parts = path.split('/').filter(Boolean);
-    const table = parts[0];
+    let table = parts[0];
+    table = table.split('?')[0].replace(/-/g, '_');
     const id = parts[1];
     
-    if (!isSupabaseTable(table)) {
-        const res = await fetch(`${DB_BASE_URL}${path}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error(`DELETE ${path} failed from json-server`);
-        return await res.json() as T;
-    }
-
     const { data, error } = await supabase.from(table).delete().eq('id', id);
-    if (error) throw new Error(`DELETE ${path} failed: ${error.message}`);
+    if (error) throw new Error(`[Supabase DELETE ${table}] failed: ${error.message}`);
     return data as T;
 }
 

@@ -4,13 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { Activity, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { dbClient } from '../../lib/dbClient';
+import { supabase } from '../../lib/supabase';
 import styles from './Dashboard.module.css';
 
 interface LiveSessionsWidgetProps {
     defaultCount?: number;
+    workers?: any[];
 }
 
-export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWidgetProps) {
+export default function LiveSessionsWidget({ defaultCount = 0, workers = [] }: LiveSessionsWidgetProps) {
     const [sessions, setSessions] = useState<any[]>([]);
     const [count, setCount] = useState(defaultCount);
     // Track if we successfully fetched at least once so we don't flash default states if possible
@@ -30,7 +32,7 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
                 
                 // Count only today's sessions!
                 const todayDate = new Date().toDateString();
-                const live = data.filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
+                const live = (data || []).filter((s: any) => new Date(s.startTime).toDateString() === todayDate);
                 
                 setSessions(live);
                 setCount(live.length);
@@ -43,10 +45,22 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
 
         // Fire immediately on mount
         fetchLive();
+
+        // Listen for realtime database changes to update instantly!
+        const channel = supabase.channel('realtime_live_sessions')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'sessions' },
+                () => { fetchLive(); }
+            )
+            .subscribe();
         
-        // Poll every 5 seconds for updates
-        const interval = setInterval(fetchLive, 5000);
-        return () => clearInterval(interval);
+        // Poll every 60 seconds as a pure background fallback
+        const interval = setInterval(fetchLive, 60000);
+        return () => {
+            clearInterval(interval);
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // Helper to format start time nicely
@@ -79,15 +93,14 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
 
     return (
         <div className={styles.statCard} style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '160px' }}>
-            <div className={styles.statHeader} style={{ marginBottom: '8px' }}>
-                <span className={styles.statTitle}>Live Sessions</span>
+            <div className={styles.statHeader} style={{ marginBottom: sessions.length > 0 ? '12px' : '0', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span className={styles.statValue} style={{ margin: 0, lineHeight: 1 }}>{count}</span>
+                    <span className={styles.statTitle} style={{ margin: 0, fontSize: '13px' }}>Live Sessions</span>
+                </div>
                 <div className={styles.iconBox}>
                     <Activity size={20} color="var(--primary)" />
                 </div>
-            </div>
-            
-            <div className={styles.statValue} style={{ marginBottom: sessions.length > 0 ? '12px' : '0' }}>
-                {count}
             </div>
             
             {/* Real-time scrolling list of active sessions */}
@@ -106,7 +119,14 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
                     </span>
                 )}
                 
-                {sessions.map(s => (
+                {sessions.map(s => {
+                    const matchedWorker = workers.find(w => 
+                        (w.employeeId && s.employeeId && w.employeeId === s.employeeId) || 
+                        (`${w.firstName} ${w.lastName}`.trim() === s.employeeName)
+                    );
+                    const avatarToUse = matchedWorker?.avatar || s.avatar;
+
+                    return (
                     <Link 
                         key={s.id} 
                         href={`/clients/${s.clientId}`}
@@ -137,38 +157,58 @@ export default function LiveSessionsWidget({ defaultCount = 0 }: LiveSessionsWid
                                 e.currentTarget.style.borderColor = '#e2e8f0';
                             }}
                         >
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {/* Pulsing indicator */}
-                            <div style={{ 
-                                position: 'absolute', 
-                                width: '12px', 
-                                height: '12px', 
-                                borderRadius: '50%', 
-                                backgroundColor: 'var(--success)', 
-                                opacity: 0.3,
-                                animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite' 
-                            }} />
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', zIndex: 1 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {/* Pulsing indicator */}
+                                    <div style={{ 
+                                        position: 'absolute', 
+                                        width: '12px', 
+                                        height: '12px', 
+                                        borderRadius: '50%', 
+                                        backgroundColor: 'var(--success)', 
+                                        opacity: 0.3,
+                                        animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite' 
+                                    }} />
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', zIndex: 1 }} />
+                                </div>
+                                
+                                {/* Employee Avatar Fallback */}
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'var(--primary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    color: 'var(--bg-dark)'
+                                }}>
+                                    {avatarToUse ? (
+                                        <img src={avatarToUse} alt={s.employeeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <span>{s.employeeName ? s.employeeName.substring(0, 2).toUpperCase() : 'U'}</span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', overflow: 'hidden', flex: 1 }}>
+                                <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#334155', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                    {s.employeeName}
+                                </span>
+                                <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{getElapsedTime(s.startTime)}</span>
+                                    <span style={{ opacity: 0.5, fontSize: '10px' }}>•</span> 
+                                    <span style={{ fontWeight: '500', color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {s.clientName}
+                                    </span>
+                                </span>
+                            </div>
                         </div>
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
-                            <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#334155', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                                {s.employeeName}
-                            </span>
-                            <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Clock size={10} />
-                                {formatTime(s.startTime)}
-                                <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span>
-                                <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{getElapsedTime(s.startTime)}</span>
-                                <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span> 
-                                <span style={{ fontWeight: '500' }}>{s.serviceType}</span>
-                                <span style={{ opacity: 0.5, margin: '0 2px' }}>•</span> 
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.clientName}</span>
-                            </span>
-                        </div>
-                    </div>
                     </Link>
-                ))}
+                )})}
             </div>
             {/* Adding generic keyframes inline for simplicity */}
             <style dangerouslySetInnerHTML={{__html: `

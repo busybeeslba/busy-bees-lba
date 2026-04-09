@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, BarChart2, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, BarChart2, Calendar, Eye } from 'lucide-react';
 import styles from './page.module.css';
 import { dbClient } from '@/lib/dbClient';
 
@@ -139,9 +139,9 @@ export default function MassTrialListPage() {
                                         <td onClick={e => e.stopPropagation()}>
                                             {pct !== null ? (
                                                 <span style={{
-                                                    display: 'inline-block', background: pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#fffde7' : '#fef2f2',
-                                                    color: pct >= 80 ? '#15803d' : pct >= 60 ? '#92400e' : '#dc2626',
-                                                    border: `1px solid ${pct >= 80 ? '#bbf7d0' : pct >= 60 ? '#ffe082' : '#fca5a5'}`,
+                                                    display: 'inline-block', background: pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#f0fdfa' : '#fef2f2',
+                                                    color: pct >= 80 ? '#15803d' : pct >= 60 ? '#0f766e' : '#dc2626',
+                                                    border: `1px solid ${pct >= 80 ? '#bbf7d0' : pct >= 60 ? '#99f6e4' : '#fca5a5'}`,
                                                     borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 700,
                                                 }}>
                                                     {pct}%
@@ -150,10 +150,13 @@ export default function MassTrialListPage() {
                                         </td>
                                         <td onClick={e => e.stopPropagation()}>
                                             <div className={styles.actions}>
-                                                <button className={styles.editBtn} onClick={() => router.push(`/forms/mass-trial/${sheet.id}`)}>
+                                                <button className={styles.editBtn} title="View" onClick={(e) => { e.stopPropagation(); window.open(`/forms/mass-trial/${sheet.id}/view`, '_blank'); }}>
+                                                    <Eye size={13} />
+                                                </button>
+                                                <button className={styles.editBtn} title="Edit" onClick={(e) => { e.stopPropagation(); router.push(`/forms/mass-trial/${sheet.id}`); }}>
                                                     <Pencil size={13} />
                                                 </button>
-                                                <button className={styles.deleteBtn} onClick={() => handleDelete(sheet.id)}>
+                                                <button className={styles.deleteBtn} title="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(sheet.id); }}>
                                                     <Trash2 size={13} />
                                                 </button>
                                             </div>

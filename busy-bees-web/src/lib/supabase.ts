@@ -7,4 +7,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.");
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
+    global: {
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+    }
+});

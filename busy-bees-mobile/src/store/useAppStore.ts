@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { AppState, Session, LocationPoint, User } from '../types';
 import { fetchClients, fetchAvailableServices, createSession as dbCreateSession, updateSession as dbUpdateSession } from '../lib/db';
+import { supabase } from '../lib/supabase';
 
 
 // Mock Initial Data
@@ -31,6 +32,44 @@ function deg2rad(deg: number) {
     return deg * (Math.PI / 180);
 }
 
+// ── Session Recovery Helper ──
+const executeSessionRecovery = async (employeeId: string, set: any) => {
+    if (!employeeId) return;
+    try {
+        // Check for abandoned sessions
+        const { data } = await supabase
+            .from('sessions')
+            .select('*')
+            .eq('employeeId', employeeId)
+            .eq('status', 'active');
+            
+        if (data && data.length > 0) {
+            const rec = data[0];
+            set({
+                activeSession: {
+                    id: String(Date.now()), // Session ID in memory
+                    _dbId: rec.id, // Primary Key for patching
+                    sessionId: rec.sessionId,
+                    clientId: String(rec.clientId).includes('CLI-') ? rec.clientId : `CLI-${rec.clientId}`, 
+                    clientName: rec.clientName,
+                    serviceType: rec.serviceType,
+                    startTime: rec.startTime, // Keeps original start time!
+                    durationSeconds: rec.durationSeconds || 0,
+                    status: 'active',
+                    documents: rec.documents || [],
+                    route: rec.route || [],
+                    notes: rec.notes || ''
+                } as any,
+                isClockedIn: true,
+                isGPSActive: true
+            });
+            console.log('Session successfully recovered from database!');
+        }
+    } catch (e) {
+        console.log('Session recovery failed', e);
+    }
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
     user: null,
     isLoggedIn: false,
@@ -43,11 +82,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     isClockedIn: false,
     clockInRecord: null,
 
-    login: (userData) => set({ user: userData, isLoggedIn: true }),
+    login: (userData) => {
+        set({ user: userData, isLoggedIn: true });
+        executeSessionRecovery(userData.employeeId, set);
+    },
     logout: async () => {
-        const { supabase } = await import('../lib/supabase');
-        await supabase.auth.signOut();
+        // Unmount UI and trigger cleanup
         set({ user: null, isLoggedIn: false, activeSession: null, isClockedIn: false, clockInRecord: null });
+        
+        // Forcefully close ALL active websockets (including presence channels) to ensure immediate Dashboard offline status
+        await supabase.removeAllChannels();
+        
+        // Wait briefly for the network 'leave' payload to exit the device before burning valid auth state
+        await new Promise(resolve => setTimeout(resolve, 400)); 
+        await supabase.auth.signOut();
     },
     updateUser: (updates) => set((state) => ({
         user: state.user ? { ...state.user, ...updates } : null
@@ -56,8 +104,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     initializeAuth: async () => {
         try {
-            const { supabase } = await import('../lib/supabase');
-
             const applySession = async (session: any) => {
                 if (session?.user?.email) {
                     const { data: dbUser, error } = await supabase
@@ -78,6 +124,7 @@ export const useAppStore = create<AppState>((set, get) => ({
                             },
                             isLoggedIn: true
                         });
+                        executeSessionRecovery(dbUser.employeeId || '', set);
                     } else {
                         await supabase.auth.signOut();
                     }
@@ -172,7 +219,12 @@ export const useAppStore = create<AppState>((set, get) => ({
                     ? { ...state.activeSession, _dbId: saved.id }
                     : null,
             }));
-        }).catch(() => { /* non-critical – app works offline */ });
+        }).catch((err: any) => { 
+            import('react-native').then(({ Alert }) => {
+                Alert.alert("Database Sync Failed", "We could not save your session to the cloud: " + (err.message || 'Unknown error'));
+            });
+            console.error(err);
+        });
     },
 
     updateSessionNotes: (sessionId: string, notes: string) => {
@@ -270,6 +322,47 @@ export const useAppStore = create<AppState>((set, get) => ({
                 employeeId: get().user?.employeeId || '',
                 route: activeSession.route || [],
                 // Look up the client status from the clients list
+                clientStatus: (get().clients as any[]).find(
+                    c => String(c.id) === activeSession.clientId?.replace('CLI-', '')
+                )?.status || '',
+            }).catch(() => { /* non-critical */ });
+        }
+    },
+
+    cancelSession: (reason) => {
+        const { activeSession, completedSessions, user } = get();
+        if (!activeSession) return;
+
+        const endTime = new Date().toISOString();
+        const startTimePayload = new Date(activeSession.startTime).getTime();
+        const endTimePayload = new Date(endTime).getTime();
+        const durationSeconds = Math.floor((endTimePayload - startTimePayload) / 1000);
+
+        const cancelledSession: Session = {
+            ...activeSession,
+            endTime,
+            durationSeconds,
+            status: 'cancelled',
+            notes: (activeSession.notes ? activeSession.notes + '\n\n' : '') + `[CANCELLED] Reason: ${reason}`
+        };
+
+        set({
+            completedSessions: [cancelledSession, ...completedSessions],
+            activeSession: null,
+            isGPSActive: false,
+        });
+
+        const dbId = (activeSession as any)._dbId;
+        if (dbId) {
+            dbUpdateSession(dbId, {
+                endTime,
+                durationSeconds,
+                status: 'cancelled',
+                notes: cancelledSession.notes,
+                employeeName: user?.name || '',
+                employeeId: user?.employeeId || '',
+                route: activeSession.route || [],
+                documents: activeSession.documents || [],
                 clientStatus: (get().clients as any[]).find(
                     c => String(c.id) === activeSession.clientId?.replace('CLI-', '')
                 )?.status || '',

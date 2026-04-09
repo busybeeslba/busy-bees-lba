@@ -43,7 +43,7 @@
     gap: 6px;
     padding: 9px 18px;
     background: var(--primary);
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 10px;
     font-size: 13px;
@@ -54,6 +54,7 @@
 
 .addBtn:hover {
     background: var(--primary);
+    filter: brightness(0.9);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
@@ -108,8 +109,8 @@
 }
 
 .table thead tr {
-    background: linear-gradient(135deg, var(--background-light), #e0e7ff);
-    border-bottom: 2px solid var(--primary);
+    background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+    border-bottom: 2px solid #99f6e4;
 }
 
 .table th {
@@ -117,7 +118,7 @@
     text-align: left;
     font-size: 10px;
     font-weight: 700;
-    color: var(--primary);
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -140,7 +141,7 @@
 }
 
 .clickableRow:hover {
-    background: var(--background-light);
+    background: #f0fdfa;
 }
 
 .clientCell {
@@ -155,7 +156,7 @@
     height: 30px;
     border-radius: 50%;
     background: var(--primary);
-    color: white;
+    color: #000;
     font-size: 12px;
     font-weight: 800;
     display: flex;
@@ -166,9 +167,9 @@
 
 .programChip {
     display: inline-block;
-    background: var(--background-light);
-    color: var(--primary);
-    border: 1px solid var(--primary);
+    background: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
     padding: 3px 10px;
     border-radius: 100px;
     font-size: 12px;
@@ -204,14 +205,14 @@
 }
 
 .editBtn {
-    background: var(--background-light);
-    color: var(--primary);
-    border: 1px solid var(--primary);
+    background: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
 }
 
 .editBtn:hover {
     background: var(--primary);
-    color: #fff;
+    color: #000;
 }
 
 .deleteBtn {

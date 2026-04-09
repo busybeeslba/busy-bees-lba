@@ -13,6 +13,9 @@ import styles from './page.module.css';
 import { MOCK_AVAILABLE_SERVICES } from '@/lib/mockData';
 import AddClientModal from '@/components/clients/AddClientModal';
 import TransactionSheetPrintView from '@/components/forms/TransactionSheetPrintView';
+import BaselineSheetPrintView from '@/components/forms/BaselineSheetPrintView';
+import MassTrialPrintView from '@/components/forms/MassTrialPrintView';
+import DailyRoutinesPrintView from '@/components/forms/DailyRoutinesPrintView';
 import { dbClient } from '@/lib/dbClient';
 
 
@@ -71,8 +74,21 @@ export default function ClientDashboardPage() {
     const [activeTransactionSheetTab, setActiveTransactionSheetTab] = useState<string | null>(null);
     const [collapsedCards, setCollapsedCards] = useState<Partial<Record<CardId, boolean>>>({});
     const [hiddenStoLines, setHiddenStoLines] = useState<Set<string>>(new Set());
+    const [draggableCard, setDraggableCard] = useState<CardId | null>(null);
+    const [filterStartDate, setFilterStartDate] = useState('');
+    const [filterEndDate, setFilterEndDate] = useState('');
+    const [includeGraph, setIncludeGraph] = useState(true);
+    const [printModalData, setPrintModalData] = useState<{ type: string, form: any, aggregate?: boolean } | null>(null);
 
-    const toggleCard = (cardId: CardId) =>
+    // Apply printing-modal class to body when modal is open
+    useEffect(() => {
+        if (printModalData) {
+            document.body.classList.add('printing-modal');
+        } else {
+            document.body.classList.remove('printing-modal');
+        }
+        return () => document.body.classList.remove('printing-modal');
+    }, [printModalData]);    const toggleCard = (cardId: CardId) =>
         setCollapsedCards(prev => ({ ...prev, [cardId]: !prev[cardId] }));
 
     const toggleStoLine = (name: string) =>
@@ -138,7 +154,7 @@ export default function ClientDashboardPage() {
         setLoading(true);
         Promise.all([
             dbClient.get('/clients').catch(() => []),
-            dbClient.get('/program_mastery').catch(() => []),
+            dbClient.get('/academic_baselines').catch(() => []),
             dbClient.get('/mass_trials').catch(() => []),
             dbClient.get('/daily_routines').catch(() => []),
             dbClient.get('/transaction-sheets').catch(() => []),
@@ -250,14 +266,21 @@ export default function ClientDashboardPage() {
             <div
                 key={cardId}
                 className={styles.card}
-                draggable
+                draggable={draggableCard === cardId}
                 onDragStart={() => handleDragStart(cardId, col)}
                 onDragOver={(e) => handleCardOver(e, cardId, col)}
                 onDrop={handleDrop}
             >
                 <div className={styles.cardHeader}>
                     <div className={styles.cardHeaderLeft}>
-                        <span className={styles.dragHandle}><GripVertical size={14} /></span>
+                        <span 
+                            className={styles.dragHandle}
+                            onMouseEnter={() => setDraggableCard(cardId)}
+                            onMouseLeave={() => setDraggableCard(null)}
+                            title="Drag to reorder"
+                        >
+                            <GripVertical size={14} />
+                        </span>
                         {cardId === 'contact' && <Mail size={14} className={styles.cardIcon} />}
                         {cardId === 'personal' && <User size={14} className={styles.cardIcon} />}
                         {cardId === 'education' && <BookOpen size={14} className={styles.cardIcon} />}
@@ -305,6 +328,10 @@ export default function ClientDashboardPage() {
                             activeDailyRoutinesTab, setActiveDailyRoutinesTab,
                             activeTransactionSheetTab, setActiveTransactionSheetTab,
                             hiddenStoLines, toggleStoLine,
+                            filterStartDate, setFilterStartDate,
+                            filterEndDate, setFilterEndDate,
+                            includeGraph, setIncludeGraph,
+                            client, setPrintModalData
                         })}
                     </div>
                 )}
@@ -559,6 +586,37 @@ export default function ClientDashboardPage() {
                 onSave={handleSaveClient}
                 initialData={client}
             />
+
+            {/* Print In-Page Modal */}
+            {printModalData && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', overflowY: 'auto' }}>
+                    <div className="print-modal-content" style={{ background: '#fff', borderRadius: '12px', width: '100%', maxWidth: '1000px', padding: '32px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                        <div className="no-print" style={{ position: 'absolute', top: 20, right: 20, display: 'flex', gap: 12 }}>
+                            <button onClick={() => window.print()} style={{ padding: '8px 16px', background: '#0f766e', color: '#fff', borderRadius: '8px', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                Print / Save as PDF
+                            </button>
+                            <button onClick={() => setPrintModalData(null)} style={{ padding: '8px 16px', background: '#f1f5f9', color: '#334155', borderRadius: '8px', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
+                                Close
+                            </button>
+                        </div>
+                        
+                        <div style={{ marginTop: '20px' }}>
+                            {printModalData.type === 'Transaction Sheet' && (
+                                <TransactionSheetPrintView sheet={printModalData.form} printOnly={false} />
+                            )}
+                            {printModalData.type === 'Baseline Sheet' && (
+                                <BaselineSheetPrintView sheet={printModalData.form} printOnly={false} includeGraph={includeGraph} />
+                            )}
+                            {printModalData.type === 'Mass Trial / DTT' && (
+                                <MassTrialPrintView sheet={printModalData.form} printOnly={false} includeGraph={includeGraph} />
+                            )}
+                            {printModalData.type === 'Daily Routines' && (
+                                <DailyRoutinesPrintView sheet={printModalData.form} printOnly={false} includeGraph={includeGraph} />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -576,6 +634,10 @@ function renderForms({
     activeDailyRoutinesTab, setActiveDailyRoutinesTab,
     activeTransactionSheetTab, setActiveTransactionSheetTab,
     hiddenStoLines, toggleStoLine,
+    filterStartDate, setFilterStartDate,
+    filterEndDate, setFilterEndDate,
+    includeGraph, setIncludeGraph,
+    client, setPrintModalData
 }: {
     forms: any[];
     activeFormForms: any[];
@@ -601,28 +663,243 @@ function renderForms({
     setActiveTransactionSheetTab: (v: string | null) => void;
     hiddenStoLines: Set<string>;
     toggleStoLine: (name: string) => void;
+    filterStartDate: string;
+    setFilterStartDate: (v: string) => void;
+    filterEndDate: string;
+    setFilterEndDate: (v: string) => void;
+    includeGraph: boolean;
+    setIncludeGraph: (v: boolean) => void;
+    client: any;
+    setPrintModalData: (data: any) => void;
 }) {
-    const dailyRoutinesForms = forms.filter(f => f.formType === 'Daily Routines');
-    const dailyRoutinesCount = dailyRoutinesForms.length;
-    
-    const transactionForms = forms.filter(f => f.formType === 'Transaction Sheet');
-    const transactionCount = transactionForms.length;
+    const normalizeDate = (dStr: any) => {
+        if (!dStr) return '';
+        try {
+            const safe = String(dStr).trim();
+            if (safe.includes('/')) {
+                const parts = safe.split('/');
+                if (parts.length === 3) return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            } else if (safe.includes('-')) {
+                const parts = safe.split('-');
+                if (parts.length === 3 && parts[0].length !== 4) {
+                     return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                }
+            }
+            return safe;
+        } catch (err) {
+            return '';
+        }
+    };
+
+    const applyGlobalDateFilter = (sourceForms: any[]) => {
+        if (!filterStartDate && !filterEndDate) return sourceForms;
+
+        return sourceForms.map(form => {
+            const clone = JSON.parse(JSON.stringify(form));
+            // Standard session filtering
+            if (Array.isArray(clone.sessions)) {
+                clone.sessions = clone.sessions.filter((s: any) => {
+                    const d = normalizeDate(s.date);
+                    if (!d) return true; // keep if no date
+                    if (filterStartDate && d < filterStartDate) return false;
+                    if (filterEndDate && d > filterEndDate) return false;
+                    return true;
+                });
+            }
+            // Daily Routines items filtering (they contain a date)
+            if (Array.isArray(clone.items)) {
+                clone.items = clone.items.filter((item: any) => {
+                    const d = normalizeDate(item.date);
+                    if (!d) return true;
+                    if (filterStartDate && d < filterStartDate) return false;
+                    if (filterEndDate && d > filterEndDate) return false;
+                    return true;
+                });
+            }
+            return clone;
+        }).filter(form => {
+            // Drop form if ALL sessions or ALL items were filtered out
+            if (Array.isArray(form.sessions) && form.sessions.length === 0 && form.formType !== 'Transaction Sheet') return false;
+            if (Array.isArray(form.items) && form.items.length === 0) return false;
+
+            // Also filter by root date if applicable
+            if (form.date) {
+                const d = normalizeDate(form.date);
+                if (d) {
+                    if (filterStartDate && d < filterStartDate) return false;
+                    if (filterEndDate && d > filterEndDate) return false;
+                }
+            }
+            return true;
+        });
+    };
+
+    const dailyRoutinesForms = applyGlobalDateFilter(forms.filter(f => f.formType === 'Daily Routines'));
+    const dailyRoutinesCount = forms.filter(f => f.formType === 'Daily Routines').length;
+
+    const transactionForms = applyGlobalDateFilter(forms.filter(f => f.formType === 'Transaction Sheet'));
+    const transactionCount = forms.filter(f => f.formType === 'Transaction Sheet').length; // Keep total un-filtered context for the Tab Counter
 
     const totalCount = forms.filter(f => f.formType === 'Baseline Sheet' || f.formType === 'Mass Trial / DTT' || f.formType === 'Daily Routines' || f.formType === 'Transaction Sheet').length;
     if (totalCount === 0) return null;
 
-    const dttForms = forms.filter(f => f.formType === 'Mass Trial / DTT');
-    const dttCount = dttForms.length;
+    const baselineForms = applyGlobalDateFilter(forms.filter(f => f.formType === 'Baseline Sheet'));
+    const dttForms = applyGlobalDateFilter(forms.filter(f => f.formType === 'Mass Trial / DTT'));
+    const dttCount = forms.filter(f => f.formType === 'Mass Trial / DTT').length; // Unfiltered count
 
     // Pick the first baseline program as default tab
-    const currentTab = activeBaselineTab || activeFormForms[0]?.program || null;
-    const tabSheet = activeFormForms.find((f: any) => f.program === currentTab) || activeFormForms[0];
+    const currentTab = activeBaselineTab || baselineForms[0]?.program || null;
+    const tabSheet = baselineForms.find((f: any) => f.program === currentTab) || baselineForms[0];
 
     const fmtDate = (d: string) => {
         try {
             const safe = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T12:00:00' : d;
             return new Date(safe).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         } catch { return d; }
+    };
+
+    const dateFilterUI = (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexGrow: 1, justifyContent: 'center' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Filter:</span>
+            <input
+                type="date"
+                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: 11, cursor: 'pointer', outline: 'none', background: '#f8fafc' }}
+                value={filterStartDate}
+                onChange={e => setFilterStartDate(e.target.value)}
+                title="Start Date"
+            />
+            <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600 }}>to</span>
+            <input
+                type="date"
+                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: 11, cursor: 'pointer', outline: 'none', background: '#f8fafc' }}
+                value={filterEndDate}
+                onChange={e => setFilterEndDate(e.target.value)}
+                title="End Date"
+            />
+            <button 
+                onClick={() => { setFilterStartDate(''); setFilterEndDate(''); }}
+                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: 11, fontWeight: 600, background: '#fff', color: '#64748b', cursor: 'pointer' }}
+            >
+                Clear
+            </button>
+            {activeFormTab !== 'Transaction Sheet' && (
+                <label style={{ display: 'flex', alignItems: 'center', marginLeft: 16, fontSize: 12, fontWeight: 700, color: '#0f766e', cursor: 'pointer', gap: 6 }}>
+                    <input 
+                        type="checkbox" 
+                        checked={includeGraph} 
+                        onChange={e => setIncludeGraph(e.target.checked)} 
+                        style={{ cursor: 'pointer', accentColor: '#0f766e', width: 14, height: 14 }} 
+                    />
+                    Show Graph
+                </label>
+            )}
+        </div>
+    );
+
+    const renderTransactionSheetTabView = () => {
+
+        // Note: transactionForms is already deep-filtered by applyGlobalDateFilter,
+        // but we want to drop forms entirely if their sessions list became empty.
+        const filteredForms = transactionForms.filter((sheet: any) => {
+            if (sheet.date) return true; // Keep root-date sheets
+            if (Array.isArray(sheet.sessions) && sheet.sessions.length === 0) {
+                // If it used to have sessions but they were all filtered out, drop it.
+                if (forms.find((f: any) => f.id === sheet.id)?.sessions?.length > 0) {
+                    return false; 
+                }
+            }
+            return true;
+        });
+
+        const selectedTab = activeTransactionSheetTab && activeTransactionSheetTab !== 'aggregate' ? activeTransactionSheetTab : 'aggregate';
+        const displayForm = selectedTab !== 'aggregate' ? filteredForms.find((f: any) => String(f.id) === String(selectedTab)) : null;
+
+        // Aggregate logic
+        const allSessions: any[] = [];
+        let programStr = '';
+
+        transactionForms.forEach((sheet: any) => {
+            if (!programStr && sheet.program) programStr = sheet.program;
+
+            if (Array.isArray(sheet.sessions) && sheet.sessions.length > 0) {
+                allSessions.push(...sheet.sessions);
+            } else if (sheet.locations || sheet.date) {
+                allSessions.push({
+                    id: sheet.id || String(Math.random()),
+                    date: sheet.date || '',
+                    employeeId: sheet.employeeId || '',
+                    employeeName: sheet.employeeName || '',
+                    cellPhoneLocation: sheet.cellPhoneLocation || '',
+                    locations: sheet.locations || []
+                });
+            }
+        });
+
+        allSessions.sort((a, b) => (normalizeDate(a.date) || '').localeCompare(normalizeDate(b.date) || ''));
+
+        const aggregateSheet = {
+            clientName: client?.kidsName || client?.name || '',
+            program: programStr || 'Multiple Programs',
+            sessions: allSessions
+        };
+
+        return (
+            <div style={{ padding: '16px', background: '#fafbff' }}>
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Transactions
+                        </div>
+                        <select 
+                            value={String(selectedTab)}
+                            onChange={e => setActiveTransactionSheetTab(e.target.value)}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: 13, outline: 'none', background: '#fff', color: '#334155', fontWeight: 600, minWidth: '220px', cursor: 'pointer' }}
+                        >
+                            <option value="aggregate">All Sessions (Aggregate)</option>
+                            {filteredForms.map((f: any) => {
+                                let dateStr = '';
+                                if (f.date) dateStr = new Date(normalizeDate(f.date) + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                else if (Array.isArray(f.sessions) && f.sessions.length > 0) {
+                                    dateStr = new Date(normalizeDate(f.sessions[f.sessions.length-1].date) + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                }
+                                return (
+                                    <option key={f.id} value={f.id}>{f.program || 'Form'} {dateStr ? `(${dateStr})` : ''} - #{String(f.id).slice(0, 6)}</option>
+                                );
+                            })}
+                        </select>
+                    </div>
+                    {dateFilterUI}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {selectedTab !== 'aggregate' && displayForm ? (
+                            <button onClick={() => setPrintModalData({ type: 'Transaction Sheet', form: displayForm, aggregate: false })} style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, background: '#ccfbf1', borderRadius: 6, padding: '6px 14px', border: '1px solid #99f6e4', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>👁 View</button>
+                        ) : (
+                            <button onClick={() => setPrintModalData({ type: 'Transaction Sheet', form: aggregateSheet, aggregate: true })} style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, background: '#ccfbf1', borderRadius: 6, padding: '6px 14px', border: '1px solid #99f6e4', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>👁 View</button>
+                        )}
+                    </div>
+                </div>
+
+                {selectedTab !== 'aggregate' && displayForm ? (
+                    displayForm.sessions.length === 0 ? (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '30px 16px', background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                            No sessions exist in this form for the selected date range.
+                        </div>
+                    ) : (
+                        <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto', maxHeight: '65vh', overflowY: 'auto' }}>
+                            <TransactionSheetPrintView sheet={displayForm} printOnly={false} />
+                        </div>
+                    )
+                ) : filteredForms.length === 0 || allSessions.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '30px 16px', background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                        No transaction forms found for the selected date range.
+                    </div>
+                ) : (
+                    <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto', maxHeight: '65vh', overflowY: 'auto' }}>
+                        <TransactionSheetPrintView sheet={aggregateSheet} printOnly={false} />
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
@@ -663,911 +940,152 @@ function renderForms({
                 </button>
             </div>
 
+
+
             {/* ── DTT tab view ── */}
             {activeFormTab === 'Mass Trial / DTT' && (
-                <div>
+                <>
                     {dttCount === 0 ? (
                         <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 16px' }}>
                             No Mass Trial / DTT sheets yet.
                         </div>
-                    ) : (() => {
-                        const currentDttTab = activeDttTab || dttForms[0]?.program || null;
-                        const dttSheet = dttForms.find((f: any) => f.program === currentDttTab) || dttForms[0];
-                        const dttRows: any[] = Array.isArray(dttSheet?.rows) ? dttSheet.rows : [];
-                        const dttSessions: any[] = Array.isArray(dttSheet?.sessions) ? dttSheet.sessions : [];
-                        return (
-                            <>
-                                {true && (() => {
-                                    const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ec4899', '#3b82f6', '#8b5cf6', '#ef4444', '#06b6d4'];
-                                    const fmtShort = (d: string) => {
-                                        try {
-                                            const safe = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T12:00:00' : d;
-                                            return new Date(safe).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                        } catch { return d; }
-                                    };
-                                    const fmtFull = (d: string) => {
-                                        try {
-                                            const safe = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T12:00:00' : d;
-                                            return new Date(safe).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                                        } catch { return d; }
-                                    };
-
-                                    const dttChartData = dttSessions.map((sess: any, si: number) => {
-                                        const pt: any = {
-                                            name: `Day ${sess.day ?? si + 1}`,
-                                            date: fmtShort(sess.date),
-                                            employee: sess.employeeName || '—',
-                                        };
-                                        dttRows.forEach((row: any, ri: number) => {
-                                            const trials: string[] = sess.results?.[String(ri)] || [];
-                                            const counted = trials.filter((v: string) => v === '+' || v === '-');
-                                            const pct = counted.length > 0 ? Math.round(counted.filter((v: string) => v === '+').length / counted.length * 100) : null;
-                                            pt[row.step] = pct;
-                                        });
-                                        return pt;
-                                    });
-
-                                    const DttXTick = ({ x, y, payload }: any) => {
-                                        const d = dttChartData[payload.index];
-                                        if (!d) return null;
-                                        return (
-                                            <g transform={`translate(${x},${y})`}>
-                                                <text x={0} y={0} dy={14} textAnchor="middle" fill="#334155" fontSize={10} fontWeight={700}>{d.name}</text>
-                                                <text x={0} y={0} dy={26} textAnchor="middle" fill="#94a3b8" fontSize={9}>{d.date}</text>
-                                                <text x={0} y={0} dy={38} textAnchor="middle" fill="#64748b" fontSize={9}>{d.employee}</text>
-                                            </g>
-                                        );
-                                    };
-                                    const PctYTick = ({ x, y, payload }: any) => (
-                                        <g transform={`translate(${x},${y})`}>
-                                            <text x={-4} y={0} dy={4} textAnchor="end" fontSize={10} fill="#94a3b8" fontWeight={600}>{payload.value}%</text>
-                                        </g>
-                                    );
-
-                                    const thStyle: React.CSSProperties = {
-                                        padding: '10px', borderRight: '1px solid #f1f5f9',
-                                        textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap',
-                                        fontSize: 10, fontWeight: 700, color: '#94a3b8',
-                                        textTransform: 'uppercase', letterSpacing: 0.5,
-                                        background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0',
-                                    };
-                                    const cellStyle: React.CSSProperties = {
-                                        padding: '8px 10px', borderRight: '1px solid #f1f5f9',
-                                        textAlign: 'center', verticalAlign: 'middle',
-                                    };
-
-                                    return (
-                                        <div style={{ borderTop: '1.5px solid #c7d2fe' }}>
-                                            {/* Sub-program tabs */}
-                                            {dttForms.length > 1 && (
-                                                <div style={{ display: 'flex', gap: 6, padding: '10px 16px 0', flexWrap: 'wrap', background: '#eef2ff' }}>
-                                                    {dttForms.map((f: any) => (
-                                                        <button key={f.id} onClick={() => setActiveDttTab(f.program)}
-                                                            style={{
-                                                                padding: '5px 14px', borderRadius: 100, border: '1.5px solid',
-                                                                cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
-                                                                borderColor: currentDttTab === f.program ? '#6366f1' : '#e2e8f0',
-                                                                background: currentDttTab === f.program ? '#6366f1' : '#f8fafc',
-                                                                color: currentDttTab === f.program ? '#fff' : '#64748b',
-                                                            }}>{f.program}</button>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Sub-header */}
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 10px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    <span style={{ fontSize: 11, fontWeight: 800, color: '#4338ca', textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>Mass Trial / DTT</span>
-                                                    <span style={{ fontSize: 11, fontWeight: 700, background: '#eef2ff', color: '#6366f1', border: '1px solid #c7d2fe', borderRadius: 100, padding: '1px 10px' }}>{dttSheet.program}</span>
-                                                </div>
-                                                <span style={{ fontSize: 11, color: '#94a3b8' }}>{dttSessions.length} session{dttSessions.length !== 1 ? 's' : ''} recorded</span>
-                                            </div>
-
-                                            {/* Chart */}
-                                            {dttSessions.length > 0 && dttRows.length > 0 && (
-                                                <div style={{ padding: '4px 16px 16px', borderBottom: '1px solid #f1f5f9' }}>
-                                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: 0.5, marginBottom: 4 }}>
-                                                        % Correct Over Time
-                                                    </div>
-                                                    <div style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 10 }}>
-                                                        Each line shows one STO's % correct per session · click legend to show/hide
-                                                    </div>
-                                                    <ResponsiveContainer width="100%" height={240}>
-                                                        <LineChart data={dttChartData} margin={{ top: 8, right: 24, left: 12, bottom: 50 }}>
-                                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                                            <XAxis dataKey="name" tick={<DttXTick />} axisLine={false} tickLine={false} height={52} />
-                                                            <YAxis tick={<PctYTick />} axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} width={44} />
-                                                            <Tooltip
-                                                                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                                                                itemStyle={{ fontWeight: 600 }}
-                                                                formatter={(value: any, name: any) => [
-                                                                    value !== null ? `${value}%` : '— Not recorded', name
-                                                                ]}
-                                                                labelFormatter={(label: any) => {
-                                                                    const d = dttChartData.find((c: any) => c.name === label);
-                                                                    return d ? `${d.name} · ${d.date} · ${d.employee}` : label;
-                                                                }}
-                                                            />
-                                                            <Legend
-                                                                iconType="circle"
-                                                                iconSize={8}
-                                                                wrapperStyle={{ fontSize: 11, paddingTop: 6, cursor: 'pointer' }}
-                                                                onClick={(payload: any) => toggleStoLine(payload.value)}
-                                                                formatter={(value: any) => (
-                                                                    <span style={{ opacity: hiddenStoLines.has(value) ? 0.35 : 1, textDecoration: hiddenStoLines.has(value) ? 'line-through' : 'none', transition: 'all 0.2s' }}>
-                                                                        {value}
-                                                                    </span>
-                                                                )}
-                                                            />
-                                                            {dttRows.map((row: any, ri: number) => (
-                                                                <Line key={row.step} type="monotone" dataKey={row.step} name={row.step}
-                                                                    stroke={COLORS[ri % COLORS.length]} strokeWidth={2.5}
-                                                                    dot={{ r: 5, fill: COLORS[ri % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
-                                                                    activeDot={{ r: 7 }} connectNulls={false}
-                                                                    hide={hiddenStoLines.has(row.step)}
-                                                                />
-                                                            ))}
-                                                        </LineChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            )}
-
-                                            {/* Full detail table */}
-                                            {dttRows.length > 0 && (
-                                                <div style={{ overflowX: 'auto' }}>
-                                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                                        <thead>
-                                                            <tr>
-                                                                <th style={{ ...thStyle, width: 32 }}>#</th>
-                                                                <th style={{ ...thStyle, textAlign: 'left', minWidth: 120 }}>STO</th>
-                                                                {dttSessions.map((sess: any, si: number) => {
-                                                                    let sPlus = 0, sTotal = 0;
-                                                                    dttRows.forEach((_: any, ri: number) => {
-                                                                        const t: string[] = sess.results?.[String(ri)] || [];
-                                                                        t.forEach((v: string) => { if (v === '+' || v === '-') { sTotal++; if (v === '+') sPlus++; } });
-                                                                    });
-                                                                    const sPct = sTotal > 0 ? Math.round(sPlus / sTotal * 100) : null;
-                                                                    return (
-                                                                        <th key={si} style={{ ...thStyle, minWidth: 100 }}>
-                                                                            <div style={{ fontWeight: 800, color: '#334155', fontSize: 11 }}>DAY {sess.day ?? si + 1}</div>
-                                                                            <div style={{ fontWeight: 400, color: '#94a3b8', fontSize: 10, marginTop: 2 }}>{fmtFull(sess.date)}</div>
-                                                                            <div style={{ fontWeight: 500, color: '#64748b', fontSize: 10 }}>{sess.employeeName}</div>
-                                                                            <a href={`/forms/mass-trial/${dttSheet.id}`} onClick={e => e.stopPropagation()}
-                                                                                style={{ display: 'inline-block', marginTop: 3, fontSize: 10, color: '#6366f1', fontWeight: 700, textDecoration: 'none', background: '#eef2ff', borderRadius: 4, padding: '1px 6px', border: '1px solid #c7d2fe' }}>
-                                                                                ✏ Edit</a>
-                                                                        </th>
-                                                                    );
-                                                                })}
-                                                                <th style={{ ...thStyle, minWidth: 80, textAlign: 'right', paddingRight: 16 }}>AVG %</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {dttRows.map((row: any, ri: number) => {
-                                                                let rPlus = 0, rTotal = 0;
-                                                                dttSessions.forEach((s: any) => {
-                                                                    const t: string[] = s.results?.[String(ri)] || [];
-                                                                    t.forEach((v: string) => { if (v === '+' || v === '-') { rTotal++; if (v === '+') rPlus++; } });
-                                                                });
-                                                                const rPct = rTotal > 0 ? Math.round(rPlus / rTotal * 100) : null;
-                                                                return (
-                                                                    <tr key={ri} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                                        <td style={{ ...cellStyle, color: '#94a3b8', fontSize: 11, fontWeight: 600 }}>{ri + 1}</td>
-                                                                        <td style={{ ...cellStyle, textAlign: 'left', fontWeight: 600, color: '#1e293b' }}>{row.step}</td>
-                                                                        {dttSessions.map((s: any) => {
-                                                                            const t: string[] = s.results?.[String(ri)] || [];
-                                                                            const counted = t.filter((v: string) => v === '+' || v === '-');
-                                                                            const pct = counted.length > 0 ? Math.round(counted.filter((v: string) => v === '+').length / counted.length * 100) : null;
-                                                                            return (
-                                                                                <td key={s.day} style={cellStyle}>
-                                                                                    {pct !== null ? (
-                                                                                        <span style={{
-                                                                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                                                            minWidth: 36, padding: '2px 6px', borderRadius: 6,
-                                                                                            fontSize: 11, fontWeight: 700,
-                                                                                            color: pct >= 80 ? '#15803d' : pct >= 60 ? '#92400e' : '#dc2626',
-                                                                                            background: pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#fffbeb' : '#fef2f2',
-                                                                                            border: `1.5px solid ${pct >= 80 ? '#86efac' : pct >= 60 ? '#fde68a' : '#fca5a5'}`,
-                                                                                        }}>{pct}%</span>
-                                                                                    ) : <span style={{ color: '#cbd5e1', fontSize: 16 }}>—</span>}
-                                                                                </td>
-                                                                            );
-                                                                        })}
-                                                                        <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16 }}>
-                                                                            {rPct !== null ? (
-                                                                                <span style={{ fontSize: 12, fontWeight: 800, color: '#6366f1' }}>
-                                                                                    {rPct}%
-                                                                                </span>
-                                                                            ) : <span style={{ color: '#cbd5e1' }}>—</span>}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                            {/* Per-day totals footer */}
-                                                            <tr style={{ borderTop: '2px solid #e2e8f0', background: '#f8fafc' }}>
-                                                                <td style={{ ...cellStyle, color: '#6366f1', fontWeight: 700, fontSize: 11 }} colSpan={2}>Σ Total per day</td>
-                                                                {dttSessions.map((sess: any, si: number) => {
-                                                                    let sPlus = 0, sTotal = 0;
-                                                                    dttRows.forEach((_: any, ri: number) => {
-                                                                        const t: string[] = sess.results?.[String(ri)] || [];
-                                                                        t.forEach((v: string) => { if (v === '+' || v === '-') { sTotal++; if (v === '+') sPlus++; } });
-                                                                    });
-                                                                    const sPct = sTotal > 0 ? Math.round(sPlus / sTotal * 100) : null;
-                                                                    return (
-                                                                        <td key={si} style={{ ...cellStyle, fontSize: 11 }}>
-                                                                            <span style={{ color: '#15803d', fontWeight: 700 }}>✓{sPlus}</span>
-                                                                            <span style={{ color: '#94a3b8', margin: '0 3px' }}>·</span>
-                                                                            <span style={{ color: '#dc2626', fontWeight: 700 }}>✗{sTotal - sPlus}</span>
-                                                                            {sPct !== null && <span style={{ marginLeft: 4, color: '#64748b', fontWeight: 600 }}>{sPct}%</span>}
-                                                                        </td>
-                                                                    );
-                                                                })}
-                                                                <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16 }}>
-                                                                    {(() => {
-                                                                        let gPlus = 0, gTotal = 0;
-                                                                        dttSessions.forEach((s: any) => dttRows.forEach((_: any, ri: number) => {
-                                                                            const t: string[] = s.results?.[String(ri)] || [];
-                                                                            t.forEach((v: string) => { if (v === '+' || v === '-') { gTotal++; if (v === '+') gPlus++; } });
-                                                                        }));
-                                                                        const gPct = gTotal > 0 ? Math.round(gPlus / gTotal * 100) : null;
-                                                                        return gPct !== null ? <span style={{ fontSize: 12, fontWeight: 800, color: '#6366f1' }}>{gPct}%</span> : null;
-                                                                    })()}
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    {/* Bottom summary */}
-                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, padding: '10px 16px', borderTop: '1px solid #f1f5f9', fontSize: 12, fontWeight: 600, color: '#64748b' }}>
-                                                        <span>{dttRows.length} STO{dttRows.length !== 1 ? 's' : ''}</span>
-                                                        {(() => {
-                                                            let gPlus = 0, gTotal = 0;
-                                                            dttSessions.forEach((s: any) => dttRows.forEach((_: any, ri: number) => {
-                                                                const t: string[] = s.results?.[String(ri)] || [];
-                                                                t.forEach((v: string) => { if (v === '+' || v === '-') { gTotal++; if (v === '+') gPlus++; } });
-                                                            }));
-                                                            const gPct = gTotal > 0 ? Math.round(gPlus / gTotal * 100) : null;
-                                                            return (<>
-                                                                <span style={{ color: '#15803d' }}>✓{gPlus} Pass</span>
-                                                                <span style={{ color: '#dc2626' }}>✗{gTotal - gPlus} Fail</span>
-                                                                {gPct !== null && <span style={{ color: '#6366f1', fontWeight: 800 }}>{gPct}% overall</span>}
-                                                            </>);
-                                                        })()}
-                                                    </div>
-                                                </div>
-                                            )}
+                    ) : (
+                        <div style={{ padding: '16px', background: '#fafbff' }}>
+                            {dttForms.length > 1 && (
+                                <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#eef2ff', borderRadius: '8px', border: '1px solid #c7d2fe' }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#4338ca', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Select a form to view:
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {dttForms.map((f: any) => (
+                                            <button key={f.id} onClick={() => setActiveDttTab(f.program)} style={{ padding: '6px 14px', borderRadius: 100, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', borderColor: activeDttTab === f.program ? '#6366f1' : '#e2e8f0', background: activeDttTab === f.program ? '#6366f1' : '#fff', color: activeDttTab === f.program ? '#fff' : '#64748b' }}>{f.program}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {(() => {
+                                const currentDttTab = activeDttTab || dttForms[0]?.program || null;
+                                const selectedForm = dttForms.find((f: any) => f.program === currentDttTab) || dttForms[0];
+                                if (!selectedForm) return null;
+                                return (<>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: 12, fontWeight: 700, color: '#4338ca', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Mass Trial / DTT</span>
+                                            <span style={{ background: '#eef2ff', color: '#6366f1', border: '1px solid #c7d2fe', borderRadius: 100, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{selectedForm.program}</span>
                                         </div>
-                                    );
-                                })()}
-                            </>
-                        );
-                    })()}
-                </div>
+                                        {dateFilterUI}
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button onClick={() => setPrintModalData({ type: 'Mass Trial / DTT', form: selectedForm })} style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, background: '#ccfbf1', borderRadius: 6, padding: '6px 12px', border: '1px solid #99f6e4', cursor: 'pointer' }}>👁 View</button>
+                                        </div>
+                                    </div>
+                                    <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto', maxHeight: '65vh', overflowY: 'auto' }}><MassTrialPrintView sheet={selectedForm} printOnly={false} includeGraph={includeGraph} /></div>
+                                </>);
+                            })()}
+                        </div>
+                    )}
+                </>
             )}
 
             {/* ── Baseline Sheet tab view ── */}
             {
                 activeFormTab === 'Baseline Sheet' && (
                     <>
-                        {/* ── Inline expanded matrix view with tabs ── */}
-                        {true && (
-                            <div style={{ borderTop: '1.5px solid #ffe082' }}>
-                                {/* Program category tabs */}
-                                {activeFormForms.length > 1 && (
-                                    <div style={{ display: 'flex', gap: 6, padding: '10px 16px 0', flexWrap: 'wrap', background: '#fffde7' }}>
-                                        {activeFormForms.map((f: any) => (
-                                            <button
-                                                key={f.id}
-                                                onClick={() => setActiveBaselineTab(f.program)}
-                                                style={{
-                                                    padding: '5px 14px', borderRadius: 100, border: '1.5px solid',
-                                                    cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
-                                                    borderColor: currentTab === f.program ? '#d97706' : '#e2e8f0',
-                                                    background: currentTab === f.program ? '#d97706' : '#f8fafc',
-                                                    color: currentTab === f.program ? '#fff' : '#64748b',
-                                                }}
-                                            >
-                                                {f.program}
-                                            </button>
-                                        ))}
+                        {baselineForms.length === 0 ? (
+                            <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 16px' }}>
+                                No Baseline Sheets yet.
+                            </div>
+                        ) : (
+                            <div style={{ padding: '16px', background: '#fafbff' }}>
+                                {baselineForms.length > 1 && (
+                                    <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#f0fdfa', borderRadius: '8px', border: '1px solid #99f6e4' }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#0f766e', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            Select a form to view:
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {baselineForms.map((f: any) => (
+                                                <button key={f.id} onClick={() => setActiveBaselineTab(f.program)} style={{ padding: '6px 14px', borderRadius: 100, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', borderColor: activeBaselineTab === f.program ? '#0d9488' : '#e2e8f0', background: activeBaselineTab === f.program ? '#0d9488' : '#fff', color: activeBaselineTab === f.program ? '#fff' : '#64748b' }}>{f.program}</button>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
-
-                                {/* Spreadsheet matrix */}
-                                {tabSheet && (() => {
-                                    const rows: any[] = Array.isArray(tabSheet.rows) ? tabSheet.rows : [];
-                                    const sessions: any[] = Array.isArray(tabSheet.sessions) ? tabSheet.sessions : [];
-                                    const totalPass = sessions.reduce((n: number, s: any) =>
-                                        n + rows.filter((_: any, ri: number) => s.results?.[String(ri)] === 'pass').length, 0);
-                                    const totalFail = sessions.reduce((n: number, s: any) =>
-                                        n + rows.filter((_: any, ri: number) => s.results?.[String(ri)] === 'fail').length, 0);
-
-                                    // CellIcon component — inline for simplicity
-                                    const CellIcon = ({ v }: { v: string | undefined }) => {
-                                        if (v === 'pass') return (
-                                            <span style={{
-                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                width: 24, height: 24, borderRadius: '50%',
-                                                background: '#f0fdf4', border: '1.5px solid #86efac',
-                                                color: '#15803d', fontSize: 13, fontWeight: 700,
-                                            }}>✓</span>
-                                        );
-                                        if (v === 'fail') return (
-                                            <span style={{
-                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                width: 24, height: 24, borderRadius: '50%',
-                                                background: '#fef2f2', border: '1.5px solid #fca5a5',
-                                                color: '#dc2626', fontSize: 13, fontWeight: 700,
-                                            }}>✗</span>
-                                        );
-                                        return <span style={{ color: '#cbd5e1', fontSize: 16 }}>—</span>;
-                                    };
-
-                                    const cellStyle: React.CSSProperties = {
-                                        padding: '8px 10px', borderRight: '1px solid #f1f5f9',
-                                        textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap',
-                                    };
-                                    const thStyle: React.CSSProperties = {
-                                        ...cellStyle, fontSize: 10, fontWeight: 700, color: '#94a3b8',
-                                        textTransform: 'uppercase', letterSpacing: 0.5,
-                                        background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0', padding: '10px',
-                                    };
-
-                                    return (
-                                        <div style={{ overflowX: 'auto', padding: '12px 0 0' }}>
-                                            {/* Sub-header: program chip + session count */}
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                padding: '0 16px 10px',
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    <span style={{
-                                                        fontSize: 11, fontWeight: 800, color: '#92400e',
-                                                        textTransform: 'uppercase', letterSpacing: 0.5,
-                                                    }}>Baseline Sheet</span>
-                                                    <span style={{
-                                                        fontSize: 11, fontWeight: 700, background: '#fffbeb',
-                                                        color: '#d97706', border: '1px solid #ffe082',
-                                                        borderRadius: 100, padding: '1px 10px',
-                                                    }}>{tabSheet.program}</span>
-                                                </div>
-                                                <span style={{ fontSize: 11, color: '#94a3b8' }}>
-                                                    {sessions.length} session{sessions.length !== 1 ? 's' : ''} recorded
-                                                </span>
+                                {(() => {
+                                    const currentTab = activeBaselineTab || baselineForms[0]?.program || null;
+                                    const selectedForm = baselineForms.find((f: any) => f.program === currentTab) || baselineForms[0];
+                                    if (!selectedForm) return null;
+                                    return (<>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Baseline Sheet</span>
+                                                <span style={{ background: '#f0fdfa', color: '#0d9488', border: '1px solid #99f6e4', borderRadius: 100, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{selectedForm.program}</span>
                                             </div>
-
-                                            {/* Multi-line STO progress chart — shown at top */}
-                                            {sessions.length > 0 && rows.length > 0 && (() => {
-                                                const fmtShort = (d: string) => {
-                                                    try {
-                                                        const safe = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T12:00:00' : d;
-                                                        return new Date(safe).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                                    } catch { return d; }
-                                                };
-                                                const COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#06b6d4', '#ef4444', '#84cc16'];
-                                                const chartData = sessions.map((sess: any, si: number) => {
-                                                    const pt: any = {
-                                                        name: `Day ${sess.day ?? si + 1}`,
-                                                        date: fmtShort(sess.date),
-                                                        employee: sess.employeeName || '—',
-                                                    };
-                                                    rows.forEach((row: any, ri: number) => {
-                                                        const v = sess.results?.[String(ri)];
-                                                        pt[row.step] = v === 'pass' ? 1 : v === 'fail' ? 0 : null;
-                                                    });
-                                                    return pt;
-                                                });
-                                                const DayXTick = ({ x, y, payload }: any) => {
-                                                    const d = chartData[payload.index];
-                                                    if (!d) return null;
-                                                    return (
-                                                        <g transform={`translate(${x},${y})`}>
-                                                            <text x={0} y={0} dy={14} textAnchor="middle" fill="#334155" fontSize={10} fontWeight={700}>{d.name}</text>
-                                                            <text x={0} y={0} dy={26} textAnchor="middle" fill="#94a3b8" fontSize={9}>{d.date}</text>
-                                                            <text x={0} y={0} dy={38} textAnchor="middle" fill="#64748b" fontSize={9}>{d.employee}</text>
-                                                        </g>
-                                                    );
-                                                };
-                                                const PassFailTick = ({ x, y, payload }: any) => (
-                                                    <g transform={`translate(${x},${y})`}>
-                                                        <text x={-4} y={0} dy={4} textAnchor="end" fontSize={10}
-                                                            fill={payload.value === 1 ? '#10b981' : payload.value === 0 ? '#ef4444' : '#94a3b8'}
-                                                            fontWeight={700}>
-                                                            {payload.value === 1 ? 'Pass' : payload.value === 0 ? 'Fail' : ''}
-                                                        </text>
-                                                    </g>
-                                                );
-                                                return (
-                                                    <div style={{ padding: '12px 16px 16px', borderBottom: '1px solid #f1f5f9' }}>
-                                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                                                            STO Progress Over Time
-                                                        </div>
-                                                        <div style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 12 }}>
-                                                            Each line shows one STO's pass/fail result per session
-                                                        </div>
-                                                        <ResponsiveContainer width="100%" height={240}>
-                                                            <LineChart data={chartData} margin={{ top: 8, right: 24, left: 12, bottom: 50 }}>
-                                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                                                <XAxis dataKey="name" tick={<DayXTick />} axisLine={false} tickLine={false} height={52} />
-                                                                <YAxis tick={<PassFailTick />} axisLine={false} tickLine={false} domain={[-0.1, 1.1]} ticks={[0, 1]} width={44} />
-                                                                <Tooltip
-                                                                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                                                                    itemStyle={{ fontWeight: 600 }}
-                                                                    formatter={(value: any, name: any) => [
-                                                                        value === 1 ? '✓ Pass' : value === 0 ? '✗ Fail' : '— Not recorded', name
-                                                                    ]}
-                                                                    labelFormatter={(label: any) => {
-                                                                        const d = chartData.find((c: any) => c.name === label);
-                                                                        return d ? `${d.name} · ${d.date} · ${d.employee}` : label;
-                                                                    }}
-                                                                />
-                                                                <Legend
-                                                                    iconType="circle"
-                                                                    iconSize={8}
-                                                                    wrapperStyle={{ fontSize: 11, paddingTop: 6, cursor: 'pointer' }}
-                                                                    onClick={(payload: any) => toggleStoLine(payload.value)}
-                                                                    formatter={(value: any) => (
-                                                                        <span style={{ opacity: hiddenStoLines.has(value) ? 0.35 : 1, textDecoration: hiddenStoLines.has(value) ? 'line-through' : 'none', transition: 'all 0.2s' }}>
-                                                                            {value}
-                                                                        </span>
-                                                                    )}
-                                                                />
-                                                                {rows.map((row: any, ri: number) => (
-                                                                    <Line key={row.step} type="monotone" dataKey={row.step} name={row.step}
-                                                                        stroke={COLORS[ri % COLORS.length]} strokeWidth={2.5}
-                                                                        dot={{ r: 5, fill: COLORS[ri % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
-                                                                        activeDot={{ r: 7 }} connectNulls={false}
-                                                                        hide={hiddenStoLines.has(row.step)}
-                                                                    />
-                                                                ))}
-                                                            </LineChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                                <thead>
-                                                    <tr>
-                                                        <th style={{ ...thStyle, width: 32, textAlign: 'center' }}>#</th>
-                                                        <th style={{ ...thStyle, textAlign: 'left', minWidth: 120 }}>STO</th>
-                                                        {sessions.map((sess: any, si: number) => {
-                                                            const sPass = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'pass').length;
-                                                            const sFail = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'fail').length;
-                                                            const sTotal = sPass + sFail;
-                                                            const sPct = sTotal > 0 ? Math.round(sPass / sTotal * 100) : null;
-                                                            return (
-                                                                <th key={si} style={{ ...thStyle, minWidth: 100 }}>
-                                                                    <div style={{ fontWeight: 800, color: '#334155', fontSize: 11 }}>
-                                                                        DAY {sess.day ?? si + 1}
-                                                                    </div>
-                                                                    <div style={{ fontWeight: 400, color: '#94a3b8', fontSize: 10, marginTop: 2 }}>
-                                                                        {fmtDate(sess.date)}
-                                                                    </div>
-                                                                    <div style={{ fontWeight: 500, color: '#64748b', fontSize: 10 }}>
-                                                                        {sess.employeeName}
-                                                                    </div>
-                                                                    <a
-                                                                        href={`/forms/baseline-sheet/${tabSheet.id}`}
-                                                                        onClick={e => e.stopPropagation()}
-                                                                        style={{
-                                                                            display: 'inline-block', marginTop: 3,
-                                                                            fontSize: 10, color: '#d97706', fontWeight: 700,
-                                                                            textDecoration: 'none',
-                                                                            background: '#fffbeb', borderRadius: 4, padding: '1px 6px',
-                                                                            border: '1px solid #ffe082',
-                                                                        }}
-                                                                    >✏ Edit</a>
-                                                                </th>
-                                                            );
-                                                        })}
-                                                        <th style={{ ...thStyle, minWidth: 120, textAlign: 'right', paddingRight: 16 }}>
-                                                            PASS / FAIL
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {rows.map((row: any, ri: number) => {
-                                                        const rPass = sessions.filter((s: any) => s.results?.[String(ri)] === 'pass').length;
-                                                        const rFail = sessions.filter((s: any) => s.results?.[String(ri)] === 'fail').length;
-                                                        const rTotal = rPass + rFail;
-                                                        const rPct = rTotal > 0 ? Math.round(rPass / rTotal * 100) : null;
-                                                        return (
-                                                            <tr key={ri} style={{ background: ri % 2 === 1 ? '#fafbff' : '#fff', borderBottom: '1px solid #f1f5f9' }}>
-                                                                <td style={{ ...cellStyle, color: '#94a3b8', fontWeight: 600 }}>{ri + 1}</td>
-                                                                <td style={{ ...cellStyle, textAlign: 'left', color: '#334155', fontWeight: 600, paddingLeft: 14 }}>
-                                                                    {row.step}
-                                                                </td>
-                                                                {sessions.map((sess: any, si: number) => (
-                                                                    <td key={si} style={cellStyle}>
-                                                                        <CellIcon v={sess.results?.[String(ri)]} />
-                                                                    </td>
-                                                                ))}
-                                                                <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16 }}>
-                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}>
-                                                                        <span style={{ color: '#15803d' }}>✓{rPass} Pass</span>
-                                                                        <span style={{ color: '#94a3b8' }}>×</span>
-                                                                        <span style={{ color: '#dc2626' }}>{rFail} Fail</span>
-                                                                        {rPct !== null && <span style={{ color: '#6366f1' }}>· {rPct}%</span>}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-
-                                                    {/* Totals row */}
-                                                    <tr style={{ background: '#f8fafc', borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
-                                                        <td style={{ ...cellStyle, color: '#64748b', fontSize: 11, paddingLeft: 14 }} colSpan={2}>
-                                                            Σ Total per day
-                                                        </td>
-                                                        {sessions.map((sess: any, si: number) => {
-                                                            const sPass = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'pass').length;
-                                                            const sFail = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'fail').length;
-                                                            const sTotal = sPass + sFail;
-                                                            const sPct = sTotal > 0 ? Math.round(sPass / sTotal * 100) : null;
-                                                            return (
-                                                                <td key={si} style={{ ...cellStyle, fontSize: 11 }}>
-                                                                    <span style={{ color: '#15803d' }}>✓{sPass}</span>
-                                                                    {' · '}
-                                                                    <span style={{ color: '#dc2626' }}>✗{sFail}</span>
-                                                                    {sPct !== null && <span style={{ color: '#6366f1' }}> {sPct}%</span>}
-                                                                </td>
-                                                            );
-                                                        })}
-                                                        <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16, fontSize: 11 }}>
-                                                            <span style={{ color: '#15803d' }}>✓{totalPass}</span>
-                                                            {' · '}
-                                                            <span style={{ color: '#dc2626' }}>✗{totalFail}</span>
-                                                            {totalPass + totalFail > 0 && (
-                                                                <span style={{ color: '#6366f1' }}> {Math.round(totalPass / (totalPass + totalFail) * 100)}%</span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-
-                                            {/* Bottom summary */}
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                                                gap: 14, padding: '10px 16px', borderTop: '1px solid #f1f5f9',
-                                                fontSize: 12, fontWeight: 600, color: '#64748b',
-                                            }}>
-                                                <span>{rows.length} STO{rows.length !== 1 ? 's' : ''}</span>
-                                                <span style={{ color: '#15803d' }}>✓{totalPass} Pass</span>
-                                                <span style={{ color: '#dc2626' }}>× {totalFail} Fail</span>
+                                            {dateFilterUI}
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button onClick={() => setPrintModalData({ type: 'Baseline Sheet', form: selectedForm })} style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, background: '#ccfbf1', borderRadius: 6, padding: '6px 12px', border: '1px solid #99f6e4', cursor: 'pointer' }}>👁 View</button>
                                             </div>
-
-
                                         </div>
-                                    );
+                                        <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto', maxHeight: '65vh', overflowY: 'auto' }}><BaselineSheetPrintView sheet={selectedForm} printOnly={false} includeGraph={includeGraph} /></div>
+                                    </>);
                                 })()}
-                            </div >
-                        )
-                        }
-                    </>
-                )
-            }
-
-            {/* ── Daily Routines tab view ── */}
-            {
-                activeFormTab === 'Daily Routines' && (
-                    <>
-                        {/* ── Inline expanded matrix view with tabs ── */}
-                        {true && (() => {
-                            const currentDailyTab = activeDailyRoutinesTab || activeFormForms[0]?.program || null;
-                            const dailyTabSheet = activeFormForms.find((f: any) => f.program === currentDailyTab) || activeFormForms[0];
-
-                            return (
-                                <div style={{ borderTop: '1.5px solid #6ee7b7' }}>
-                                    {/* Program category tabs */}
-                                    {activeFormForms.length > 1 && (
-                                        <div style={{ display: 'flex', gap: 6, padding: '10px 16px 0', flexWrap: 'wrap', background: '#ecfdf5' }}>
-                                            {activeFormForms.map((f: any) => (
-                                                <button
-                                                    key={f.id}
-                                                    onClick={() => setActiveDailyRoutinesTab(f.program)}
-                                                    style={{
-                                                        padding: '5px 14px', borderRadius: 100, border: '1.5px solid',
-                                                        cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
-                                                        borderColor: currentDailyTab === f.program ? '#10b981' : '#e2e8f0',
-                                                        background: currentDailyTab === f.program ? '#10b981' : '#f8fafc',
-                                                        color: currentDailyTab === f.program ? '#fff' : '#64748b',
-                                                    }}
-                                                >
-                                                    {f.program}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Spreadsheet matrix */}
-                                    {dailyTabSheet && (() => {
-                                        const rows: any[] = Array.isArray(dailyTabSheet.rows) ? dailyTabSheet.rows : [];
-                                        const sessions: any[] = Array.isArray(dailyTabSheet.sessions) ? dailyTabSheet.sessions : [];
-                                        const totalPass = sessions.reduce((n: number, s: any) =>
-                                            n + rows.filter((_: any, ri: number) => s.results?.[String(ri)] === 'pass').length, 0);
-                                        const totalFail = sessions.reduce((n: number, s: any) =>
-                                            n + rows.filter((_: any, ri: number) => s.results?.[String(ri)] === 'fail').length, 0);
-
-                                        const CellIcon = ({ v }: { v: string | undefined }) => {
-                                            if (v === 'pass') return (
-                                                <span style={{
-                                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                    width: 24, height: 24, borderRadius: '50%',
-                                                    background: '#f0fdf4', border: '1.5px solid #86efac',
-                                                    color: '#15803d', fontSize: 13, fontWeight: 700,
-                                                }}>✓</span>
-                                            );
-                                            if (v === 'fail') return (
-                                                <span style={{
-                                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                    width: 24, height: 24, borderRadius: '50%',
-                                                    background: '#fef2f2', border: '1.5px solid #fca5a5',
-                                                    color: '#dc2626', fontSize: 13, fontWeight: 700,
-                                                }}>✗</span>
-                                            );
-                                            return <span style={{ color: '#cbd5e1', fontSize: 16 }}>—</span>;
-                                        };
-
-                                        const cellStyle: React.CSSProperties = {
-                                            padding: '8px 10px', borderRight: '1px solid #f1f5f9',
-                                            textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap',
-                                        };
-                                        const thStyle: React.CSSProperties = {
-                                            ...cellStyle, fontSize: 10, fontWeight: 700, color: '#94a3b8',
-                                            textTransform: 'uppercase', letterSpacing: 0.5,
-                                            background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0', padding: '10px',
-                                        };
-
-                                        const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#ef4444', '#84cc16'];
-
-                                        const fmtShort = (d: string) => {
-                                            try {
-                                                const safe = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T12:00:00' : d;
-                                                return new Date(safe).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
-                                            } catch { return d; }
-                                        };
-
-                                        const chartData = sessions.map((sess: any, si: number) => {
-                                            const pt: any = {
-                                                name: `Day ${sess.day ?? si + 1}`,
-                                                date: fmtShort(sess.date),
-                                                employee: sess.employeeName || '—',
-                                            };
-                                            rows.forEach((row: any, ri: number) => {
-                                                const v = sess.results?.[String(ri)];
-                                                pt[row.step] = v === 'pass' ? 1 : v === 'fail' ? 0 : null;
-                                            });
-                                            return pt;
-                                        });
-
-                                        const DayXTick = ({ x, y, payload }: any) => {
-                                            const d = chartData[payload.index];
-                                            if (!d) return null;
-                                            return (
-                                                <g transform={`translate(${x},${y})`}>
-                                                    <text x={0} y={0} dy={14} textAnchor="middle" fill="#334155" fontSize={10} fontWeight={700}>{d.name}</text>
-                                                    <text x={0} y={0} dy={26} textAnchor="middle" fill="#94a3b8" fontSize={9}>{d.date}</text>
-                                                    <text x={0} y={0} dy={38} textAnchor="middle" fill="#64748b" fontSize={9}>{d.employee}</text>
-                                                </g>
-                                            );
-                                        };
-
-                                        const PassFailTick = ({ x, y, payload }: any) => (
-                                            <g transform={`translate(${x},${y})`}>
-                                                <text x={-4} y={0} dy={4} textAnchor="end" fontSize={10}
-                                                    fill={payload.value === 1 ? '#10b981' : payload.value === 0 ? '#ef4444' : '#94a3b8'}
-                                                    fontWeight={700}>
-                                                    {payload.value === 1 ? 'Pass' : payload.value === 0 ? 'Fail' : ''}
-                                                </text>
-                                            </g>
-                                        );
-
-                                        return (
-                                            <div style={{ overflowX: 'auto', padding: '12px 0 0' }}>
-                                                {/* Sub-header: program chip + session count */}
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', justifyContent: 'space-between', padding: '0 16px 10px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                        <span style={{ fontSize: 11, fontWeight: 800, color: '#047857', textTransform: 'uppercase', letterSpacing: 0.5 }}>Daily Routines</span>
-                                                        <span style={{ fontSize: 11, fontWeight: 700, background: '#ecfdf5', color: '#10b981', border: '1px solid #6ee7b7', borderRadius: 100, padding: '1px 10px' }}>{dailyTabSheet.program}</span>
-                                                    </div>
-                                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{sessions.length} session{sessions.length !== 1 ? 's' : ''} recorded</span>
-                                                </div>
-
-                                                {sessions.length > 0 && rows.length > 0 && (
-                                                    <div style={{ padding: '0px 16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                                                            Routine Progress Over Time
-                                                        </div>
-                                                        <div style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 12 }}>
-                                                            Each line shows one Step's pass/fail result per session · click legend to show/hide
-                                                        </div>
-                                                        <ResponsiveContainer width="100%" height={240}>
-                                                            <LineChart data={chartData} margin={{ top: 8, right: 24, left: 12, bottom: 50 }}>
-                                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                                                <XAxis dataKey="name" tick={<DayXTick />} axisLine={false} tickLine={false} height={52} />
-                                                                <YAxis tick={<PassFailTick />} axisLine={false} tickLine={false} domain={[-0.1, 1.1]} ticks={[0, 1]} width={44} />
-                                                                <Tooltip
-                                                                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                                                                    itemStyle={{ fontWeight: 600 }}
-                                                                    formatter={(value: any, name: any) => [
-                                                                        value === 1 ? '✓ Pass' : value === 0 ? '✗ Fail' : '— Not recorded', name
-                                                                    ]}
-                                                                    labelFormatter={(label: any) => {
-                                                                        const d = chartData.find((c: any) => c.name === label);
-                                                                        return d ? `${d.name} · ${d.date} · ${d.employee}` : label;
-                                                                    }}
-                                                                />
-                                                                <Legend
-                                                                    iconType="circle"
-                                                                    iconSize={8}
-                                                                    wrapperStyle={{ fontSize: 11, paddingTop: 6, cursor: 'pointer' }}
-                                                                    onClick={(payload: any) => toggleStoLine(payload.value)}
-                                                                    formatter={(value: any) => (
-                                                                        <span style={{ opacity: hiddenStoLines.has(value) ? 0.35 : 1, textDecoration: hiddenStoLines.has(value) ? 'line-through' : 'none', transition: 'all 0.2s' }}>
-                                                                            {value}
-                                                                        </span>
-                                                                    )}
-                                                                />
-                                                                {rows.map((row: any, ri: number) => (
-                                                                    <Line key={row.step} type="monotone" dataKey={row.step} name={row.step}
-                                                                        stroke={COLORS[ri % COLORS.length]} strokeWidth={2.5}
-                                                                        dot={{ r: 5, fill: COLORS[ri % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
-                                                                        activeDot={{ r: 7 }} connectNulls={false}
-                                                                        hide={hiddenStoLines.has(row.step)}
-                                                                    />
-                                                                ))}
-                                                            </LineChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                )}
-
-                                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th style={{ ...thStyle, width: 32, textAlign: 'center' }}>#</th>
-                                                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 120 }}>STEP</th>
-                                                            {sessions.map((sess: any, si: number) => {
-                                                                const sPass = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'pass').length;
-                                                                const sFail = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'fail').length;
-                                                                const sTotal = sPass + sFail;
-                                                                const sPct = sTotal > 0 ? Math.round(sPass / sTotal * 100) : null;
-                                                                return (
-                                                                    <th key={si} style={{ ...thStyle, minWidth: 100 }}>
-                                                                        <div style={{ fontWeight: 800, color: '#334155', fontSize: 11 }}>DAY {sess.day ?? si + 1}</div>
-                                                                        <div style={{ fontWeight: 400, color: '#94a3b8', fontSize: 10, marginTop: 2 }}>
-                                                                            {new Date(sess.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                                        </div>
-                                                                        <div style={{ fontWeight: 500, color: '#64748b', fontSize: 10 }}>{sess.employeeName}</div>
-                                                                        <a href={`/forms/daily-routines/${dailyTabSheet.id}`} onClick={e => e.stopPropagation()} style={{ display: 'inline-block', marginTop: 3, fontSize: 10, color: '#10b981', fontWeight: 700, textDecoration: 'none', background: '#ecfdf5', borderRadius: 4, padding: '1px 6px', border: '1px solid #6ee7b7' }}>✏ Edit</a>
-                                                                    </th>
-                                                                );
-                                                            })}
-                                                            <th style={{ ...thStyle, minWidth: 120, textAlign: 'right', paddingRight: 16 }}>PASS / FAIL</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {rows.map((row: any, ri: number) => {
-                                                            const rPass = sessions.filter((s: any) => s.results?.[String(ri)] === 'pass').length;
-                                                            const rFail = sessions.filter((s: any) => s.results?.[String(ri)] === 'fail').length;
-                                                            const rTotal = rPass + rFail;
-                                                            const rPct = rTotal > 0 ? Math.round(rPass / rTotal * 100) : null;
-                                                            return (
-                                                                <tr key={ri} style={{ background: ri % 2 === 1 ? '#fafbff' : '#fff', borderBottom: '1px solid #f1f5f9' }}>
-                                                                    <td style={{ ...cellStyle, color: '#94a3b8', fontWeight: 600 }}>{ri + 1}</td>
-                                                                    <td style={{ ...cellStyle, textAlign: 'left', color: '#334155', fontWeight: 600, paddingLeft: 14 }}>{row.step}</td>
-                                                                    {sessions.map((sess: any, si: number) => (
-                                                                        <td key={si} style={cellStyle}><CellIcon v={sess.results?.[String(ri)]} /></td>
-                                                                    ))}
-                                                                    <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16 }}>
-                                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}>
-                                                                            <span style={{ color: '#15803d' }}>✓{rPass} Pass</span>
-                                                                            <span style={{ color: '#94a3b8' }}>×</span>
-                                                                            <span style={{ color: '#dc2626' }}>{rFail} Fail</span>
-                                                                            {rPct !== null && <span style={{ color: '#6366f1' }}>· {rPct}%</span>}
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                        {/* Totals row */}
-                                                        <tr style={{ background: '#f8fafc', borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
-                                                            <td style={{ ...cellStyle, color: '#64748b', fontSize: 11, paddingLeft: 14 }} colSpan={2}>Σ Total per day</td>
-                                                            {sessions.map((sess: any, si: number) => {
-                                                                const sPass = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'pass').length;
-                                                                const sFail = rows.filter((_: any, ri: number) => sess.results?.[String(ri)] === 'fail').length;
-                                                                const sTotal = sPass + sFail;
-                                                                const sPct = sTotal > 0 ? Math.round(sPass / sTotal * 100) : null;
-                                                                return (
-                                                                    <td key={si} style={{ ...cellStyle, fontSize: 11 }}>
-                                                                        <span style={{ color: '#15803d' }}>✓{sPass}</span>{' · '}
-                                                                        <span style={{ color: '#dc2626' }}>✗{sFail}</span>
-                                                                        {sPct !== null && <span style={{ color: '#6366f1' }}> {sPct}%</span>}
-                                                                    </td>
-                                                                );
-                                                            })}
-                                                            <td style={{ ...cellStyle, textAlign: 'right', paddingRight: 16, fontSize: 11 }}>
-                                                                <span style={{ color: '#15803d' }}>✓{totalPass}</span>{' · '}
-                                                                <span style={{ color: '#dc2626' }}>✗{totalFail}</span>
-                                                                {totalPass + totalFail > 0 && <span style={{ color: '#6366f1' }}> {Math.round(totalPass / (totalPass + totalFail) * 100)}%</span>}
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-
-                                                {/* Bottom summary */}
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, padding: '10px 16px', borderTop: '1px solid #f1f5f9', fontSize: 12, fontWeight: 600, color: '#64748b' }}>
-                                                    <span>{rows.length} STEP{rows.length !== 1 ? 's' : ''}</span>
-                                                    <span style={{ color: '#15803d' }}>✓{totalPass} Pass</span>
-                                                    <span style={{ color: '#dc2626' }}>× {totalFail} Fail</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            );
-                        })()}
-                    </>
-                )
-            }
-
-            {/* ── Transaction Sheet tab view ── */}
-            {
-                activeFormTab === 'Transaction Sheet' && (
-                    <>
-                        {true && (
-                            <div style={{ borderTop: '1.5px solid #ddd6fe', padding: '16px 0 0' }}>
-                                {transactionCount === 0 ? (
-                                    <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 16px' }}>
-                                        No Transaction Sheets yet.
-                                    </div>
-                                ) : (
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ padding: '10px 16px', borderBottom: '1.5px solid #e2e8f0', textAlign: 'left', color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Date</th>
-                                                <th style={{ padding: '10px 16px', borderBottom: '1.5px solid #e2e8f0', textAlign: 'left', color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Program</th>
-                                                <th style={{ padding: '10px 16px', borderBottom: '1.5px solid #e2e8f0', textAlign: 'left', color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Employee</th>
-                                                <th style={{ padding: '10px 16px', borderBottom: '1.5px solid #e2e8f0', textAlign: 'center', color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Locations Logged</th>
-                                                <th style={{ padding: '10px 16px', borderBottom: '1.5px solid #e2e8f0', textAlign: 'right', color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {transactionForms.map((f: any, i: number) => (
-                                                <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 1 ? '#fafbff' : '#fff' }}>
-                                                    <td style={{ padding: '10px 16px', color: '#334155', fontWeight: 600 }}>
-                                                        {fmtDate(f.date)}
-                                                    </td>
-                                                    <td style={{ padding: '10px 16px', color: '#64748b', fontWeight: 500 }}>
-                                                        <span style={{ background: '#f5f3ff', color: '#8b5cf6', border: '1px solid #ddd6fe', borderRadius: 100, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>{f.program || 'N/A'}</span>
-                                                    </td>
-                                                    <td style={{ padding: '10px 16px', color: '#64748b', fontWeight: 500 }}>{f.employeeName}</td>
-                                                    <td style={{ padding: '10px 16px', color: '#64748b', fontWeight: 500, textAlign: 'center' }}>
-                                                        <span style={{ fontWeight: 700, color: '#334155' }}>{(f.locations || []).length}</span> locations
-                                                    </td>
-                                                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
-                                                        <button onClick={e => { e.stopPropagation(); window.open(`/forms/transaction-sheet/${f.id}/view`, '_blank'); }} style={{ display: 'inline-block', fontSize: 11, color: '#0891b2', fontWeight: 700, background: '#ecfeff', borderRadius: 4, padding: '3px 8px', border: '1px solid #cffafe', marginRight: 6, cursor: 'pointer' }}>
-                                                            👁 View
-                                                        </button>
-                                                        <a href={`/forms/transaction-sheet/${f.id}`} onClick={e => e.stopPropagation()} style={{ display: 'inline-block', fontSize: 11, color: '#8b5cf6', fontWeight: 700, textDecoration: 'none', background: '#f5f3ff', borderRadius: 4, padding: '3px 8px', border: '1px solid #ddd6fe' }}>
-                                                            ✏ Edit
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td colSpan={5} style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>
-                                                    Total: {transactionCount} recorded sheet(s)
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                )}
                             </div>
                         )}
                     </>
                 )
             }
+            {/* ── Daily Routines tab view ── */}
+            {activeFormTab === 'Daily Routines' && (
+                <>
+                    {dailyRoutinesForms.length === 0 ? (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 16px' }}>
+                            No Daily Routines forms yet.
+                        </div>
+                    ) : (
+                        <div style={{ padding: '16px', background: '#fafbff' }}>
+                            {dailyRoutinesForms.length > 1 && (
+                                <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #6ee7b7' }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#047857', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Select a form to view:
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {dailyRoutinesForms.map((f: any) => (
+                                            <button key={f.id} onClick={() => setActiveDailyRoutinesTab(f.program)} style={{ padding: '6px 14px', borderRadius: 100, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', borderColor: activeDailyRoutinesTab === f.program ? '#10b981' : '#e2e8f0', background: activeDailyRoutinesTab === f.program ? '#10b981' : '#fff', color: activeDailyRoutinesTab === f.program ? '#fff' : '#64748b' }}>{f.program}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {(() => {
+                                const currentTab = activeDailyRoutinesTab || dailyRoutinesForms[0]?.program || null;
+                                const selectedForm = dailyRoutinesForms.find((f: any) => f.program === currentTab) || dailyRoutinesForms[0];
+                                if (!selectedForm) return null;
+                                return (<>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: 12, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Daily Routines</span>
+                                            <span style={{ background: '#ecfdf5', color: '#10b981', border: '1px solid #6ee7b7', borderRadius: 100, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{selectedForm.program}</span>
+                                        </div>
+                                        {dateFilterUI}
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button onClick={() => setPrintModalData({ type: 'Daily Routines', form: selectedForm })} style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, background: '#ccfbf1', borderRadius: 6, padding: '6px 12px', border: '1px solid #99f6e4', cursor: 'pointer' }}>👁 View</button>
+                                        </div>
+                                    </div>
+                                    <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto', maxHeight: '65vh', overflowY: 'auto' }}><DailyRoutinesPrintView sheet={selectedForm} printOnly={false} includeGraph={includeGraph} /></div>
+                                </>);
+                            })()}
+                        </div>
+                    )}
+                </>
+            )}
+            {/* ── Transaction Sheet tab view ── */}
+            {activeFormTab === 'Transaction Sheet' && (
+                <>
+                    {transactionCount === 0 ? (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 16px' }}>
+                            No Transaction Sheets yet.
+                        </div>
+                    ) : (
+                        renderTransactionSheetTabView()
+                    )}
+                </>
+            )}
         </>
     );
 }

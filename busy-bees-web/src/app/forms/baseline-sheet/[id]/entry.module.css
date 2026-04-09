@@ -48,9 +48,9 @@
 }
 
 .backBtn:hover {
-    background: #fffbeb;
+    background: #f0fdfa;
     border-color: var(--primary);
-    color: #92400e;
+    color: #0f766e;
 }
 
 .pageTitle {
@@ -70,13 +70,13 @@
 }
 
 .sessionBadge {
-    background: #fffde7;
-    color: #92400e;
+    background: #f0fdfa;
+    color: #0f766e;
     font-size: 11px;
     font-weight: 700;
     padding: 1px 8px;
     border-radius: 100px;
-    border: 1px solid #ffe082;
+    border: 1px solid #99f6e4;
 }
 
 .saveBtn {
@@ -178,8 +178,8 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #fffde7, #fff8e1);
-    border-bottom: 2px solid #ffe082;
+    background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+    border-bottom: 2px solid #99f6e4;
     border-left: 4px solid var(--primary);
     flex-wrap: wrap;
 }
@@ -187,7 +187,7 @@
 .gridTitle {
     font-size: 12px;
     font-weight: 800;
-    color: #92400e;
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.6px;
 }
@@ -203,7 +203,7 @@
 
 .historyNote {
     font-size: 11px;
-    color: #92400e;
+    color: #0f766e;
     background: rgba(var(--primary-rgb, 246, 168, 0), 0.15);
     padding: 2px 10px;
     border-radius: 100px;
@@ -305,7 +305,7 @@
 .colDayLabel {
     font-size: 11px;
     font-weight: 800;
-    color: #92400e;
+    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: center;
@@ -439,7 +439,7 @@
 }
 
 .unchecked:hover {
-    background: #fffde7;
+    background: #f0fdfa;
     border-color: var(--primary);
 }
 
@@ -599,7 +599,7 @@
 .editingSessionCol {
     padding: 8px 6px;
     text-align: center;
-    background: #fffbeb;
+    background: #f0fdfa;
     border-left: 2px solid var(--primary);
     border-right: 2px solid var(--primary);
     min-width: 80px;
@@ -622,16 +622,16 @@
 }
 
 .editColBtn:hover {
-    background: #fffde7;
-    color: #92400e;
+    background: #f0fdfa;
+    color: #0f766e;
     border-color: var(--primary);
 }
 
 .editingCell {
     padding: 6px 4px;
     text-align: center;
-    background: #fffde7;
-    border-left: 1px solid #ffe082;
+    background: #f0fdfa;
+    border-left: 1px solid #99f6e4;
 }
 
 .editingLabel {
@@ -639,14 +639,14 @@
     margin-top: 4px;
     font-size: 9px;
     font-weight: 700;
-    color: #d97706;
+    color: #0d9488;
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
 
 .editingBadge {
-    background: #fffde7;
-    color: #d97706;
+    background: #f0fdfa;
+    color: #0d9488;
     font-size: 11px;
     font-weight: 700;
     padding: 1px 8px;
@@ -709,20 +709,23 @@
 }
 
 .addStepBtn {
-    background: none;
-    border: 1.5px dashed var(--primary);
-    color: var(--primary);
+    background: var(--primary);
+    color: #000;
     font-size: 13px;
     font-weight: 700;
-    padding: 7px 16px;
-    border-radius: 8px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .addStepBtn:hover {
-    background: var(--background-light);
-    border-color: var(--primary);
+    filter: brightness(0.9);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb, 246, 168, 0), 0.35);
 }
 
 .addStepRow {

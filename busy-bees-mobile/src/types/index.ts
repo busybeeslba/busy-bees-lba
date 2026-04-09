@@ -75,6 +75,7 @@ export interface AppState {
   removeDocument: (sessionId: string, docId: string) => void;
 
   completeSession: (signature: string) => void;
+  cancelSession: (reason: string) => void;
   endSession: () => void;
 
   // GPS

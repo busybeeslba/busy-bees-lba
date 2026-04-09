@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight, Palette } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight, Palette, FileEdit, Table } from 'lucide-react';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBrand } from '@/context/BrandContext';
 import { createClient } from '@/utils/supabase/client';
@@ -34,14 +34,13 @@ const MENU_ITEMS = [
     {
         name: 'Forms', icon: ClipboardCheck, path: '/forms',
         subItems: [
-            { name: 'Baseline Sheet', path: '/forms/baseline-sheet' },
-            { name: 'Baseline Data Table', path: '/forms/baseline-sheet/data-table' },
-            { name: 'Mass Trial / DTT', path: '/forms/mass-trial' },
-            { name: 'DTT Data Table', path: '/forms/mass-trial/data-table' },
-            { name: 'Daily Routines', path: '/forms/daily-routines' },
-            { name: 'Daily Routines Data Table', path: '/forms/daily-routines/data-table' },
-            { name: 'Transaction Sheet', path: '/forms/transaction-sheet' },
-            { name: 'Transaction Data Table', path: '/forms/transaction-sheet/data-table' },
+            { name: 'Baseline Form', icon: FileEdit, path: '/forms/baseline-sheet' },
+            { name: 'Baseline Data Table', icon: Table, path: '/forms/baseline-sheet/data-table' },
+            { name: 'Mass Trial / DTT Form', icon: FileEdit, path: '/forms/mass-trial' },
+            { name: 'Mass Trial / DTT Data Table', icon: Table, path: '/forms/mass-trial/data-table' },
+            { name: 'Daily Routines Form', icon: FileEdit, path: '/forms/daily-routines' },
+            { name: 'Daily Routines Data Table', icon: Table, path: '/forms/daily-routines/data-table' },
+            { name: 'Transaction Form', icon: FileEdit, path: '/forms/transaction-sheet' }
         ],
     },
     { name: 'Session Summary', icon: FileText, path: '/session-summary' },
@@ -131,15 +130,20 @@ export default function Sidebar() {
                                 </button>
                                 {!isCollapsed && isOpen && (
                                     <div className={styles.subMenu}>
-                                        {item.subItems.map((subItem) => (
-                                            <Link
-                                                key={subItem.path}
-                                                href={subItem.path}
-                                                className={`${styles.subMenuItem} ${pathname === subItem.path ? styles.activeSubMenu : ''}`}
-                                            >
-                                                {subItem.name}
-                                            </Link>
-                                        ))}
+                                        {item.subItems.map((subItem: any) => {
+                                            const SubIcon = subItem.icon;
+                                            return (
+                                                <Link
+                                                    key={subItem.path}
+                                                    href={subItem.path}
+                                                    className={`${styles.subMenuItem} ${pathname === subItem.path ? styles.activeSubMenu : ''}`}
+                                                    style={{ display: 'flex', alignItems: 'center' }}
+                                                >
+                                                    {SubIcon && <SubIcon size={14} style={{ marginRight: '8px', opacity: 0.8 }} />}
+                                                    {subItem.name}
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>

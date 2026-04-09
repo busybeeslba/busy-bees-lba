@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Download } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Download, Printer } from 'lucide-react';
 import TransactionSheetPrintView from '@/components/forms/TransactionSheetPrintView';
 import { dbClient } from '@/lib/dbClient';
 
-
 export default function TransactionSheetViewPage() {
     const params = useParams();
+    const router = useRouter();
     const id = params.id as string;
     const [sheet, setSheet] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -19,10 +19,32 @@ export default function TransactionSheetViewPage() {
 
         const loadSheet = async () => {
             try {
-                const res = await dbClient.get(`/transaction-sheets/${id}`);
-                if (!res.ok) throw new Error('Failed to fetch transaction sheet');
-                const data = res; // Was .json()
-                setSheet(data);
+                const data = await dbClient.get(`/transaction-sheets/${id}`);
+                if (!data) throw new Error('Failed to fetch transaction sheet');
+                
+                let migratedSheet = { ...data };
+                if (!migratedSheet.sessions) migratedSheet.sessions = [];
+                
+                // If legacy data with no sessions but has a date/locations
+                if (migratedSheet.sessions.length === 0 && (migratedSheet.locations || migratedSheet.date)) {
+                    migratedSheet.sessions.push({
+                        id: data.id ? String(Math.random()) : '',
+                        date: migratedSheet.date || '',
+                        employeeId: migratedSheet.employeeId || '',
+                        employeeName: migratedSheet.employeeName || '',
+                        cellPhoneLocation: migratedSheet.cellPhoneLocation || '',
+                        locations: migratedSheet.locations || []
+                    });
+                }
+                
+                // Ensure at least one session so the meta card renders
+                if (migratedSheet.sessions.length === 0) {
+                    migratedSheet.sessions.push({
+                        id: String(Math.random()), date: '', employeeId: '', employeeName: '', cellPhoneLocation: '', locations: []
+                    });
+                }
+                
+                setSheet(migratedSheet);
             } catch (err: any) {
                 console.error('Error loading transaction sheet:', err);
                 setError(err.message);
@@ -65,7 +87,7 @@ export default function TransactionSheetViewPage() {
                 filename:     `Transaction_Sheet_${sheet.clientName}_${sheet.date}.pdf`,
                 image:        { type: 'jpeg' as const, quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'portrait' as const }
+                jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'landscape' as const }
             };
             
             html2pdf().from(element).set(opt).save();
@@ -75,40 +97,99 @@ export default function TransactionSheetViewPage() {
         }
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
-        <div style={{ minHeight: '100vh', background: '#f1f5f9', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ minHeight: '100vh', background: '#f1f5f9', fontFamily: 'system-ui, sans-serif' }}>
             <style>{`
                 @media print {
                     .no-print { display: none !important; }
                     body { background: white !important; }
+                    .print-container { 
+                        box-shadow: none !important; 
+                        margin: 0 !important; 
+                        padding: 0 !important;
+                        max-width: 100% !important;
+                    }
+                    @page { margin: 15mm 12mm; size: A4 landscape; }
                 }
             `}</style>
             
-            <div className="no-print" style={{ width: '100%', maxWidth: 900, display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+            {/* Top Navigation Bar - Hidden in Print */}
+            <div className="no-print" style={{ 
+                background: 'white', 
+                borderBottom: '1px solid #e2e8f0',
+                padding: '12px 24px',
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            }}>
                 <button 
-                    onClick={handleDownload}
+                    onClick={() => router.push(`/forms/transaction-sheet/${params.id}`)}
                     style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '10px 20px', background: 'white', color: '#0f172a',
-                        border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600,
-                        cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        background: 'transparent', border: 'none',
+                        color: '#64748b', fontWeight: 600, fontSize: '14px',
+                        cursor: 'pointer', padding: '6px 12px', borderRadius: '6px',
+                        transition: 'background 0.2s'
                     }}
+                    onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 >
-                    <Download size={18} />
-                    Download PDF
+                    <ArrowLeft size={16} /> Back to Edit
                 </button>
+                
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                        onClick={handlePrint}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            background: '#1e293b', color: 'white',
+                            border: 'none', padding: '8px 16px', borderRadius: '6px',
+                            fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        }}
+                    >
+                        <Printer size={16} /> Print
+                    </button>
+                    <button 
+                        onClick={handleDownload}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            background: 'var(--primary)', color: '#0f172a',
+                            border: 'none', padding: '8px 16px', borderRadius: '6px',
+                            fontWeight: 700, fontSize: '14px', cursor: 'pointer',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        }}
+                    >
+                        <Download size={16} /> Download PDF
+                    </button>
+                </div>
             </div>
 
-            <div style={{ 
-                background: 'white', 
-                width: '100%', 
-                maxWidth: 900, 
-                borderRadius: 16, 
-                padding: '40px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-            }}>
-                <div id="transaction-sheet-print-container">
-                    <TransactionSheetPrintView sheet={sheet} printOnly={false} />
+            {/* Document Container */}
+            <div style={{ padding: '32px 24px' }}>
+                <div 
+                    className="print-container"
+                    style={{
+                        width: '96%',
+                        maxWidth: '1500px',
+                        margin: '0 auto',
+                        background: 'white',
+                        padding: '40px',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
+                    }}
+                >
+                    <div id="transaction-sheet-print-container">
+                        <TransactionSheetPrintView sheet={sheet} printOnly={false} />
+                    </div>
                 </div>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, CheckSquare, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckSquare, Calendar, Eye } from 'lucide-react';
 import styles from '../baseline-sheet/page.module.css'; // Reusing existing styling
 import { dbClient } from '@/lib/dbClient';
 
@@ -162,10 +162,13 @@ export default function DailyRoutinesListPage() {
                                         </td>
                                         <td>
                                             <div className={styles.actions}>
-                                                <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); router.push(`/forms/daily-routines/${sheet.id}`); }}>
+                                                <button className={styles.editBtn} title="View" onClick={(e) => { e.stopPropagation(); window.open(`/forms/daily-routines/${sheet.id}/view`, '_blank'); }}>
+                                                    <Eye size={13} />
+                                                </button>
+                                                <button className={styles.editBtn} title="Edit" onClick={(e) => { e.stopPropagation(); router.push(`/forms/daily-routines/${sheet.id}`); }}>
                                                     <Pencil size={13} />
                                                 </button>
-                                                <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); handleDelete(sheet.id); }}>
+                                                <button className={styles.deleteBtn} title="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(sheet.id); }}>
                                                     <Trash2 size={13} />
                                                 </button>
                                             </div>
