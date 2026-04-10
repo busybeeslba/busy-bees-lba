@@ -11,6 +11,7 @@ export default function TransactionSheetListPage() {
     const [sheets, setSheets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedIds, setSelectedIds] = useState<(number | string)[]>([]);
     const [clientFilter, setClientFilter] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -23,9 +24,37 @@ export default function TransactionSheetListPage() {
     }, []);
 
     const handleDelete = async (id: number | string) => {
-        if (!confirm('Delete this Transaction Sheet?')) return;
+        if (!confirm('Delete this Transaction Form?')) return;
         await dbClient.delete(`/transaction-sheets/${id}`);
         setSheets(prev => prev.filter(s => s.id !== id));
+        setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+    };
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Delete ${selectedIds.length} selected Transaction Forms?`)) return;
+        setLoading(true);
+        try {
+            await Promise.all(selectedIds.map(id => dbClient.delete(`/transaction-sheets/${id}`)));
+            setSheets(prev => prev.filter(s => !selectedIds.includes(s.id)));
+            setSelectedIds([]);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to delete some forms.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filtered.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filtered.map(s => s.id));
+        }
+    };
+
+    const toggleSelect = (id: number | string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
 
     // Calculate dynamic filter options
@@ -123,13 +152,20 @@ export default function TransactionSheetListPage() {
                 <div className={styles.headerLeft}>
                     <Activity size={22} className={styles.headerIcon} />
                     <div>
-                        <h1 className={styles.pageTitle}>Transaction Sheets</h1>
+                        <h1 className={styles.pageTitle}>Transaction Form</h1>
                         <p className={styles.pageSubtitle}>Log and track location transitions and behaviors</p>
                     </div>
                 </div>
-                <button className={styles.addBtn} onClick={() => router.push('/forms/transaction-sheet/new')}>
-                    <Plus size={16} /> New Sheet
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {selectedIds.length > 0 && (
+                        <button className={styles.deleteBtn} onClick={handleBulkDelete} style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.length})
+                        </button>
+                    )}
+                    <button className={styles.addBtn} onClick={() => router.push('/forms/transaction-sheet/new')}>
+                        <Plus size={16} /> Add New
+                    </button>
+                </div>
             </div>
 
             {/* Search & Filters */}
@@ -200,13 +236,21 @@ export default function TransactionSheetListPage() {
                 <div className={styles.empty}>Loading…</div>
             ) : filtered.length === 0 ? (
                 <div className={styles.empty}>
-                    No Transaction Sheets found matching your filters.
+                    No Transaction Forms found matching your filters.
                 </div>
             ) : (
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th style={{ width: '40px', textAlign: 'center' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                                        onChange={toggleSelectAll}
+                                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                    />
+                                </th>
                                 <th onClick={() => requestSort('id')} style={{cursor: 'pointer'}}>ID {sortConfig?.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
                                 <th onClick={() => requestSort('clientName')} style={{cursor: 'pointer'}}>Client {sortConfig?.key === 'clientName' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
                                 <th onClick={() => requestSort('date')} style={{cursor: 'pointer'}}>Date Range {sortConfig?.key === 'date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
@@ -233,7 +277,19 @@ export default function TransactionSheetListPage() {
                                 }
 
                                 return (
-                                    <tr key={sheet.id} className={styles.clickableRow} onClick={() => router.push(`/forms/transaction-sheet/${sheet.id}`)}>
+                                    <tr key={sheet.id} onClick={(e) => { 
+                                        if ((e.target as HTMLElement).tagName.toLowerCase() === 'td') {
+                                            router.push(`/forms/transaction-sheet/${sheet.id}`);
+                                        }
+                                    }} className={styles.clickableRow}>
+                                        <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(sheet.id)}
+                                                onChange={() => toggleSelect(sheet.id)}
+                                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                            />
+                                        </td>
                                         <td style={{ fontWeight: 600, color: '#64748b' }}>#{sheet.id}</td>
                                         <td className={styles.clientCell}>
                                             <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>

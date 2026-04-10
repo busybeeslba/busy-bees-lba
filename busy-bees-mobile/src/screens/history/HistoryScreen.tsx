@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { ScreenLayout } from '../../components/ScreenLayout';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -16,9 +16,11 @@ import { useTheme } from '../../hooks/useTheme';
 
 export const HistoryScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const completedSessions = useAppStore(state => state.completedSessions);
+    const user = useAppStore(state => state.user);
     const { updateActiveSession } = useAppStore();
     const [searchQuery, setSearchQuery] = useState('');
+    const [historicSessions, setHistoricSessions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const { colors, isDarkMode } = useTheme();
     // Set of "clientId|clientName" that have baseline sheet data
     const [baselineClients, setBaselineClients] = useState<Set<string>>(new Set());
@@ -35,15 +37,26 @@ export const HistoryScreen = () => {
                 setBaselineClients(keys);
             })
             .catch(() => { });
-    }, []);
+
+        dbGet<any[]>('/sessions')
+            .then(data => {
+                const mine = (Array.isArray(data) ? data : []).filter((s: any) =>
+                    (s.status === 'completed' || s.status === 'cancelled') && s.employeeId === user?.employeeId
+                );
+                mine.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+                setHistoricSessions(mine);
+            })
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    }, [user?.employeeId]);
 
     const hasBaseline = (session: any) =>
         baselineClients.has(`${session.clientId}|${session.clientName}`) ||
         [...baselineClients].some(k => k.endsWith(`|${session.clientName}`));
 
-    const filteredSessions = completedSessions.filter(session =>
-        session.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.serviceType.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredSessions = historicSessions.filter(session =>
+        (session.clientName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (session.serviceType || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handlePress = (session: any) => {
@@ -85,7 +98,11 @@ export const HistoryScreen = () => {
                 </View>
             </View>
 
-            {filteredSessions.length === 0 ? (
+            {loading ? (
+                <View style={[styles.emptyContainer, { marginTop: 100 }]}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                </View>
+            ) : filteredSessions.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Text style={[styles.emptyText, secondaryTextStyle]}>No sessions found.</Text>
                 </View>
@@ -108,12 +125,14 @@ export const HistoryScreen = () => {
                                         <Text style={[styles.metaText, secondaryTextStyle]}>{formatDuration(item.durationSeconds)}</Text>
                                         <View style={[styles.dotSeparator, { backgroundColor: colors.secondaryText }]} />
                                         <MapPin size={14} color={colors.secondaryText} />
-                                        <Text style={[styles.metaText, secondaryTextStyle]}>{item.route.length} pts</Text>
+                                        <Text style={[styles.metaText, secondaryTextStyle]}>{item.route?.length || 0} pts</Text>
                                     </View>
                                 </View>
                                 <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
-                                    <View style={styles.completedBadge}>
-                                        <Text style={styles.badgeText}>COMPLETED</Text>
+                                    <View style={[styles.completedBadge, item.status === 'cancelled' && { backgroundColor: 'rgba(220, 38, 38, 0.1)' }]}>
+                                        <Text style={[styles.badgeText, item.status === 'cancelled' && { color: '#dc2626' }]}>
+                                            {item.status === 'cancelled' ? 'CANCELLED' : 'COMPLETED'}
+                                        </Text>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                         {hasBaseline(item) && (

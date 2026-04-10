@@ -9,14 +9,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import { useAppStore } from '../../store/useAppStore';
 import { COLORS, FONTS } from '../../constants/theme';
-import { ArrowLeft, Save, X, ChevronDown, ChevronUp, Pencil } from 'lucide-react-native';
+import { ArrowLeft, Save, X, ChevronDown, ChevronUp, Pencil, CheckCircle, XCircle } from 'lucide-react-native';
 import { dbGet, dbPost, dbPatch } from '../../lib/db';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-type CellResult = string | null; // e.g. "4/5", "NA", null
+type CellResult = 'pass' | 'fail' | null;
 
 interface Session {
     day: number;
@@ -45,7 +45,11 @@ const fmtDate = (d: string) => {
         return `${dt.toLocaleString('default', { month: 'short' })} ${dt.getDate()}`;
     } catch { return d; }
 };
-
+const cycleResult = (v: CellResult): CellResult => {
+    if (!v) return 'pass';
+    if (v === 'pass') return 'fail';
+    return null;
+};
 function initResults(rows: StepRow[]): Record<string, CellResult> {
     const r: Record<string, CellResult> = {};
     rows.forEach((_, i) => { r[String(i)] = null; });
@@ -71,10 +75,7 @@ export const DailyRoutinesScreen = () => {
     const [showAddStep, setShowAddStep] = useState(false);
     const [newStepText, setNewStepText] = useState('');
 
-    // Custom Modal State for Cell Input
-    const [activeCellIdx, setActiveCellIdx] = useState<number | null>(null);
-    const [modalCorrect, setModalCorrect] = useState('');
-    const [modalTotal, setModalTotal] = useState('');
+
 
     const numericClientId = activeSession?.clientId?.replace('CLI-', '');
     const clientRecord: any =
@@ -138,36 +139,12 @@ export const DailyRoutinesScreen = () => {
         fetchFromDB();
     }, [selectedProgram, clientRecord]);
 
-    const handleOpenCellOptions = (rowIdx: number) => {
-        setActiveCellIdx(rowIdx);
-        const currentVal = (editingSessionIdx !== null ? editDraft : newResults)[String(rowIdx)];
-        if (currentVal && currentVal !== 'NA') {
-            const [c, t] = currentVal.split('/');
-            setModalCorrect(c || '');
-            setModalTotal(t || '');
-        } else {
-            setModalCorrect('');
-            setModalTotal('');
-        }
+    const toggleNewCell = (rowIdx: number) => {
+        setNewResults(prev => ({ ...prev, [String(rowIdx)]: cycleResult(prev[String(rowIdx)] ?? null) }));
     };
 
-    const handleApplyCellVal = (val: string | null) => {
-        if (activeCellIdx === null) return;
-        const row = String(activeCellIdx);
-        if (editingSessionIdx !== null) {
-            setEditDraft(prev => ({ ...prev, [row]: val }));
-        } else {
-            setNewResults(prev => ({ ...prev, [row]: val }));
-        }
-        setActiveCellIdx(null);
-    };
-
-    const handleApplyModalNumbers = () => {
-        if (modalCorrect && modalTotal) {
-            handleApplyCellVal(`${modalCorrect}/${modalTotal}`);
-        } else {
-            handleApplyCellVal(null);
-        }
+    const toggleEditCell = (rowIdx: number) => {
+        setEditDraft(prev => ({ ...prev, [String(rowIdx)]: cycleResult(prev[String(rowIdx)] ?? null) }));
     };
 
     const startEdit = (sessIdx: number) => {
@@ -243,6 +220,7 @@ export const DailyRoutinesScreen = () => {
     const editingSess = isEditMode ? allSessions[editingSessionIdx!] : null;
 
     const activeResults = isEditMode ? editDraft : newResults;
+    const toggleActiveCell = isEditMode ? toggleEditCell : toggleNewCell;
 
     return (
         <View style={s.container}>
@@ -268,7 +246,7 @@ export const DailyRoutinesScreen = () => {
                 >
                     {saving ? <ActivityIndicator color="#000" size="small" /> : (
                         <><Save size={15} color="#000" />
-                            <Text style={s.saveBtnText}>{isEditMode ? 'Save Edit' : `Save Day ${nextDay}`}</Text></>
+                            <Text style={s.saveBtnText}>{isEditMode ? 'Save Edit' : 'Save'}</Text></>
                     )}
                 </TouchableOpacity>
             </View>
@@ -315,7 +293,7 @@ export const DailyRoutinesScreen = () => {
 
                         <View style={s.tableHeader}>
                             <Text style={[s.headerCell, { flex: 1 }]}>Routine / Step</Text>
-                            <Text style={[s.headerCell, { width: 80, textAlign: 'center' }]}>Score / NA</Text>
+                            <Text style={[s.headerCell, { width: 72, textAlign: 'center' }]}>Result</Text>
                         </View>
 
                         {rows.map((row, rowIdx) => {
@@ -325,11 +303,18 @@ export const DailyRoutinesScreen = () => {
                                     <Text style={s.rowNum}>{rowIdx + 1}</Text>
                                     <Text style={s.stepText}>{row.step}</Text>
                                     <TouchableOpacity
-                                        style={[s.resultBtn, val && s.resultBtnFilled, isEditMode && s.resultBtnEditMode]}
-                                        onPress={() => handleOpenCellOptions(rowIdx)}
+                                        style={[s.resultBtn,
+                                        val === 'pass' ? s.resultBtnPass :
+                                            val === 'fail' ? s.resultBtnFail :
+                                                s.resultBtnEmpty,
+                                        isEditMode && s.resultBtnEditMode,
+                                        ]}
+                                        onPress={() => toggleActiveCell(rowIdx)}
                                         activeOpacity={0.7}
                                     >
-                                        <Text style={[s.resultBtnText, !val && s.resultBtnTextEmpty]}>{val || 'Tap'}</Text>
+                                        {val === 'pass' && <CheckCircle size={20} color="#15803d" />}
+                                        {val === 'fail' && <XCircle size={20} color="#dc2626" />}
+                                        {!val && <Text style={s.dashText}>—</Text>}
                                     </TouchableOpacity>
                                 </View>
                             );
@@ -365,9 +350,21 @@ export const DailyRoutinesScreen = () => {
                             </View>
                         )}
                         <View style={s.entryFooter}>
-                            <Text style={s.entryFooterText}>
-                                Enter Correct Response (+) over number of opportunities (X), or NA
-                            </Text>
+                            {(() => {
+                                const fp = rows.filter((_, i) => activeResults[String(i)] === 'pass').length;
+                                const ff = rows.filter((_, i) => activeResults[String(i)] === 'fail').length;
+                                const ft = fp + ff;
+                                const fpct = ft > 0 ? Math.round(fp / ft * 100) : null;
+                                return (
+                                    <Text style={s.entryFooterText}>
+                                        {rows.length} steps · {' '}
+                                        <Text style={{ color: '#15803d', fontWeight: '700' }}>{fp} pass</Text>
+                                        {' · '}
+                                        <Text style={{ color: '#dc2626', fontWeight: '700' }}>{ff} fail</Text>
+                                        {fpct !== null ? <Text style={{ color: '#ec4899', fontWeight: '700' }}> · {fpct}%</Text> : null}
+                                    </Text>
+                                );
+                            })()}
                         </View>
                     </View>
 
@@ -377,7 +374,10 @@ export const DailyRoutinesScreen = () => {
                             <Text style={s.sectionTitle}>Past Sessions</Text>
                             {allSessions.map((sess, sessIdx) => {
                                 const isExpanded = expandedDay === sess.day;
-                                const filledCount = Object.values(sess.results || {}).filter(Boolean).length;
+                                const passCount = rows.filter((_, i) => sess.results[String(i)] === 'pass').length;
+                                const failCount = rows.filter((_, i) => sess.results[String(i)] === 'fail').length;
+                                const total = passCount + failCount;
+                                const pct = total > 0 ? Math.round(passCount / total * 100) : null;
                                 return (
                                     <View key={sess.day} style={s.accordionItem}>
                                         <TouchableOpacity style={s.accordionHeader} onPress={() => toggleDayExpand(sess.day)} activeOpacity={0.75}>
@@ -386,7 +386,10 @@ export const DailyRoutinesScreen = () => {
                                                 <Text style={s.accordionMeta}>{fmtDate(sess.date)} · {sess.employeeName || '—'}</Text>
                                             </View>
                                             <View style={s.accordionRight}>
-                                                <Text style={s.statText}>Filled: {filledCount}/{rows.length}</Text>
+                                                {passCount > 0 && <Text style={s.statPass}>✓{passCount}</Text>}
+                                                {failCount > 0 && <Text style={s.statFail}> ✗{failCount}</Text>}
+                                                {pct !== null && <Text style={s.statPct}> {pct}%</Text>}
+                                                {total === 0 && <Text style={s.statNone}>—</Text>}
                                                 {isExpanded
                                                     ? <ChevronUp size={16} color="#94a3b8" style={{ marginLeft: 6 }} />
                                                     : <ChevronDown size={16} color="#94a3b8" style={{ marginLeft: 6 }} />}
@@ -402,7 +405,9 @@ export const DailyRoutinesScreen = () => {
                                                             <Text style={s.dayRowNum}>{ri + 1}</Text>
                                                             <Text style={s.dayRowStep}>{row.step}</Text>
                                                             <View style={s.dayRowResult}>
-                                                                <Text style={s.dayRowResultText}>{v || '—'}</Text>
+                                                                {v === 'pass' && <CheckCircle size={16} color="#15803d" />}
+                                                                {v === 'fail' && <XCircle size={16} color="#dc2626" />}
+                                                                {!v && <Text style={s.dayRowNone}>—</Text>}
                                                             </View>
                                                         </View>
                                                     );
@@ -422,65 +427,6 @@ export const DailyRoutinesScreen = () => {
                 </ScrollView>
             )}
 
-            {/* Fractional Value Modal */}
-            <Modal
-                transparent
-                visible={activeCellIdx !== null}
-                animationType="fade"
-                onRequestClose={() => setActiveCellIdx(null)}
-            >
-                <KeyboardAvoidingView style={s.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                    <View style={s.modalCard}>
-                        <View style={s.modalHeader}>
-                            <Text style={s.modalTitle}>Enter Score</Text>
-                            <TouchableOpacity onPress={() => setActiveCellIdx(null)}><X size={20} color="#64748b" /></TouchableOpacity>
-                        </View>
-                        <Text style={s.modalSubtitle}>{activeCellIdx !== null ? sheet?.rows[activeCellIdx]?.step : ''}</Text>
-                        
-                        <View style={s.fractionInputRow}>
-                            <View style={s.fractionCol}>
-                                <Text style={s.fractionLabel}>Correct (+)</Text>
-                                <TextInput
-                                    style={s.fractionInput}
-                                    keyboardType="number-pad"
-                                    placeholder="0"
-                                    value={modalCorrect}
-                                    onChangeText={setModalCorrect}
-                                    autoFocus
-                                />
-                            </View>
-                            <Text style={s.fractionSlash}>/</Text>
-                            <View style={s.fractionCol}>
-                                <Text style={s.fractionLabel}>Opportunities (X)</Text>
-                                <TextInput
-                                    style={s.fractionInput}
-                                    keyboardType="number-pad"
-                                    placeholder="0"
-                                    value={modalTotal}
-                                    onChangeText={setModalTotal}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={s.modalBtnRow}>
-                            <TouchableOpacity style={s.modalBtnAction} onPress={() => handleApplyModalNumbers()}>
-                                <Text style={s.modalBtnActionText}>Apply Score</Text>
-                            </TouchableOpacity>
-                        </View>
-                        
-                        <View style={s.modalDivider} />
-                        
-                        <View style={s.modalBtnRowSecondary}>
-                            <TouchableOpacity style={s.modalBtnNA} onPress={() => handleApplyCellVal('NA')}>
-                                <Text style={s.modalBtnNAText}>Mark as N/A</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={s.modalBtnClear} onPress={() => handleApplyCellVal(null)}>
-                                <Text style={s.modalBtnClearText}>Clear Cell</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </KeyboardAvoidingView>
-            </Modal>
         </View>
     );
 };
@@ -528,10 +474,10 @@ const s = StyleSheet.create({
     rowNum: { width: 22, fontSize: 10, color: '#94a3b8', fontWeight: '600', fontFamily: FONTS.regular },
     stepText: { flex: 1, fontSize: 13, fontWeight: '600', color: '#1e293b', fontFamily: FONTS.bold, flexShrink: 1 },
     resultBtn: { width: 72, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderWidth: 1.5, borderColor: '#e2e8f0', borderStyle: 'dashed' },
-    resultBtnFilled: { backgroundColor: '#fdf2f8', borderColor: '#fbcfe8', borderStyle: 'solid' },
-    resultBtnEditMode: { borderWidth: 2, borderStyle: 'solid' },
-    resultBtnText: { fontSize: 16, fontWeight: '800', color: '#be185d', fontFamily: FONTS.bold },
-    resultBtnTextEmpty: { fontSize: 13, fontWeight: '600', color: '#cbd5e1' },
+    resultBtnEmpty: { backgroundColor: '#f8fafc', borderWidth: 1.5, borderColor: '#e2e8f0', borderStyle: 'dashed' },
+    resultBtnPass: { backgroundColor: '#f0fdf4', borderWidth: 1.5, borderColor: '#86efac' },
+    resultBtnFail: { backgroundColor: '#fef2f2', borderWidth: 1.5, borderColor: '#fca5a5' },
+    dashText: { fontSize: 18, color: '#cbd5e1', fontWeight: '300' },
 
     addStepBar: { paddingHorizontal: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
     addStepBtn: { borderWidth: 1.5, borderColor: '#fbcfe8', borderStyle: 'dashed', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start' },
@@ -552,36 +498,20 @@ const s = StyleSheet.create({
     accordionDay: { fontSize: 14, fontWeight: '800', color: '#1e293b', fontFamily: FONTS.bold },
     accordionMeta: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontFamily: FONTS.regular },
     accordionRight: { flexDirection: 'row', alignItems: 'center' },
-    statText: { fontSize: 12, fontWeight: '700', color: '#64748b', fontFamily: FONTS.bold },
+    statPass: { fontSize: 12, fontWeight: '700', color: '#15803d', fontFamily: FONTS.bold },
+    statFail: { fontSize: 12, fontWeight: '700', color: '#dc2626', fontFamily: FONTS.bold },
+    statPct: { fontSize: 12, fontWeight: '700', color: '#ec4899', fontFamily: FONTS.bold },
+    statNone: { fontSize: 12, color: '#cbd5e1', fontFamily: FONTS.regular },
 
     accordionBody: { backgroundColor: '#fafbff', borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingBottom: 6 },
     dayRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
     dayRowAlt: { backgroundColor: '#f0f4ff' },
     dayRowNum: { width: 22, fontSize: 10, color: '#94a3b8', fontFamily: FONTS.regular },
     dayRowStep: { flex: 1, fontSize: 13, color: '#334155', fontFamily: FONTS.regular },
-    dayRowResult: { width: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e2e8f0', borderRadius: 6, paddingVertical: 4 },
-    dayRowResultText: { fontSize: 12, fontWeight: '800', color: '#334155' },
+    dayRowResult: { width: 32, alignItems: 'center' },
+    dayRowNone: { fontSize: 14, color: '#cbd5e1' },
     editDayBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end', margin: 12, backgroundColor: '#fffde7', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: '#ffe082' },
     editDayBtnText: { fontSize: 12, fontWeight: '700', color: '#d97706', fontFamily: FONTS.bold },
 
-    // Modal
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 },
-    modalCard: { backgroundColor: 'white', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 10 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-    modalTitle: { fontSize: 18, fontWeight: '800', color: '#1e293b', fontFamily: FONTS.bold },
-    modalSubtitle: { fontSize: 14, color: '#64748b', fontFamily: FONTS.regular, marginBottom: 20 },
-    fractionInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 },
-    fractionCol: { flex: 1, alignItems: 'center' },
-    fractionLabel: { fontSize: 12, color: '#94a3b8', fontWeight: '600', marginBottom: 8 },
-    fractionInput: { width: '100%', backgroundColor: '#f8fafc', borderWidth: 2, borderColor: '#e2e8f0', borderRadius: 12, fontSize: 24, fontWeight: '800', color: '#ec4899', textAlign: 'center', paddingVertical: 12 },
-    fractionSlash: { fontSize: 36, fontWeight: '200', color: '#cbd5e1', paddingTop: 18 },
-    modalBtnRow: { flexDirection: 'row', gap: 12 },
-    modalBtnAction: { flex: 1, backgroundColor: '#ec4899', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-    modalBtnActionText: { color: 'white', fontSize: 15, fontWeight: 'bold' },
-    modalDivider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 20 },
-    modalBtnRowSecondary: { flexDirection: 'row', gap: 12 },
-    modalBtnNA: { flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
-    modalBtnNAText: { color: '#64748b', fontSize: 14, fontWeight: 'bold' },
-    modalBtnClear: { flex: 1, backgroundColor: '#fef2f2', paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
-    modalBtnClearText: { color: '#dc2626', fontSize: 14, fontWeight: 'bold' },
+
 });

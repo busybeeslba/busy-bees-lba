@@ -9,7 +9,7 @@ import { Button } from '../../components/Button';
 import { useTheme } from '../../hooks/useTheme';
 import { COLORS, FONTS } from '../../constants/theme';
 import { useAppStore } from '../../store/useAppStore';
-import { saveAvailability } from '../../utils/api';
+import { createSchedule } from '../../lib/db';
 import { Clock, Calendar as CalendarIcon, X, Trash } from 'lucide-react-native';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -80,15 +80,16 @@ export const SetAvailabilityScreen = () => {
 
         setLoading(true);
         try {
-            // Because JSON server doesn't support bulk post easily out of the box,
-            // we will loop and post them individually, or we could just do it via promise map.
             const promises = availabilitySlots.map(slot =>
-                saveAvailability({
-                    id: slot.id, // using the generated timestamp string
+                createSchedule({
                     employeeId: user.employeeId || user.id,
                     date: slot.date,
                     startTime: slot.startTime,
-                    endTime: slot.endTime
+                    endTime: slot.endTime,
+                    status: 'available',
+                    clientId: null,
+                    serviceId: null,
+                    notes: 'Availability Slot'
                 })
             );
 

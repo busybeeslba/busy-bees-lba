@@ -151,7 +151,7 @@ export const BaselineSheetScreen = () => {
         setExpandedDay(null);
         const clientId = activeSession?.clientId || `CLI-${clientRecord.id}`;
         const fetchFromDB = () => {
-            dbGet<any[]>('/program_mastery')
+            dbGet<any[]>('/academic_baselines')
                 .then((all: any[]) => {
                     const found = (Array.isArray(all) ? all : []).find(s =>
                         (s.clientId === clientId || s.clientName === (clientRecord.kidsName || clientRecord.name)) &&
@@ -205,7 +205,7 @@ export const BaselineSheetScreen = () => {
                 i === editingSessionIdx ? { ...s, results: editDraft } : s
             );
             const updatedSheet = { ...sheet, sessions: updatedSessions };
-            await dbPatch(`/program_mastery/${sheet.id}`, updatedSheet);
+            await dbPatch(`/academic_baselines/${sheet.id}`, updatedSheet);
             setSheet(updatedSheet);
             setEditingSessionIdx(null);
             setEditDraft({});
@@ -227,9 +227,9 @@ export const BaselineSheetScreen = () => {
             };
             const updatedSheet = { ...sheet, sessions: [...(sheet.sessions || []), newSession] };
             if (sheet.id) {
-                await dbPatch(`/program_mastery/${sheet.id}`, updatedSheet);
+                await dbPatch(`/academic_baselines/${sheet.id}`, updatedSheet);
             } else {
-                await dbPost('/program_mastery', { ...updatedSheet, createdAt: new Date().toISOString() });
+                await dbPost('/academic_baselines', { ...updatedSheet, createdAt: new Date().toISOString() });
             }
             Alert.alert('Saved!', `Day ${newSession.day} recorded.`, [{ text: 'OK', onPress: () => navigation.goBack() }]);
         } catch {
@@ -273,7 +273,7 @@ export const BaselineSheetScreen = () => {
                 </TouchableOpacity>
                 <View style={s.headerTitle}>
                     <Text style={[s.title, isEditMode && s.titleEditMode]}>
-                        {isEditMode ? `Correcting Day ${editingSess?.day}` : 'Baseline Sheet'}
+                        {isEditMode ? `Correcting Day ${editingSess?.day}` : 'Baseline Form'}
                     </Text>
                     <Text style={[s.subtitle, isEditMode && s.subtitleEditMode]}>
                         {isEditMode
@@ -288,7 +288,7 @@ export const BaselineSheetScreen = () => {
                 >
                     {saving ? <ActivityIndicator color="#000" size="small" /> : (
                         <><Save size={15} color="#000" />
-                            <Text style={s.saveBtnText}>{isEditMode ? 'Save Edit' : `Save Day ${nextDay}`}</Text></>
+                            <Text style={s.saveBtnText}>{isEditMode ? 'Save Edit' : 'Save'}</Text></>
                     )}
                 </TouchableOpacity>
             </View>

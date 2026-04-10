@@ -146,6 +146,8 @@ export const createDocument = (d: Omit<any, 'id'>) => dbPost<any>('/documents', 
 
 export const fetchSchedule = () => dbGet<any[]>('/schedule');
 export const createSchedule = (s: Omit<any, 'id'>) => dbPost<any>('/schedule', s);
+export const deleteSchedule = (id: string | number) => dbDelete<any>(`/schedule/${id}`);
+export const updateSchedule = (id: string | number, updates: Partial<any>) => dbPatch<any>(`/schedule/${id}`, updates);
 
 // ── Users ────────────────────────────────────────────────────────────────────
 export const fetchUsers = () => dbGet<any[]>('/users');

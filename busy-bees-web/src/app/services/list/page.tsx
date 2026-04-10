@@ -16,6 +16,7 @@ export default function ServiceListPage() {
     const [providers, setProviders] = useState<any[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<any>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Advanced Filter State
     const [filterRules, setFilterRules] = useState<FilterRule[]>([]);
@@ -100,6 +101,19 @@ export default function ServiceListPage() {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (!confirm(`Are you sure you want to delete ${selectedIds.size} selected service(s)?`)) return;
+        try {
+            await Promise.all(Array.from(selectedIds).map(id => dbClient.delete(`/available_services/${id}`)));
+            const updated = availableServices.filter(s => !selectedIds.has(s.serviceId));
+            setAvailableServices(updated);
+            localStorage.setItem('busy_bees_services', JSON.stringify(updated));
+            setSelectedIds(new Set());
+        } catch {
+            alert('Could not delete some services.');
+        }
+    };
+
 
     const getProviderStyle = (providerName: string) => {
         if (!providerName || providerName === 'Unassigned') return { backgroundColor: '#94a3b8', color: '#ffffff' };
@@ -144,6 +158,14 @@ export default function ServiceListPage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {selectedIds.size > 0 && (
+                        <button 
+                            onClick={handleBulkDelete}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                        >
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.size})
+                        </button>
+                    )}
                     <button className={styles.addBtn} onClick={() => setIsAddModalOpen(true)}>
                         <Plus size={20} />
                         <span>Add New Service</span>
@@ -184,6 +206,27 @@ export default function ServiceListPage() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
+                            <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer' }} onClick={() => {
+                                if (selectedIds.size === filteredServices.length && filteredServices.length > 0) {
+                                    setSelectedIds(new Set());
+                                } else {
+                                    setSelectedIds(new Set(filteredServices.map(s => s.serviceId)));
+                                }
+                            }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={filteredServices.length > 0 && selectedIds.size === filteredServices.length} 
+                                    onChange={() => {
+                                        if (selectedIds.size === filteredServices.length && filteredServices.length > 0) {
+                                            setSelectedIds(new Set());
+                                        } else {
+                                            setSelectedIds(new Set(filteredServices.map(s => s.serviceId)));
+                                        }
+                                    }} 
+                                    onClick={e => e.stopPropagation()}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                            </th>
                             <th onClick={() => handleSort('serviceId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     Service ID
@@ -207,7 +250,20 @@ export default function ServiceListPage() {
                     </thead>
                     <tbody>
                         {filteredServices.map((service, index) => (
-                            <tr key={index}>
+                            <tr key={index} className={selectedIds.has(service.serviceId) ? styles.checkedRow : ''}>
+                                <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedIds.has(service.serviceId)}
+                                        onChange={() => {
+                                            const next = new Set(selectedIds);
+                                            if (next.has(service.serviceId)) next.delete(service.serviceId);
+                                            else next.add(service.serviceId);
+                                            setSelectedIds(next);
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                </td>
                                 <td>
                                     <span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span>
                                 </td>

@@ -39,8 +39,8 @@ export const SessionDetailsScreen = () => {
     const [expandNotes, setExpandNotes] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
-    // Whether this client already has at least 1 baseline session saved
-    const [hasBaselineData, setHasBaselineData] = useState(false);
+    // Form history tracking
+    const [historyForms, setHistoryForms] = useState({ baseline: false, massTrial: false, dailyRoutines: false, transaction: false });
 
     // Filtered lists
     const filteredClients = clients.filter(c => {
@@ -72,21 +72,27 @@ export const SessionDetailsScreen = () => {
         fetchFromDB();
     }, []);
 
-    // Check if this client has any saved baseline sessions
+    // Check if this client has any saved sessions for the 4 form types
     useEffect(() => {
         const cId = activeSession?.clientId;
         const cName = activeSession?.clientName;
         if (!cId && !cName) return;
-        setHasBaselineData(false);
-        dbGet<any[]>('/academic_baselines')
-            .then(data => {
-                const found = (Array.isArray(data) ? data : []).find(s =>
-                    (s.clientId === cId || s.clientName === cName) &&
-                    Array.isArray(s.sessions) && s.sessions.length > 0
-                );
-                setHasBaselineData(!!found);
-            })
-            .catch(() => setHasBaselineData(false));
+        
+        const checkData = (arr: any[]) => arr.some(s => (s.clientId === cId || s.clientName === cName) && Array.isArray(s.sessions) && s.sessions.length > 0);
+        
+        Promise.all([
+            dbGet<any[]>('/academic_baselines').catch(() => []),
+            dbGet<any[]>('/mass_trials').catch(() => []),
+            dbGet<any[]>('/daily_routines').catch(() => []),
+            dbGet<any[]>('/transaction-sheets').catch(() => [])
+        ]).then(([baselines, massTrials, dailyRoutines, transactions]) => {
+            setHistoryForms({
+                baseline: checkData(baselines),
+                massTrial: checkData(massTrials),
+                dailyRoutines: checkData(dailyRoutines),
+                transaction: checkData(transactions)
+            });
+        });
     }, [activeSession?.clientId, activeSession?.clientName]);
 
     useEffect(() => {
@@ -246,23 +252,45 @@ export const SessionDetailsScreen = () => {
                         <View style={styles.section}>
                             <Text style={sectionTitleStyle}>Forms</Text>
 
-                            {/* ── Baseline Sheet quick-access card (only when data exists) ── */}
-                            {hasBaselineData && (
-                                <TouchableOpacity
-                                    style={styles.baselineCard}
-                                    onPress={() => navigation.navigate('BaselineSheet')}
-                                    activeOpacity={0.8}
-                                >
-                                    <View style={styles.baselineIconBox}>
-                                        <ClipboardList size={24} color="#92400e" />
-                                    </View>
+                            {/* ── Form quick-access cards (only when data exists) ── */}
+                            {historyForms.baseline && (
+                                <TouchableOpacity style={styles.baselineCard} onPress={() => navigation.navigate('BaselineSheet')} activeOpacity={0.8}>
+                                    <View style={styles.baselineIconBox}><ClipboardList size={24} color="#92400e" /></View>
                                     <View style={styles.baselineInfo}>
-                                        <Text style={styles.baselineName}>Baseline Sheet</Text>
+                                        <Text style={styles.baselineName}>Baseline Form</Text>
                                         <Text style={styles.baselineDesc}>Track pass / fail per STO across sessions</Text>
                                     </View>
-                                    <View style={styles.baselineArrow}>
-                                        <Text style={styles.baselineArrowText}>›</Text>
+                                    <View style={styles.baselineArrow}><Text style={styles.baselineArrowText}>›</Text></View>
+                                </TouchableOpacity>
+                            )}
+                            {historyForms.massTrial && (
+                                <TouchableOpacity style={[styles.baselineCard, { borderColor: '#3b82f6', shadowColor: '#3b82f6' }]} onPress={() => navigation.navigate('MassTrial')} activeOpacity={0.8}>
+                                    <View style={[styles.baselineIconBox, { backgroundColor: '#dbeafe' }]}><ClipboardList size={24} color="#1d4ed8" /></View>
+                                    <View style={styles.baselineInfo}>
+                                        <Text style={[styles.baselineName, { color: '#1e3a8a' }]}>Mass Trial / DTT</Text>
+                                        <Text style={[styles.baselineDesc, { color: '#1e40af' }]}>Track prompted vs unprompted trials</Text>
                                     </View>
+                                    <View style={styles.baselineArrow}><Text style={[styles.baselineArrowText, { color: '#2563eb' }]}>›</Text></View>
+                                </TouchableOpacity>
+                            )}
+                            {historyForms.dailyRoutines && (
+                                <TouchableOpacity style={[styles.baselineCard, { borderColor: '#ec4899', shadowColor: '#ec4899' }]} onPress={() => navigation.navigate('DailyRoutines')} activeOpacity={0.8}>
+                                    <View style={[styles.baselineIconBox, { backgroundColor: '#fdf2f8' }]}><ClipboardList size={24} color="#be185d" /></View>
+                                    <View style={styles.baselineInfo}>
+                                        <Text style={[styles.baselineName, { color: '#9d174d' }]}>Daily Routines</Text>
+                                        <Text style={[styles.baselineDesc, { color: '#be185d' }]}>Track routine steps pass / fail</Text>
+                                    </View>
+                                    <View style={styles.baselineArrow}><Text style={[styles.baselineArrowText, { color: '#ec4899' }]}>›</Text></View>
+                                </TouchableOpacity>
+                            )}
+                            {historyForms.transaction && (
+                                <TouchableOpacity style={[styles.baselineCard, { borderColor: '#10b981', shadowColor: '#10b981' }]} onPress={() => navigation.navigate('TransactionSheet')} activeOpacity={0.8}>
+                                    <View style={[styles.baselineIconBox, { backgroundColor: '#d1fae5' }]}><ClipboardList size={24} color="#047857" /></View>
+                                    <View style={styles.baselineInfo}>
+                                        <Text style={[styles.baselineName, { color: '#064e3b' }]}>Transaction Form</Text>
+                                        <Text style={[styles.baselineDesc, { color: '#065f46' }]}>Log behavioral events and locations</Text>
+                                    </View>
+                                    <View style={styles.baselineArrow}><Text style={[styles.baselineArrowText, { color: '#059669' }]}>›</Text></View>
                                 </TouchableOpacity>
                             )}
 

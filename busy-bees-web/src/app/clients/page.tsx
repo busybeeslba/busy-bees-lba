@@ -21,6 +21,7 @@ export default function ClientsPage() {
     const [clients, setClients] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any | null>(null);
     const [activeActionId, setActiveActionId] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [detailWidth, setDetailWidth] = useState<number>(0); // Initialize as 0, will set in effect
     const [isResizing, setIsResizing] = useState(false);
@@ -364,6 +365,28 @@ export default function ClientsPage() {
                     </div>
                 </div>
                 <div className={styles.rightActions}>
+                    {selectedIds.size > 0 && (
+                        <button 
+                            onClick={async () => {
+                                if (!confirm(`Are you sure you want to delete ${selectedIds.size} selected client(s)?`)) return;
+                                try {
+                                    await Promise.all(Array.from(selectedIds).map(id => {
+                                        const target = clients.find(c => c.clientId === id);
+                                        const dbId = target?._dbId || id;
+                                        return dbClient.delete(`/clients/${dbId}`);
+                                    }));
+                                    setClients(prev => prev.filter(c => !selectedIds.has(c.clientId)));
+                                    setSelectedIds(new Set());
+                                    if (selectedClient && selectedIds.has(selectedClient.clientId)) setSelectedClient(null);
+                                } catch {
+                                    alert('Could not delete some clients.');
+                                }
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                        >
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.size})
+                        </button>
+                    )}
                     <button
                         className={styles.addBtn}
                         onClick={() => setIsAddModalOpen(true)}
@@ -414,6 +437,27 @@ export default function ClientsPage() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
+                                    <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer' }} onClick={() => {
+                                        if (selectedIds.size === filteredClients.length && filteredClients.length > 0) {
+                                            setSelectedIds(new Set());
+                                        } else {
+                                            setSelectedIds(new Set(filteredClients.map((c: any) => c.clientId)));
+                                        }
+                                    }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={filteredClients.length > 0 && selectedIds.size === filteredClients.length} 
+                                            onChange={() => {
+                                                if (selectedIds.size === filteredClients.length && filteredClients.length > 0) {
+                                                    setSelectedIds(new Set());
+                                                } else {
+                                                    setSelectedIds(new Set(filteredClients.map((c: any) => c.clientId)));
+                                                }
+                                            }} 
+                                            onClick={e => e.stopPropagation()}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </th>
                                     <th onClick={() => handleSort('clientId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             Client ID
@@ -513,10 +557,23 @@ export default function ClientsPage() {
                                 {filteredClients.map((client) => (
                                     <tr
                                         key={client.clientId}
-                                        className={`${selectedClient?.clientId === client.clientId ? styles.selectedRow : ''}`}
+                                        className={`${selectedClient?.clientId === client.clientId ? styles.selectedRow : ''} ${selectedIds.has(client.clientId) ? styles.checkedRow : ''}`}
                                         onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}
                                         style={{ cursor: 'pointer' }}
                                     >
+                                        <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.has(client.clientId)}
+                                                onChange={() => {
+                                                    const next = new Set(selectedIds);
+                                                    if (next.has(client.clientId)) next.delete(client.clientId);
+                                                    else next.add(client.clientId);
+                                                    setSelectedIds(next);
+                                                }}
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                        </td>
                                         <td><span className={styles.cellText}>CLI-{client.clientId}</span></td>
                                         <td><span className={styles.clientName}>{client.kidsName}</span></td>
                                         <td><span className={styles.cellText}>{calculateAge(client.dob)}</span></td>

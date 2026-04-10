@@ -25,6 +25,7 @@ import { SetAvailabilityScreen } from '../screens/calendar/SetAvailabilityScreen
 import { BaselineSheetScreen } from '../screens/forms/BaselineSheetScreen';
 import { MassTrialScreen } from '../screens/forms/MassTrialScreen';
 import { DailyRoutinesScreen } from '../screens/forms/DailyRoutinesScreen';
+import { TransactionSheetScreen } from '../screens/forms/TransactionSheetScreen';
 
 import { tabStyles } from './styles';
 import { COLORS, FONTS } from '../constants/theme';
@@ -247,6 +248,11 @@ export default function AppNavigator() {
                             name="DailyRoutines"
                             component={DailyRoutinesScreen}
                             options={{ headerShown: true, title: 'Daily Routines' }}
+                        />
+                        <Stack.Screen
+                            name="TransactionSheet"
+                            component={TransactionSheetScreen}
+                            options={{ headerShown: false, title: 'Transaction Form' }}
                         />
                     </Stack.Group>
                 )}

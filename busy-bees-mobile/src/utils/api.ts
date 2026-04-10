@@ -14,7 +14,7 @@
 
 // The address of our shared database server
 // On a real phone, replace 'localhost' with your computer's IP address (e.g. 192.168.2.25)
-const DB_URL = 'http://192.168.2.25:3001';
+const DB_URL = 'http://192.168.2.159:3001';
 
 // Helper: make a GET request (read data)
 async function get<T>(path: string): Promise<T> {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Clock, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Clock, Filter, ArrowUpDown, Trash2 } from 'lucide-react';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
 import FacetedFilter from '@/components/ui/FacetedFilter';
@@ -17,6 +17,7 @@ export default function ClientServicesPage() {
     const [filterRules, setFilterRules] = useState<FilterRule[]>([]);
     const [matchType, setMatchType] = useState<MatchType>('AND');
     const [showFilterDrawer, setShowFilterDrawer] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Sorting State
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
@@ -61,6 +62,64 @@ export default function ClientServicesPage() {
         });
     }, []);
 
+    const handleBulkDelete = async () => {
+        if (!confirm(`Are you sure you want to delete ${selectedIds.size} assigned service(s)?`)) return;
+        try {
+            // Group deletions by client.id
+            const deletionsByClient: Record<string, string[]> = {};
+            Array.from(selectedIds).forEach(uniqueId => {
+                const parts = uniqueId.split('-');
+                if (parts.length >= 3) {
+                    const clientId = parts[0];
+                    const serviceId = parts[1];
+                    if (!deletionsByClient[clientId]) deletionsByClient[clientId] = [];
+                    deletionsByClient[clientId].push(serviceId);
+                }
+            });
+
+            // Process each client
+            await Promise.all(Object.entries(deletionsByClient).map(async ([clientId, serviceIdsToRemove]) => {
+                const client = await dbClient.get(`/clients/${clientId}`);
+                if (client && Array.isArray(client.services)) {
+                    // Remove the services being deleted
+                    const updatedServices = client.services.filter((s: any) => !serviceIdsToRemove.includes(s.serviceId));
+                    await dbClient.patch(`/clients/${clientId}`, { services: updatedServices });
+                }
+            }));
+            
+            // Trigger a re-fetch
+            const [clients, services] = await Promise.all([
+                dbClient.get('/clients').catch(() => []),
+                dbClient.get('/available_services').catch(() => []),
+            ]);
+            
+            setAvailableServices(services);
+            const derivedServices: any[] = [];
+            clients.forEach((client: any) => {
+                if (Array.isArray(client.services)) {
+                    client.services.forEach((srv: any, idx: number) => {
+                        const serviceDef = services.find((s: any) => s.serviceId === srv.serviceId);
+                        derivedServices.push({
+                            uniqueId: `${client.id}-${srv.serviceId}-${idx}`,
+                            serviceId: srv.serviceId,
+                            clientId: `CLI-${client.id}`,
+                            childName: client.kidsName || client.name || '',
+                            type: serviceDef ? serviceDef.name : srv.serviceId,
+                            provider: serviceDef ? (serviceDef.provider || 'Unassigned') : 'Unassigned',
+                            hours: srv.hours || '0h',
+                        });
+                    });
+                }
+            });
+            setAssignedServices(derivedServices);
+            setSelectedIds(new Set());
+            
+        } catch {
+            alert('Could not delete some assigned services.');
+        }
+    };
+
+
 
 
     // Apply Advanced Filters
@@ -88,10 +147,18 @@ export default function ClientServicesPage() {
                     <input type="text" placeholder="Search client services..." className={styles.searchInput} />
                 </div>
 
+                {selectedIds.size > 0 && (
+                    <button 
+                        onClick={handleBulkDelete}
+                        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                    >
+                        <Trash2 size={16} /> Delete Selected ({selectedIds.size})
+                    </button>
+                )}
                 {/* Filter Drawer Toggle */}
                 <button
                     className={styles.filterBtn}
-                    style={{ marginLeft: 'auto' }}
+                    style={{ marginLeft: selectedIds.size > 0 ? '0' : 'auto' }}
                     onClick={() => setShowFilterDrawer(true)}
                 >
                     <Filter size={16} color="currentColor" />
@@ -125,6 +192,27 @@ export default function ClientServicesPage() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
+                            <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer' }} onClick={() => {
+                                if (selectedIds.size === filteredServices.length && filteredServices.length > 0) {
+                                    setSelectedIds(new Set());
+                                } else {
+                                    setSelectedIds(new Set(filteredServices.map((s: any) => s.uniqueId)));
+                                }
+                            }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={filteredServices.length > 0 && selectedIds.size === filteredServices.length} 
+                                    onChange={() => {
+                                        if (selectedIds.size === filteredServices.length && filteredServices.length > 0) {
+                                            setSelectedIds(new Set());
+                                        } else {
+                                            setSelectedIds(new Set(filteredServices.map((s: any) => s.uniqueId)));
+                                        }
+                                    }} 
+                                    onClick={e => e.stopPropagation()}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                            </th>
                             <th onClick={() => handleSort('serviceId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     Service ID
@@ -168,7 +256,20 @@ export default function ClientServicesPage() {
                     <tbody>
                         {filteredServices.length > 0 ? (
                             filteredServices.map((service) => (
-                                <tr key={service.uniqueId}>
+                                <tr key={service.uniqueId} className={selectedIds.has(service.uniqueId) ? styles.checkedRow : ''}>
+                                    <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.has(service.uniqueId)}
+                                            onChange={() => {
+                                                const next = new Set(selectedIds);
+                                                if (next.has(service.uniqueId)) next.delete(service.uniqueId);
+                                                else next.add(service.uniqueId);
+                                                setSelectedIds(next);
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </td>
                                     <td>
                                         <span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span>
                                     </td>

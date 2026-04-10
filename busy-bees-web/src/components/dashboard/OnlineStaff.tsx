@@ -4,11 +4,9 @@ import React from 'react';
 import { Users, Smartphone, Monitor } from 'lucide-react';
 import styles from './Dashboard.module.css';
 import { usePresence } from '@/context/PresenceContext';
-import { useBrand } from '@/context/BrandContext';
 
 export default function OnlineStaff({ workers }: { workers: any[] }) {
     const { onlineUsers, selectedUserEmail, setSelectedUserEmail } = usePresence();
-    const { staffAvatarSize } = useBrand();
 
     // Map online emails back to the complete Postgres user objects
     const currentOnlineStaff = workers.filter(w =>

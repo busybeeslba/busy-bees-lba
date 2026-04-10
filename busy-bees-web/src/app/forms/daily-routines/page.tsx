@@ -12,6 +12,7 @@ export default function DailyRoutinesListPage() {
     const [sheets, setSheets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedIds, setSelectedIds] = useState<(number | string)[]>([]);
 
     useEffect(() => {
         dbClient.get('/daily_routines').catch(() => [])
@@ -23,6 +24,34 @@ export default function DailyRoutinesListPage() {
         if (!confirm('Delete this Daily Routine sheet?')) return;
         await dbClient.delete(`/daily_routines/${id}`);
         setSheets(prev => prev.filter(s => s.id !== id));
+        setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+    };
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Delete ${selectedIds.length} selected Daily Routines?`)) return;
+        setLoading(true);
+        try {
+            await Promise.all(selectedIds.map(id => dbClient.delete(`/daily_routines/${id}`)));
+            setSheets(prev => prev.filter(s => !selectedIds.includes(s.id)));
+            setSelectedIds([]);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to delete some forms.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filtered.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filtered.map(s => s.id));
+        }
+    };
+
+    const toggleSelect = (id: number | string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
 
     const filtered = sheets.filter(s =>
@@ -88,9 +117,16 @@ export default function DailyRoutinesListPage() {
                         <p className={styles.pageSubtitle}>Track daily routine progress (fractional tracking)</p>
                     </div>
                 </div>
-                <button className={styles.addBtn} onClick={() => router.push('/forms/daily-routines/new')}>
-                    <Plus size={16} /> New Tracking
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {selectedIds.length > 0 && (
+                        <button className={styles.deleteBtn} onClick={handleBulkDelete} style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.length})
+                        </button>
+                    )}
+                    <button className={styles.addBtn} onClick={() => router.push('/forms/daily-routines/new')}>
+                        <Plus size={16} /> Add New
+                    </button>
+                </div>
             </div>
 
             {/* Search */}
@@ -109,13 +145,21 @@ export default function DailyRoutinesListPage() {
                 <div className={styles.empty}>Loading…</div>
             ) : filtered.length === 0 ? (
                 <div className={styles.empty}>
-                    No Daily Routines tracked yet. Use the Mobile App to log sessions.
+                    No Daily Routines tracked yet. Click <strong>+ Add New</strong> to create one.
                 </div>
             ) : (
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th style={{ width: '40px', textAlign: 'center' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                                        onChange={toggleSelectAll}
+                                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                    />
+                                </th>
                                 <th>Client</th>
                                 <th>Program</th>
                                 <th>Routines</th>
@@ -131,8 +175,21 @@ export default function DailyRoutinesListPage() {
                                 const last = getLastSession(sheet);
                                 const sessionCount = getSessionCount(sheet);
                                 return (
-                                    <tr key={sheet.id} className={styles.clickableRow} onClick={() => router.push(`/forms/daily-routines/${sheet.id}`)}>
-                                        <td className={styles.clientCell}>
+                                    <tr key={sheet.id} onClick={(e) => { 
+                                        // If clicking a row and it's not on a button, navigate or toggle selection 
+                                        if ((e.target as HTMLElement).tagName.toLowerCase() === 'td') {
+                                            router.push(`/forms/daily-routines/${sheet.id}`);
+                                        }
+                                    }} className={styles.clickableRow}>
+                                        <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(sheet.id)}
+                                                onChange={() => toggleSelect(sheet.id)}
+                                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                            />
+                                        </td>
+                                        <td className={styles.clientCell} onClick={() => router.push(`/forms/daily-routines/${sheet.id}`)}>
                                             <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>
                                             {sheet.clientName || '—'}
                                         </td>

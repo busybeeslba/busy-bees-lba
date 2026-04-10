@@ -12,6 +12,7 @@ export default function MassTrialListPage() {
     const [sheets, setSheets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedIds, setSelectedIds] = useState<(number | string)[]>([]);
 
     useEffect(() => {
         dbClient.get('/mass_trials').catch(() => [])
@@ -23,6 +24,34 @@ export default function MassTrialListPage() {
         if (!confirm('Delete this Mass Trial / DTT sheet?')) return;
         await dbClient.delete(`/mass_trials/${id}`);
         setSheets(prev => prev.filter(s => s.id !== id));
+        setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+    };
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Delete ${selectedIds.length} selected Mass Trials?`)) return;
+        setLoading(true);
+        try {
+            await Promise.all(selectedIds.map(id => dbClient.delete(`/mass_trials/${id}`)));
+            setSheets(prev => prev.filter(s => !selectedIds.includes(s.id)));
+            setSelectedIds([]);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to delete some forms.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filtered.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filtered.map(s => s.id));
+        }
+    };
+
+    const toggleSelect = (id: number | string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
 
     const filtered = sheets.filter(s =>
@@ -75,9 +104,16 @@ export default function MassTrialListPage() {
                         <p className={styles.pageSubtitle}>Discrete Trial Training — 5 trials per STO per session</p>
                     </div>
                 </div>
-                <button className={styles.addBtn} onClick={() => router.push('/forms/mass-trial/new')}>
-                    <Plus size={16} /> New Sheet
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {selectedIds.length > 0 && (
+                        <button className={styles.deleteBtn} onClick={handleBulkDelete} style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.length})
+                        </button>
+                    )}
+                    <button className={styles.addBtn} onClick={() => router.push('/forms/mass-trial/new')}>
+                        <Plus size={16} /> Add New
+                    </button>
+                </div>
             </div>
 
             {/* Search */}
@@ -96,13 +132,21 @@ export default function MassTrialListPage() {
                 <div className={styles.empty}>Loading…</div>
             ) : filtered.length === 0 ? (
                 <div className={styles.empty}>
-                    No DTT sheets yet. Click <strong>+ New Sheet</strong> to create one.
+                    No DTT sheets yet. Click <strong>+ Add New</strong> to create one.
                 </div>
             ) : (
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th style={{ width: '40px', textAlign: 'center' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                                        onChange={toggleSelectAll}
+                                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                    />
+                                </th>
                                 <th>Client</th>
                                 <th>Program / STO</th>
                                 <th>STOs</th>
@@ -119,8 +163,21 @@ export default function MassTrialListPage() {
                                 const sessionCount = getSessionCount(sheet);
                                 const pct = getAvgPct(sheet);
                                 return (
-                                    <tr key={sheet.id} onClick={() => router.push(`/forms/mass-trial/${sheet.id}`)} className={styles.clickableRow}>
-                                        <td className={styles.clientCell}>
+                                    <tr key={sheet.id} onClick={(e) => { 
+                                        // If clicking a row and it's not on a button, navigate or toggle selection 
+                                        if ((e.target as HTMLElement).tagName.toLowerCase() === 'td') {
+                                            router.push(`/forms/mass-trial/${sheet.id}`);
+                                        }
+                                    }} className={styles.clickableRow}>
+                                        <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(sheet.id)}
+                                                onChange={() => toggleSelect(sheet.id)}
+                                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                            />
+                                        </td>
+                                        <td className={styles.clientCell} onClick={() => router.push(`/forms/mass-trial/${sheet.id}`)}>
                                             <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>
                                             {sheet.clientName || '—'}
                                         </td>

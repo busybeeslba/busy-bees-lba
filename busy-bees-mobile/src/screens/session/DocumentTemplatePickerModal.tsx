@@ -8,11 +8,11 @@ import { ClipboardCheck, BarChart2, CheckSquare, X } from 'lucide-react-native';
 
 const FORM_TEMPLATES = [
     {
-        id: 'program_mastery',
-        name: 'Baseline Sheet',
+        id: 'baseline_form',
+        name: 'Baseline Form',
         description: 'Track skill introduction, mastery, and generalization',
         icon: ClipboardCheck,
-        color: '#FFC107',
+        color: '#f59e0b',
         route: 'BaselineSheet' as const,
     },
     {
@@ -25,18 +25,26 @@ const FORM_TEMPLATES = [
     },
     {
         id: 'daily_routines',
-        name: 'Daily Routines',
+        name: 'Daily Routines Form',
         description: 'Track correct responses over opportunities for daily routines',
         icon: CheckSquare,
         color: '#ec4899',
         route: 'DailyRoutines' as const,
+    },
+    {
+        id: 'transaction_form',
+        name: 'Transaction Form',
+        description: 'Log and track location transitions and client behaviors',
+        icon: ClipboardCheck,
+        color: '#10b981',
+        route: 'TransactionSheet' as const,
     },
 ];
 
 export const DocumentTemplatePickerModal = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-    const handleSelect = (route: 'BaselineSheet' | 'MassTrial' | 'DailyRoutines') => {
+    const handleSelect = (route: 'BaselineSheet' | 'MassTrial' | 'DailyRoutines' | 'TransactionSheet') => {
         navigation.replace(route);
     };
 

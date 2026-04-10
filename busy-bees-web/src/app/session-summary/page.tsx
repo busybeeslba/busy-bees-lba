@@ -50,6 +50,7 @@ export default function SessionSummaryPage() {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
     const [activeActionId, setActiveActionId] = useState<string | null>(null);
     const [selectedSession, setSelectedSession] = useState<any | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const load = () => {
@@ -103,6 +104,33 @@ export default function SessionSummaryPage() {
         setActiveActionId(null);
     };
 
+    const handleBulkDelete = async () => {
+        if (!confirm(`Delete ${selectedIds.size} selected session(s)?`)) return;
+        try {
+            await Promise.all(Array.from(selectedIds).map(id => dbClient.delete(`/sessions/${id}`)));
+            setSessions(prev => prev.filter(s => !selectedIds.has(s.id)));
+            setSelectedIds(new Set());
+            if (selectedSession && selectedIds.has(selectedSession.id)) setSelectedSession(null);
+        } catch {
+            alert('Could not delete some sessions.');
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === displayed.length && displayed.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(displayed.map((s: any) => s.id)));
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
     const filteredByRules = useDataFilter({ data: sessions, rules: filterRules, matchType });
 
     const displayed = useMemo(() => {
@@ -138,6 +166,14 @@ export default function SessionSummaryPage() {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {selectedIds.size > 0 && (
+                        <button 
+                            onClick={handleBulkDelete}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                        >
+                            <Trash2 size={16} /> Delete Selected ({selectedIds.size})
+                        </button>
+                    )}
                     <button className={styles.filterBtn} onClick={() => setShowFilterDrawer(true)}>
                         <Filter size={16} color="currentColor" />
                         <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
@@ -168,6 +204,15 @@ export default function SessionSummaryPage() {
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer' }} onClick={toggleSelectAll}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={displayed.length > 0 && selectedIds.size === displayed.length} 
+                                        onChange={toggleSelectAll} 
+                                        onClick={e => e.stopPropagation()}
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                </th>
                                 <th onClick={() => handleSort('id')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Session ID <SortIcon col="id" /></div>
                                 </th>
@@ -209,10 +254,18 @@ export default function SessionSummaryPage() {
                                 const isSelected = selectedSession?.id === session.id;
                                 return (
                                     <tr key={session.id}
-                                        className={isSelected ? styles.selectedRow : ''}
+                                        className={`${isSelected ? styles.selectedRow : ''} ${selectedIds.has(session.id) ? styles.checkedRow : ''}`}
                                         onClick={() => setSelectedSession(isSelected ? null : session)}
                                         style={{ cursor: 'pointer' }}
                                     >
+                                        <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.has(session.id)}
+                                                onChange={() => toggleSelect(session.id)}
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                        </td>
                                         <td>
                                             <span style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace', fontSize: '13px' }}>
                                                 {session.sessionId}
