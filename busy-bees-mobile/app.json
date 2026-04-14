@@ -15,6 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "buildNumber": "5",
       "bundleIdentifier": "com.y2kgroup.busybees",
       "infoPlist": {
         "UIBackgroundModes": [

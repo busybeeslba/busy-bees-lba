@@ -4,14 +4,33 @@ import React from 'react';
 import { Users, Smartphone, Monitor } from 'lucide-react';
 import styles from './Dashboard.module.css';
 import { usePresence } from '@/context/PresenceContext';
+import { createClient } from '@/utils/supabase/client';
 
-export default function OnlineStaff({ workers }: { workers: any[] }) {
+export default function OnlineStaff({ workers: initialWorkers }: { workers: any[] }) {
     const { onlineUsers, selectedUserEmail, setSelectedUserEmail } = usePresence();
+    const [workers, setWorkers] = React.useState(initialWorkers);
+
+    React.useEffect(() => { setWorkers(initialWorkers); }, [initialWorkers]);
+
+    React.useEffect(() => {
+        const supabase = createClient();
+        const chan = supabase.channel('online_staff_db_updates')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, (payload) => {
+                setWorkers(prev => prev.map(w => String(w.email).toLowerCase() === String(payload.new.email).toLowerCase() ? { ...w, ...payload.new } : w));
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(chan); };
+    }, []);
 
     // Map online emails back to the complete Postgres user objects
-    const currentOnlineStaff = workers.filter(w =>
-        onlineUsers.some(u => u.email === String(w.email).toLowerCase())
-    );
+    const currentOnlineStaff = workers.filter(w => {
+        const isWebSocketOnline = onlineUsers.some(u => u.email === String(w.email).toLowerCase());
+        
+        // Mobile iOS actively freezes WebSockets in background, so we check background GPS loop heartbeat (3 mins)
+        const isDatabaseOnline = w.lastEditAt && (new Date().getTime() - new Date(w.lastEditAt).getTime() < 180000);
+
+        return isWebSocketOnline || isDatabaseOnline;
+    });
 
     return (
         <div className={styles.statCard} style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '160px' }}>
@@ -43,7 +62,8 @@ export default function OnlineStaff({ workers }: { workers: any[] }) {
                 
                 {currentOnlineStaff.map((staff, i) => {
                     const presenceInfo = onlineUsers.find(u => u.email === String(staff.email).toLowerCase());
-                    const isMobile = presenceInfo?.deviceType === 'mobile';
+                    // If no WebSocket presence exists, they must be alive via the background GPS ping (mobile constraint)
+                    const isMobile = presenceInfo ? presenceInfo.deviceType === 'mobile' : true; 
                     const isSelected = selectedUserEmail === String(staff.email).toLowerCase();
 
                     return (

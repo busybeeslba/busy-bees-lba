@@ -10,6 +10,7 @@ export type MainTabParamList = {
     Calendar: undefined;
     History: undefined;
     Settings: undefined;
+    ChatList: undefined; // INJECT NATIVE CHAT TAB
 };
 
 export type RootStackParamList = {
@@ -18,6 +19,7 @@ export type RootStackParamList = {
     SessionDetails: undefined;
     DocumentTemplatePicker: undefined;
     DocumentForm: { templateType: string };
+    ChatRoom: { roomId?: string, targetUserId?: string, targetUserName?: string, targetAvatar?: string }; // INJECT CHAT FEED SCREEN
     CompleteSession: undefined;
     SessionCompleted: { session: Session };
     HistoryDetails: { session: Session };

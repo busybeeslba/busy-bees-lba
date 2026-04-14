@@ -81,22 +81,59 @@ interface LiveMapCoreProps {
     workers: any[];
 }
 
-export default function LiveMapCore({ onlineUsers, workers }: LiveMapCoreProps) {
+import { createClient } from '@/utils/supabase/client';
+
+export default function LiveMapCore({ onlineUsers, workers: initialWorkers }: LiveMapCoreProps) {
     const { staffAvatarSize } = useBrand();
+    const [workers, setWorkers] = React.useState(initialWorkers);
+
+    React.useEffect(() => { setWorkers(initialWorkers); }, [initialWorkers]);
+
+    React.useEffect(() => {
+        const supabase = createClient();
+        const chan = supabase.channel('online_map_db_updates')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, (payload) => {
+                setWorkers(prev => prev.map(w => String(w.email).toLowerCase() === String(payload.new.email).toLowerCase() ? { ...w, ...payload.new } : w));
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(chan); };
+    }, []);
 
     // Determine the center of the map based on online users, fallback to default NYC
     const defaultCenter: [number, number] = [40.7128, -74.0060];
     
-    const activeStaff = onlineUsers
-        .filter(u => u.location)
-        .map(u => {
+    // 1. First gather active structural data from the Postgres DB heartbeat tracker
+    const dbActiveStaff = workers.filter(w => w.lastEditAt && w.location && (new Date().getTime() - new Date(w.lastEditAt).getTime() < 180000));
+    const activeStaffMap = new Map();
+
+    dbActiveStaff.forEach(w => {
+        let parsedLocation = null;
+        try { parsedLocation = typeof w.location === 'string' ? JSON.parse(w.location) : w.location; } catch(e) {}
+        if (parsedLocation && parsedLocation.latitude) {
+            activeStaffMap.set(String(w.email).toLowerCase(), {
+                email: String(w.email).toLowerCase(),
+                location: parsedLocation,
+                deviceType: 'mobile',
+                workerName: `${w.firstName} ${w.lastName}`,
+                avatar: w.avatar
+            });
+        }
+    });
+
+    // 2. Overwrite with Real-Time WebSocket streams (which are 10x faster when app is physically open)
+    onlineUsers.forEach(u => {
+        if (u.location) {
             const worker = workers.find(w => String(w.email).toLowerCase() === u.email);
-            return {
+            activeStaffMap.set(u.email, {
                 ...u,
                 workerName: worker ? `${worker.firstName} ${worker.lastName}` : u.email,
                 avatar: worker?.avatar
-            };
-        });
+            });
+        }
+    });
+
+    // 3. Convert Map back to array for rendering
+    const activeStaff = Array.from(activeStaffMap.values());
 
     const center = activeStaff.length > 0 
         ? [activeStaff[0].location!.latitude, activeStaff[0].location!.longitude] as [number, number]

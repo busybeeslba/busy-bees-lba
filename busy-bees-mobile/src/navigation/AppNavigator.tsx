@@ -3,8 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform, View, ActivityIndicator, AppState } from 'react-native';
-import { LucideIcon, Home, Clock, Settings, FileText, Calendar } from 'lucide-react-native';
+import { Platform, View, ActivityIndicator, AppState, DeviceEventEmitter } from 'react-native';
+import { LucideIcon, Home, Clock, Settings, FileText, Calendar, MessageCircle } from 'lucide-react-native';
 import { RootStackParamList, AuthStackParamList, MainTabParamList } from '../types/navigation';
 import { useAppStore } from '../store/useAppStore';
 
@@ -22,6 +22,8 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { EditProfileScreen } from '../screens/settings/EditProfileScreen';
 import { CalendarScreen } from '../screens/calendar/CalendarScreen';
 import { SetAvailabilityScreen } from '../screens/calendar/SetAvailabilityScreen';
+import { ChatListScreen } from '../screens/chat/ChatListScreen';
+import { ChatRoomScreen } from '../screens/chat/ChatRoomScreen';
 import { BaselineSheetScreen } from '../screens/forms/BaselineSheetScreen';
 import { MassTrialScreen } from '../screens/forms/MassTrialScreen';
 import { DailyRoutinesScreen } from '../screens/forms/DailyRoutinesScreen';
@@ -83,6 +85,14 @@ function MainTabs() {
                 component={HistoryScreen}
                 options={{
                     tabBarIcon: ({ color, size }) => <Clock color={color} size={size} />,
+                }}
+            />
+            <Tab.Screen
+                name="ChatList"
+                component={ChatListScreen}
+                options={{
+                    title: 'Chat',
+                    tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
                 }}
             />
             <Tab.Screen
@@ -166,6 +176,22 @@ export default function AppNavigator() {
             }).catch(() => {});
         }
     }, [currentLocation, isLoggedIn, user?.email, isClockedIn]);
+
+    // 3. Global Push Notifications WebSocket
+    React.useEffect(() => {
+        if (isLoggedIn && user?.email) {
+            const notifChannel = supabase.channel('mobile-global-notifs')
+              .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
+                 const dbMsg = payload.new as any;
+                 DeviceEventEmitter.emit('new_chat_message', dbMsg);
+              })
+              .subscribe();
+              
+            return () => {
+                supabase.removeChannel(notifChannel);
+            };
+        }
+    }, [isLoggedIn, user?.email]);
 
     if (isInitializingAuth) {
         return (
@@ -253,6 +279,11 @@ export default function AppNavigator() {
                             name="TransactionSheet"
                             component={TransactionSheetScreen}
                             options={{ headerShown: false, title: 'Transaction Form' }}
+                        />
+                        <Stack.Screen
+                            name="ChatRoom"
+                            component={ChatRoomScreen}
+                            options={{ headerShown: false }} // Custom Header injected in screen
                         />
                     </Stack.Group>
                 )}

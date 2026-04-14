@@ -154,3 +154,29 @@ CREATE TABLE public."transaction_sheets" (
 
 INSERT INTO public."transaction_sheets" ("clientId", "clientName", "employeeId", "employeeName", "program", "date", "cellPhoneLocation", "locations", "id") VALUES ('1', 'Emma Rodriguez', '1', 'Sarah Connor', 'Colors', '2026-03-24', '', '[{"id":1,"name":"Classroom","transition":"+","delay":"No","delayTime":"","prompt":"Verbal","promptCount":"2","assistantNeeded":"Yes","food":"Snack","cwTaskAssigned":"Puzzle","cwTaskCompleted":"Yes","pgTaskAssigned":"Colors","pgTaskCompleted":"Yes","scheduleChange":"None","crisis":"No","transitionNote":"Smooth transition","promptNote":"Needed two verbal prompts","cwNote":"Finished puzzle fast","pgNote":"Got all colors right","scheduleNote":"","crisisNote":"","summaryExtra":"Great day overall."}]'::jsonb, 1);
 
+-- Realtime Chat Infrastructure Schema
+DROP TABLE IF EXISTS public."chat_rooms" CASCADE;
+CREATE TABLE public."chat_rooms" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "type" TEXT DEFAULT 'direct',
+    "created_at" TIMESTAMPTZ DEFAULT now()
+);
+
+DROP TABLE IF EXISTS public."chat_participants" CASCADE;
+CREATE TABLE public."chat_participants" (
+    "conversation_id" UUID REFERENCES public."chat_rooms"("id") ON DELETE CASCADE,
+    "user_id" UUID REFERENCES public."users"("id") ON DELETE CASCADE,
+    "joined_at" TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY ("conversation_id", "user_id")
+);
+
+DROP TABLE IF EXISTS public."chat_messages" CASCADE;
+CREATE TABLE public."chat_messages" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "conversation_id" UUID REFERENCES public."chat_rooms"("id") ON DELETE CASCADE,
+    "sender_id" UUID REFERENCES public."users"("id") ON DELETE CASCADE,
+    "content" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT now()
+);
+
+-- Note: In a live Supabase environment, run: ALTER PUBLICATION supabase_realtime ADD TABLE public."chat_messages";

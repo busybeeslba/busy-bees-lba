@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight, Palette, FileEdit, Table } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, FileText, Settings, LogOut, Building2, Wrench, ClipboardCheck, ChevronDown, ChevronRight, Palette, FileEdit, Table, MessageCircle } from 'lucide-react';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBrand } from '@/context/BrandContext';
 import { createClient } from '@/utils/supabase/client';
@@ -44,6 +44,7 @@ const MENU_ITEMS = [
         ],
     },
     { name: 'Session Summary', icon: FileText, path: '/session-summary' },
+    { name: 'Chat', icon: MessageCircle, path: '/chat' },
     { name: 'Calendar', icon: Calendar, path: '/calendar' },
     { name: 'Reports', icon: FileText, path: '/reports' },
     { 
