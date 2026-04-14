@@ -732,7 +732,7 @@ export const ChatDashboard: React.FC = () => {
              <span style={{fontWeight: 600}}>{currentUser.firstName}</span>
           </div>
           <div className={styles.headerIcons}>
-            <Plus size={20} className={styles.icon} onClick={() => setShowNewChatMenu(true)} title="New Chat" />
+            <Plus size={20} className={styles.icon} onClick={() => setShowNewChatMenu(true)} />
             <MoreVertical size={20} className={styles.icon} />
           </div>
         </div>
