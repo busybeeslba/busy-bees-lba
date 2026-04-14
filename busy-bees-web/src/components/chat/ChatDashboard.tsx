@@ -22,7 +22,7 @@ interface Message {
   senderId: string;
   content: string;
   timestamp: string;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sending' | 'sent' | 'delivered' | 'read';
   attachmentUrl?: string; // Phase 3 attachments
 }
 
