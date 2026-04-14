@@ -300,7 +300,7 @@ export const ChatDashboard: React.FC = () => {
              
              const sender = allUsers.find(u => u.id === dbMsg.sender_id);
              if (sender) {
-                 const syntheticUI = {
+                 const syntheticUI: ConversationUI = {
                    id: dbMsg.conversation_id,
                    name: `${sender.firstName} ${sender.lastName}`.trim(),
                    avatar: sender.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.firstName)}`,
