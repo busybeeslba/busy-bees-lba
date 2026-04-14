@@ -304,7 +304,6 @@ export const ChatDashboard: React.FC = () => {
                    id: dbMsg.conversation_id,
                    name: `${sender.firstName} ${sender.lastName}`.trim(),
                    avatar: sender.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.firstName)}`,
-                   isOnline: true,
                    lastMessage: dbMsg.content,
                    lastMessageTime: mapped.timestamp,
                    unreadCount: 1,
