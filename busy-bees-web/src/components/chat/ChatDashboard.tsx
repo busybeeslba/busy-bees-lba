@@ -306,8 +306,8 @@ export const ChatDashboard: React.FC = () => {
                    avatar: sender.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.firstName)}`,
                    isOnline: true,
                    lastMessage: dbMsg.content,
-                   timestamp: mapped.timestamp,
-                   unread: 1,
+                   lastMessageTime: mapped.timestamp,
+                   unreadCount: 1,
                    type: 'direct'
                  };
                  return [syntheticUI, ...prev];
