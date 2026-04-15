@@ -1,11 +1,9 @@
 .container {
     padding: 32px;
-    flex: 1;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    overflow: hidden;
-    min-height: 0;
+    width: 100%;
 }
 
 .header {
@@ -13,9 +11,6 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    /* Reduced margin */
-    flex-shrink: 0;
-    /* Prevent header from shrinking */
 }
 
 .title {
@@ -82,7 +77,6 @@
     border: 1px solid var(--border-light);
     border-radius: 8px;
     width: 44px;
-    /* Match height of addBtn approx */
     height: 44px;
     display: flex;
     align-items: center;
@@ -98,13 +92,10 @@
     border-color: var(--primary);
 }
 
-/* Toolbar */
 .toolbar {
     display: flex;
     justify-content: space-between;
     margin-bottom: 24px;
-    flex-shrink: 0;
-    /* Prevent toolbar from shrinking */
 }
 
 .searchBox {
@@ -138,16 +129,11 @@
     cursor: pointer;
 }
 
-/* Table */
 .tableContainer {
     background: white;
     border-radius: 16px;
     border: 1px solid var(--border-light);
-    overflow: auto;
-    /* Allow both scrollbars if needed */
-    flex: 1;
-    min-height: 0;
-    /* Fill wrapper height */
+    width: 100%;
 }
 
 .table {
@@ -166,9 +152,6 @@
     color: var(--text-secondary-light);
     text-transform: uppercase;
     vertical-align: middle;
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
 .table td {
@@ -193,7 +176,6 @@
     font-size: 12px;
     color: var(--text-secondary-light);
     display: none;
-    /* Hide client type if not needed or keep it */
 }
 
 .cellText {
@@ -256,7 +238,6 @@
     cursor: pointer;
     color: var(--text-secondary-light);
     padding: 8px;
-    /* Added padding for better hit area */
     transition: color 0.2s;
 }
 
@@ -323,26 +304,17 @@
     }
 }
 
-/* Layout Wrapper */
 .contentWrapper {
     display: flex;
-    gap: 0;
-    align-items: stretch;
-    flex: 1;
-    min-height: 0;
-    padding-bottom: 2px;
-    min-width: 0;
+    flex-wrap: wrap; /* Automatically wrap when screen is too small */
+    gap: 24px;
+    width: 100%;
 }
 
 .tableWrapper {
-    flex: 1;
-    transition: all 0.3s ease;
-    width: 100%;
+    flex: 1 1 60%; /* Allow shrinking but maintain proportion */
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    margin-right: 24px;
-    /* only gap needed: between table and detail card */
 }
 
 /* duplicate tableContainer removed */
@@ -407,11 +379,8 @@
     background: white;
     border-radius: 16px;
     border: 1px solid var(--border-light);
-    overflow: hidden;
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    height: 100%;
-    /* Fill view height */
     display: flex;
     flex-direction: column;
 }
@@ -510,13 +479,10 @@
 /* Cleaned up Detail Body */
 .detailBody {
     padding: 16px;
-    flex: 1;
-    overflow-y: auto;
     background-color: #f4f6fb;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 0;
 }
 
 /* Sections */
