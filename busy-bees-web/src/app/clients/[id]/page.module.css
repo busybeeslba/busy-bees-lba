@@ -2,8 +2,8 @@
 
 .page {
     padding: 24px 32px;
-    height: 100vh;
-    overflow: hidden;
+    flex: 1;
+    width: 100%;
     background: #f6f7f8;
     display: flex;
     flex-direction: column;
@@ -291,8 +291,6 @@
     gap: 16px;
     align-items: start;
     flex: 1;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .leftCol,
@@ -300,8 +298,6 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    overflow-y: auto;
-    overflow-x: hidden;
     padding-bottom: 32px;
     padding-right: 4px;
 }
