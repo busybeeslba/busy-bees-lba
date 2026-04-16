@@ -44,6 +44,17 @@ export const dbClient = {
         return data;
     },
 
+    upsert: async (path: string, body: any) => {
+        let table = path.replace('/', '');
+        table = table.split('?')[0].replace(/-/g, '_');
+        const { data, error } = await supabase.from(table).upsert(body).select().single();
+        if (error) {
+            console.error(`[Supabase UPSERT ${table}] Error:`, error);
+            throw error;
+        }
+        return data;
+    },
+
     patch: async (path: string, body: any) => {
         const parts = path.split('/').filter(Boolean);
         let table = parts[0];

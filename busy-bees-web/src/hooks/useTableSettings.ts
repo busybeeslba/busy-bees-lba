@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { dbClient } from '@/lib/dbClient';
 
 export interface ColumnDef<T = any> {
     id: string;
@@ -14,6 +15,7 @@ export function useTableSettings<T>(storageKey: string, initialColumns: ColumnDe
     const [orderedColumnIds, setOrderedColumnIds] = useState<string[]>([]);
     const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<string>>(new Set());
     const [isLoaded, setIsLoaded] = useState(false);
+    const hasInitializedFromDb = useRef(false);
 
     useEffect(() => {
         const fullStorageKey = `busy_bees_table_${storageKey}`;
@@ -52,16 +54,62 @@ export function useTableSettings<T>(storageKey: string, initialColumns: ColumnDe
         setOrderedColumnIds(initialOrderedIds);
         setHiddenColumnIds(initialHiddenIds);
         setIsLoaded(true);
+
+        // Fetch global DB config
+        dbClient.get(`/table_settings/${storageKey}`)
+            .then(data => {
+                if (data) {
+                    let dbOrderedIds = initialOrderedIds;
+                    if (Array.isArray(data.ordered_ids) && data.ordered_ids.length > 0) {
+                        const validStoredIds = data.ordered_ids.filter((id: string) => 
+                            initialColumns.some(c => c.id === id)
+                        );
+                        const newIds = initialColumns
+                            .filter(c => !data.ordered_ids.includes(c.id))
+                            .map(c => c.id);
+                        dbOrderedIds = [...validStoredIds, ...newIds];
+                        setOrderedColumnIds(dbOrderedIds);
+                    }
+                    if (Array.isArray(data.hidden_ids)) {
+                        setHiddenColumnIds(new Set(data.hidden_ids));
+                    }
+                    
+                    // Update cache to latest DB state
+                    localStorage.setItem(fullStorageKey, JSON.stringify({
+                        orderedIds: dbOrderedIds,
+                        hiddenIds: data.hidden_ids || Array.from(initialHiddenIds)
+                    }));
+                }
+                hasInitializedFromDb.current = true;
+            })
+            .catch(err => {
+                // Table row might not exist yet, or no internet.
+                hasInitializedFromDb.current = true;
+            });
+
     }, [storageKey]); // Intentionally not including initialColumns to avoid reset on every render
 
-    // Save state to localstorage whenever it changes
+    // Save state to localstorage and Supabase whenever it changes
     useEffect(() => {
-        if (!isLoaded) return;
+        if (!isLoaded || !hasInitializedFromDb.current) return;
         const payload = {
             orderedIds: orderedColumnIds,
             hiddenIds: Array.from(hiddenColumnIds)
         };
         localStorage.setItem(`busy_bees_table_${storageKey}`, JSON.stringify(payload));
+
+        // Push config to Supabase database for global sync
+        const timeout = setTimeout(() => {
+            dbClient.upsert('/table_settings', {
+                id: storageKey,
+                ordered_ids: payload.orderedIds,
+                hidden_ids: payload.hiddenIds
+            }).catch(err => {
+                console.warn("Failed to sync table settings to DB (Make sure to run the migration query!)", err);
+            });
+        }, 1200);
+
+        return () => clearTimeout(timeout);
     }, [orderedColumnIds, hiddenColumnIds, storageKey, isLoaded]);
 
     const toggleColumnVisibility = useCallback((colId: string) => {
