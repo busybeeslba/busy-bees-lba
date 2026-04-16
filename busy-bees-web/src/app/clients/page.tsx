@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Search, Plus, Phone, Mail, MapPin, Building2, X, FileText, Calendar, User, Pencil, Trash2, MoreVertical, Clock, Filter, ArrowUpDown, Maximize2, Minimize2, LayoutDashboard, PanelTop } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Dot } from 'recharts';
 import AddClientModal from '@/components/clients/AddClientModal';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import FacetedFilter from '@/components/ui/FacetedFilter';
 import styles from './page.module.css';
 import { MOCK_AVAILABLE_SERVICES } from '@/lib/mockData';
@@ -135,7 +137,7 @@ export default function ClientsPage() {
         return { backgroundColor: colors[index], color: '#ffffff' };
     };
 
-    const calculateAge = (dob: string) => {
+    const calculateAge = useCallback((dob: string) => {
         if (!dob) return '';
         const birthDate = new Date(dob);
         const today = new Date();
@@ -145,7 +147,97 @@ export default function ClientsPage() {
             age--;
         }
         return age;
-    };
+    }, []);
+
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = useMemo(() => {
+        const baseCols = [
+            { id: 'clientId', label: 'Client ID', sortKey: 'clientId', renderCell: (client: any) => <td key="clientId" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>CLI-{client.clientId}</span></td> },
+            { id: 'kidsName', label: 'Child Name', sortKey: 'kidsName', renderCell: (client: any) => <td key="kidsName" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.clientName}>{client.kidsName}</span></td> },
+            { id: 'age', label: 'Age', sortKey: 'dob', renderCell: (client: any) => <td key="age" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{calculateAge(client.dob)}</span></td> },
+            { id: 'guardian', label: 'Guardian 1 First', sortKey: 'guardian', renderCell: (client: any) => <td key="guardian" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.guardian}</span></td> },
+            { id: 'guardianLastName', label: 'Guardian 1 Last', sortKey: 'guardianLastName', renderCell: (client: any) => <td key="guardianLastName" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{(client as any).guardianLastName}</span></td> },
+            { id: 'status', label: 'Status', sortKey: 'status', renderCell: (client: any) => <td key="status" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={`${styles.statusBadge} ${client.status === 'Active' ? styles.active : styles.inactive}`}>{client.status}</span></td> }
+        ];
+
+        if (!selectedClient) {
+            baseCols.push(
+                { id: 'address', label: 'Address', sortKey: 'address', renderCell: (client: any) => <td key="address" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.address}</span></td> },
+                { id: 'phone', label: 'Phone', sortKey: 'phone', renderCell: (client: any) => <td key="phone" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.phone}</span></td> },
+                { id: 'dob', label: 'Date of Birth', sortKey: 'dob', renderCell: (client: any) => <td key="dob" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.dob}</span></td> },
+                { id: 'email', label: 'Email', sortKey: 'email', renderCell: (client: any) => <td key="email" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.email}</span></td> },
+                { id: 'teacher', label: 'Teacher', sortKey: 'teacher', renderCell: (client: any) => <td key="teacher" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.teacher}</span></td> },
+                { id: 'services', label: 'Services', renderCell: (client: any) => (
+                    <td key="services" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {Array.isArray(client.services)
+                                ? client.services.map((s: any, idx: number) => (
+                                    <span key={idx} className={styles.serviceBubble} style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}>
+                                        {getServiceName(s.serviceId)}
+                                    </span>
+                                ))
+                                : <span className={styles.cellText}>{client.services || 'None'}</span>}
+                        </div>
+                    </td>
+                )},
+                { id: 'serviceProvider', label: 'Service Provider', renderCell: (client: any) => (
+                    <td key="serviceProvider" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {Array.isArray(client.services)
+                                ? Array.from(new Set(client.services.map((s: any) => {
+                                    const srvAssignedUser = usersList.find(u => u.id === s.providerId);
+                                    return srvAssignedUser ? `${srvAssignedUser.firstName} ${srvAssignedUser.lastName}` : getServiceProvider(s.serviceId);
+                                }))).map((providerName: unknown, idx: number) => (
+                                    <span key={idx} className={styles.serviceBubble} style={getProviderStyle(providerName as string)}>
+                                        {providerName as string}
+                                    </span>
+                                ))
+                                : <span className={styles.cellText}>{client.services || 'Unassigned'}</span>}
+                        </div>
+                    </td>
+                )},
+                { id: 'assignedPrograms', label: 'Program Description', sortKey: 'assignedPrograms', renderCell: (client: any) => <td key="assignedPrograms" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.assignedPrograms || 'N/A'}</span></td> },
+                { id: 'programCategories', label: 'Program Categories', renderCell: (client: any) => (
+                    <td key="programCategories" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {(client.programCategories || []).map((cat: any, idx: number) => (
+                                <span key={idx} className={styles.serviceBubble} style={{ backgroundColor: '#e0e7ff', color: '#4338ca', border: '1px solid #c7d2fe' }}>
+                                    {cat.name || cat}
+                                </span>
+                            ))}
+                        </div>
+                    </td>
+                )},
+                { id: 'subCategories', label: 'Sub-categories', renderCell: (client: any) => (
+                    <td key="subCategories" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {(() => {
+                                const cats: ProgramCategory[] = client.programCategories || [];
+                                const allSubs = cats.flatMap(c => (c.targets || []).map(t => t.name));
+                                if (allSubs.length === 0) return <span className={styles.cellText}>—</span>;
+                                const shown = allSubs.slice(0, 3);
+                                const extra = allSubs.length - shown.length;
+                                return (
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                        {shown.map((s, i) => (
+                                            <span key={i} style={{ fontSize: '11px', fontWeight: 600, background: '#ede9fe', color: '#5b21b6', padding: '2px 8px', borderRadius: '100px' }}>{s}</span>
+                                        ))}
+                                        {extra > 0 && <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>+{extra}</span>}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    </td>
+                )},
+                { id: 'programPercentage', label: 'Program %', sortKey: 'programPercentage', renderCell: (client: any) => <td key="programPercentage" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.programPercentage ? `${client.programPercentage}` : '0%'}</span></td> },
+                { id: 'iepMeeting', label: 'IEP Meeting', sortKey: 'iepMeeting', renderCell: (client: any) => <td key="iepMeeting" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{client.iepMeeting || 'N/A'}</span></td> }
+            );
+        }
+        return baseCols;
+    }, [selectedClient, usersList, providers, availableServices, calculateAge, router]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('clients_table_config', COLUMNS);
 
     const startResizing = (mouseDownEvent: React.MouseEvent) => {
         mouseDownEvent.preventDefault();
@@ -401,7 +493,7 @@ export default function ClientsPage() {
                         <Filter size={16} color="currentColor" />
                         <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
                     </button>
-                    <button className={styles.moreActionsBtn}>
+                    <button className={styles.moreActionsBtn} onClick={() => setShowSettingsDrawer(true)} title="Page Settings">
                         <MoreVertical size={20} />
                     </button>
                 </div>
@@ -437,7 +529,7 @@ export default function ClientsPage() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer' }} onClick={() => {
+                                    <th style={{ width: '40px', textAlign: 'center', cursor: 'pointer', paddingLeft: '24px' }} onClick={() => {
                                         if (selectedIds.size === filteredClients.length && filteredClients.length > 0) {
                                             setSelectedIds(new Set());
                                         } else {
@@ -458,98 +550,18 @@ export default function ClientsPage() {
                                             style={{ cursor: 'pointer' }}
                                         />
                                     </th>
-                                    <th onClick={() => handleSort('clientId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Client ID
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'clientId' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    <th onClick={() => handleSort('kidsName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Child Name
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'kidsName' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    <th onClick={() => handleSort('dob')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Age
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'dob' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    <th onClick={() => handleSort('guardian')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Guardian
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'guardian' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    <th onClick={() => handleSort('guardianLastName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Guardian Last Name
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'guardianLastName' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    <th onClick={() => handleSort('status')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Status
-                                            <ArrowUpDown size={14} color={sortConfig?.key === 'status' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                        </div>
-                                    </th>
-                                    {!selectedClient && (
-                                        <>
-                                            <th onClick={() => handleSort('address')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Address
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'address' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th onClick={() => handleSort('phone')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Phone
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'phone' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th onClick={() => handleSort('dob')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Date of Birth
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'dob' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th onClick={() => handleSort('email')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Email
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'email' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th onClick={() => handleSort('teacher')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Teacher's
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'teacher' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th>Services</th>
-                                            <th>Service Provider</th>
-                                            <th onClick={() => handleSort('assignedPrograms')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Program Description
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'assignedPrograms' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th>Program Categories</th>
-                                            <th>Sub-categories</th>
-                                            <th onClick={() => handleSort('programPercentage')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    Program %
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'programPercentage' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                            <th onClick={() => handleSort('iepMeeting')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    IEP Meeting
-                                                    <ArrowUpDown size={14} color={sortConfig?.key === 'iepMeeting' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                                </div>
-                                            </th>
-                                        </>
-                                    )}
+                                    {activeColumns.map(col => (
+                                        <th 
+                                            key={col.id} 
+                                            onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined} 
+                                            style={{ minWidth: col.minWidth, cursor: col.sortKey ? 'pointer' : 'default', userSelect: 'none' }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                {col.label}
+                                                {col.sortKey && <ArrowUpDown size={14} color={sortConfig?.key === col.sortKey ? 'var(--primary)' : 'var(--text-secondary-light)'} />}
+                                            </div>
+                                        </th>
+                                    ))}
                                     <th style={{ textAlign: 'center' }}>Action</th>
                                 </tr>
                             </thead>
@@ -558,10 +570,9 @@ export default function ClientsPage() {
                                     <tr
                                         key={client.clientId}
                                         className={`${selectedClient?.clientId === client.clientId ? styles.selectedRow : ''} ${selectedIds.has(client.clientId) ? styles.checkedRow : ''}`}
-                                        onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}
                                         style={{ cursor: 'pointer' }}
                                     >
-                                        <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                        <td onClick={e => e.stopPropagation()} style={{ textAlign: 'center', paddingLeft: '24px' }}>
                                             <input 
                                                 type="checkbox" 
                                                 checked={selectedIds.has(client.clientId)}
@@ -574,109 +585,9 @@ export default function ClientsPage() {
                                                 style={{ cursor: 'pointer' }}
                                             />
                                         </td>
-                                        <td><span className={styles.cellText}>CLI-{client.clientId}</span></td>
-                                        <td><span className={styles.clientName}>{client.kidsName}</span></td>
-                                        <td><span className={styles.cellText}>{calculateAge(client.dob)}</span></td>
-                                        <td><span className={styles.cellText}>{client.guardian}</span></td>
-                                        <td><span className={styles.cellText}>{(client as any).guardianLastName}</span></td>
+                                        {activeColumns.map(col => col.renderCell?.(client))}
                                         <td>
-                                            <span className={`${styles.statusBadge} ${client.status === 'Active' ? styles.active : styles.inactive}`}>
-                                                {client.status}
-                                            </span>
-                                        </td>
-                                        {!selectedClient && (
-                                            <>
-                                                <td><span className={styles.cellText}>{client.address}</span></td>
-                                                <td><span className={styles.cellText}>{client.phone}</span></td>
-                                                <td><span className={styles.cellText}>{client.dob}</span></td>
-                                                <td><span className={styles.cellText}>{client.email}</span></td>
-                                                <td><span className={styles.cellText}>{client.teacher}</span></td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                        {Array.isArray(client.services)
-                                                            ? client.services.map((s: any, idx: number) => {
-                                                                return (
-                                                                    <span
-                                                                        key={idx}
-                                                                        className={styles.serviceBubble}
-                                                                        style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}
-                                                                    >
-                                                                        {getServiceName(s.serviceId)}
-                                                                    </span>
-                                                                );
-                                                            })
-                                                            : <span className={styles.cellText}>{client.services || 'None'}</span>}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                        {Array.isArray(client.services)
-                                                            ? Array.from(new Set(client.services.map((s: any) => {
-                                                                const srvAssignedUser = usersList.find(u => u.id === s.providerId);
-                                                                return srvAssignedUser 
-                                                                    ? `${srvAssignedUser.firstName} ${srvAssignedUser.lastName}` 
-                                                                    : getServiceProvider(s.serviceId);
-                                                            }))).map((providerName: unknown, idx: number) => {
-                                                                const name = providerName as string;
-                                                                const providerStyle = getProviderStyle(name);
-                                                                return (
-                                                                    <span
-                                                                        key={idx}
-                                                                        className={styles.serviceBubble}
-                                                                        style={providerStyle}
-                                                                    >
-                                                                        {name}
-                                                                    </span>
-                                                                );
-                                                            })
-                                                            : <span className={styles.cellText}>—</span>}
-                                                    </div>
-                                                </td>
-                                                {/* Program Description (old assignedPrograms text) */}
-                                                <td><span className={styles.cellText}>{client.assignedPrograms || '—'}</span></td>
-
-                                                {/* Program Categories Name */}
-                                                <td>
-                                                    {(() => {
-                                                        const cats: ProgramCategory[] = client.programCategories || [];
-                                                        if (cats.length === 0) return <span className={styles.cellText}>—</span>;
-                                                        const shown = cats.slice(0, 2);
-                                                        const extra = cats.length - shown.length;
-                                                        return (
-                                                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                                                {shown.map((c: ProgramCategory) => (
-                                                                    <span key={c.id} style={{ fontSize: '11px', fontWeight: 600, background: '#f0f4ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '100px' }}>{c.name}</span>
-                                                                ))}
-                                                                {extra > 0 && <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>+{extra}</span>}
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                </td>
-
-                                                {/* Program Sub-categories */}
-                                                <td>
-                                                    {(() => {
-                                                        const cats: ProgramCategory[] = client.programCategories || [];
-                                                        const allSubs = cats.flatMap(c => c.targets.map(t => t.name));
-                                                        if (allSubs.length === 0) return <span className={styles.cellText}>—</span>;
-                                                        const shown = allSubs.slice(0, 3);
-                                                        const extra = allSubs.length - shown.length;
-                                                        return (
-                                                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                                                {shown.map((s, i) => (
-                                                                    <span key={i} style={{ fontSize: '11px', fontWeight: 600, background: '#ede9fe', color: '#5b21b6', padding: '2px 8px', borderRadius: '100px' }}>{s}</span>
-                                                                ))}
-                                                                {extra > 0 && <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>+{extra}</span>}
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                </td>
-                                                <td><span className={styles.cellText}>{client.programPercentage}</span></td>
-                                                <td><span className={styles.cellText}>{client.iepMeeting}</span></td>
-                                            </>
-                                        )}
-                                        <td>
-                                            <div className={styles.actionMenuContainer}>
+                                            <div className={styles.actionMenuContainer} onClick={(e) => e.stopPropagation()}>
                                                 <button
                                                     className={styles.actionBtn}
                                                     onClick={(e) => toggleActionMenu(e, client.clientId)}
@@ -685,7 +596,7 @@ export default function ClientsPage() {
                                                 </button>
 
                                                 {activeActionId === client.clientId && (
-                                                    <div className={styles.dropdownMenu} onClick={(e) => e.stopPropagation()}>
+                                                    <div className={styles.dropdownMenu}>
                                                         <button
                                                             className={styles.dropdownItem}
                                                             onClick={(e) => {
@@ -1199,6 +1110,17 @@ export default function ClientsPage() {
                 onSave={handleSaveClient}
                 initialData={editingClient}
             />
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
+
+            {/* Modals and Toasts (if any) go here */}
         </div>
     );
 }

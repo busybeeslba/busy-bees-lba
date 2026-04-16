@@ -60,6 +60,11 @@
     color: #64748b;
 }
 
+.statusBadge[data-status="suspended"] {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
 .contentGrid {
     display: grid;
     grid-template-columns: 350px 1fr;

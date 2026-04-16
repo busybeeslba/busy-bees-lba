@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart2, ArrowLeft, Download, Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { BarChart2, ArrowLeft, Download, Search, Filter, ChevronDown, ChevronUp, X, MoreVertical } from 'lucide-react';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import styles from './data-table.module.css';
 import { dbClient } from '@/lib/dbClient';
 
@@ -188,6 +190,64 @@ export default function DttDataTablePage() {
 
     const activeFilterCount = [filterClient, filterProgram, filterEmployee, filterPctMin, filterPctMax].filter(Boolean).length;
 
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { 
+            id: 'client', 
+            label: 'Client', 
+            sortKey: 'client', 
+            renderCell: (r: any) => (
+                <td key={`client-${r.sheetId}`} className={styles.td}>
+                    <div className={styles.clientCell}>
+                        <span className={styles.avatar}>{(r.clientName || '?')[0]}</span>
+                        <span>{r.clientName}</span>
+                    </div>
+                </td>
+            )
+        },
+        { 
+            id: 'program', 
+            label: 'Program', 
+            sortKey: 'program', 
+            renderCell: (r: any) => {
+                const programColor = COLORS[uniquePrograms.indexOf(r.program) % COLORS.length];
+                return (
+                    <td key={`program-${r.sheetId}`} className={styles.td}>
+                        <span className={styles.programChip} style={{ background: `${programColor}18`, color: programColor, border: `1px solid ${programColor}40` }}>
+                            {r.program}
+                        </span>
+                    </td>
+                );
+            }
+        },
+        { id: 'day', label: 'Day', sortKey: 'day', renderCell: (r: any) => <td key={`day-${r.sheetId}`} className={`${styles.td} ${styles.tdCenter}`}><span className={styles.dayBadge}>D{r.day}</span></td> },
+        { id: 'date', label: 'Date', sortKey: 'date', renderCell: (r: any) => <td key={`date-${r.sheetId}`} className={styles.td}>{fmtDate(r.date)}</td> },
+        { id: 'employee', label: 'Employee', sortKey: 'employee', renderCell: (r: any) => <td key={`employee-${r.sheetId}`} className={styles.td}>{r.employee}</td> },
+        { id: 'sto', label: 'STO', sortKey: 'sto', renderCell: (r: any) => <td key={`sto-${r.sheetId}`} className={styles.td}><span className={styles.stoName}>{r.stoName}</span></td> },
+        ...Array.from({ length: MAX_TRIALS }, (_, i) => ({
+            id: `t${i + 1}`, label: `T${i + 1}`, renderCell: (r: any) => <td key={`t${i + 1}-${r.sheetId}`} className={`${styles.td} ${styles.tdCenter}`}><TrialCell val={r.trials[i]} /></td>
+        })),
+        { 
+            id: 'pct', 
+            label: '% Correct', 
+            sortKey: 'pct', 
+            renderCell: (r: any) => {
+                const pc2 = pctColor(r.pct);
+                return (
+                <td key={`pct-${r.sheetId}`} className={`${styles.td} ${styles.tdCenter}`}>
+                    {r.pct !== null ? (
+                        <span className={styles.pctBadge} style={{ color: pc2.color, background: pc2.bg, border: `1.5px solid ${pc2.border}` }}>
+                            {r.pct}%
+                        </span>
+                    ) : <span className={styles.emptyDash}>—</span>}
+                </td>
+            )}
+        }
+    ], [uniquePrograms]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('mass_trial_data_table_config', COLUMNS);
+
     return (
         <div className={styles.page}>
             {/* Header */}
@@ -202,9 +262,6 @@ export default function DttDataTablePage() {
                         <p className={styles.subtitle}>{filtered.length} rows · {allRows.length} total entries</p>
                     </div>
                 </div>
-                <button className={styles.exportBtn} onClick={exportCsv} title="Export as CSV">
-                    <Download size={15} /> Export CSV
-                </button>
             </div>
 
             {/* Toolbar */}
@@ -231,6 +288,15 @@ export default function DttDataTablePage() {
                         <Filter size={14} />
                         Filters{activeFilterCount > 0 && <span className={styles.filterCount}>{activeFilterCount}</span>}
                     </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                        <button className={styles.exportBtn} onClick={exportCsv} title="Export as CSV">
+                            <Download size={15} /> Export CSV
+                        </button>
+                        <button className={styles.filterBtn} onClick={() => setShowSettingsDrawer(true)} title="Page Settings" style={{ padding: '8px', height: '100%' }}>
+                            <MoreVertical size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -291,35 +357,22 @@ export default function DttDataTablePage() {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                {groupBy === 'none' && (
-                                    <th className={styles.th} onClick={() => handleSort('client')} style={{ minWidth: 130 }}>
-                                        Client <SortIcon col="client" />
+                                {activeColumns.filter(col => {
+                                    if (col.id === 'client' && groupBy !== 'none') return false;
+                                    if (col.id === 'program' && groupBy !== 'none' && groupBy !== 'client') return false;
+                                    return true;
+                                }).map(col => (
+                                    <th 
+                                        key={col.id} 
+                                        className={`${styles.th} ${col.id.startsWith('t') ? styles.thTrial : ''}`} 
+                                        onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined}
+                                        style={{ minWidth: col.minWidth }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            {col.label} {col.sortKey && <SortIcon col={col.sortKey} />}
+                                        </div>
                                     </th>
-                                )}
-                                {(groupBy === 'none' || groupBy === 'client') && (
-                                    <th className={styles.th} onClick={() => handleSort('program')} style={{ minWidth: 110 }}>
-                                        Program <SortIcon col="program" />
-                                    </th>
-                                )}
-                                <th className={styles.th} onClick={() => handleSort('day')} style={{ width: 56 }}>
-                                    Day <SortIcon col="day" />
-                                </th>
-                                <th className={styles.th} onClick={() => handleSort('date')} style={{ minWidth: 110 }}>
-                                    Date <SortIcon col="date" />
-                                </th>
-                                <th className={styles.th} onClick={() => handleSort('employee')} style={{ minWidth: 120 }}>
-                                    Employee <SortIcon col="employee" />
-                                </th>
-                                <th className={styles.th} onClick={() => handleSort('sto')} style={{ minWidth: 140 }}>
-                                    STO <SortIcon col="sto" />
-                                </th>
-                                {/* Trial columns T1–T5 */}
-                                {Array.from({ length: MAX_TRIALS }, (_, i) => (
-                                    <th key={i} className={`${styles.th} ${styles.thTrial}`}>T{i + 1}</th>
                                 ))}
-                                <th className={styles.th} onClick={() => handleSort('pct')} style={{ minWidth: 80 }}>
-                                    % Correct <SortIcon col="pct" />
-                                </th>
                                 <th className={`${styles.th} ${styles.thTrial}`}>Edit</th>
                             </tr>
                         </thead>
@@ -354,46 +407,14 @@ export default function DttDataTablePage() {
 
                                         {/* Data rows */}
                                         {!isCollapsed && rows.map((r, ri) => {
-                                            const pc2 = pctColor(r.pct);
-                                            const programColor = COLORS[uniquePrograms.indexOf(r.program) % COLORS.length];
                                             return (
                                                 <tr key={`${r.sheetId}-${r.day}-${r.stoIdx}-${ri}`}
                                                     className={ri % 2 === 0 ? styles.rowEven : styles.rowOdd}>
-                                                    {groupBy === 'none' && (
-                                                        <td className={styles.td}>
-                                                            <div className={styles.clientCell}>
-                                                                <span className={styles.avatar}>{(r.clientName || '?')[0]}</span>
-                                                                <span>{r.clientName}</span>
-                                                            </div>
-                                                        </td>
-                                                    )}
-                                                    {(groupBy === 'none' || groupBy === 'client') && (
-                                                        <td className={styles.td}>
-                                                            <span className={styles.programChip} style={{ background: `${programColor}18`, color: programColor, border: `1px solid ${programColor}40` }}>
-                                                                {r.program}
-                                                            </span>
-                                                        </td>
-                                                    )}
-                                                    <td className={`${styles.td} ${styles.tdCenter}`}>
-                                                        <span className={styles.dayBadge}>D{r.day}</span>
-                                                    </td>
-                                                    <td className={styles.td}>{fmtDate(r.date)}</td>
-                                                    <td className={styles.td}>{r.employee}</td>
-                                                    <td className={styles.td}>
-                                                        <span className={styles.stoName}>{r.stoName}</span>
-                                                    </td>
-                                                    {r.trials.map((t, ti) => (
-                                                        <td key={ti} className={`${styles.td} ${styles.tdCenter}`}>
-                                                            <TrialCell val={t} />
-                                                        </td>
-                                                    ))}
-                                                    <td className={`${styles.td} ${styles.tdCenter}`}>
-                                                        {r.pct !== null ? (
-                                                            <span className={styles.pctBadge} style={{ color: pc2.color, background: pc2.bg, border: `1.5px solid ${pc2.border}` }}>
-                                                                {r.pct}%
-                                                            </span>
-                                                        ) : <span className={styles.emptyDash}>—</span>}
-                                                    </td>
+                                                    {activeColumns.filter(col => {
+                                                        if (col.id === 'client' && groupBy !== 'none') return false;
+                                                        if (col.id === 'program' && groupBy !== 'none' && groupBy !== 'client') return false;
+                                                        return true;
+                                                    }).map(col => col.renderCell?.(r))}
                                                     <td className={`${styles.td} ${styles.tdCenter}`}>
                                                         <a href={`/forms/mass-trial/${r.sheetId}`} className={styles.editLink} onClick={e => e.stopPropagation()}>✏</a>
                                                     </td>
@@ -422,6 +443,15 @@ export default function DttDataTablePage() {
                     </div>
                 </div>
             )}
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }

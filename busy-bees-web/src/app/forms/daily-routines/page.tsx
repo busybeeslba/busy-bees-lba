@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, CheckSquare, Calendar, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckSquare, Calendar, Eye, MoreVertical } from 'lucide-react';
+import React from 'react';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import styles from '../baseline-sheet/page.module.css'; // Reusing existing styling
 import { dbClient } from '@/lib/dbClient';
 
@@ -106,6 +109,29 @@ export default function DailyRoutinesListPage() {
         };
     };
 
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { id: 'clientName', label: 'Client', renderCell: (sheet: any) => <td key="clientName" className={styles.clientCell} onClick={() => router.push(`/forms/daily-routines/${sheet.id}`)}><span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>{sheet.clientName || '—'}</td> },
+        { id: 'program', label: 'Program', renderCell: (sheet: any) => <td key="program"><span className={styles.programChip}>{sheet.program || '—'}</span></td> },
+        { id: 'routines', label: 'Routines', renderCell: (sheet: any) => <td key="routines">{getStepCount(sheet)}</td> },
+        { id: 'sessions', label: 'Sessions', renderCell: (sheet: any) => { const c = getSessionCount(sheet); return <td key="sessions"><span className={styles.sessionCountBadge}><Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />{c} day{c !== 1 ? 's' : ''}</span></td> } },
+        { id: 'lastSession', label: 'Last Session', renderCell: (sheet: any) => { const last = getLastSession(sheet); return <td key="lastSession" className={styles.dateCell}>{last ? new Date(last.date).toLocaleDateString() : '—'}</td> } },
+        { id: 'lastEmployee', label: 'Last Employee', renderCell: (sheet: any) => { const last = getLastSession(sheet); return <td key="lastEmployee">{last?.employee || '—'}</td> } },
+        { id: 'stats', label: 'Stats', renderCell: (sheet: any) => {
+            const { filled, highestPct } = getStats(sheet);
+            return <td key="stats" onClick={e => e.stopPropagation()}>
+                {filled === 0 ? <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span> :
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
+                    <span style={{ color: '#0f766e', background: '#eefcf5', border: '1px solid #6ee7b7', borderRadius: 6, padding: '2px 7px' }}>{filled} entries</span>
+                    {highestPct !== null && <span style={{ color: 'var(--primary)', background: 'var(--background-light)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '2px 7px' }}>High: {highestPct}%</span>}
+                </span>}
+            </td>
+        } }
+    ], [router]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('daily_routines_forms_table_config', COLUMNS);
+
     return (
         <div className={styles.page}>
             {/* Header */}
@@ -130,14 +156,24 @@ export default function DailyRoutinesListPage() {
             </div>
 
             {/* Search */}
-            <div className={styles.toolbar}>
-                <input
-                    className={styles.searchInput}
-                    placeholder="Search by client or program…"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                />
-                <span className={styles.countBadge}>{filtered.length} sheet{filtered.length !== 1 ? 's' : ''}</span>
+            <div className={styles.toolbar} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                        className={styles.searchInput}
+                        placeholder="Search by client or program…"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                    <span className={styles.countBadge}>{filtered.length} sheet{filtered.length !== 1 ? 's' : ''}</span>
+                </div>
+                <button 
+                    className={styles.addBtn} 
+                    style={{ background: 'transparent', color: 'var(--text-secondary-light)', border: '1px solid var(--border-light)', padding: '6px', width: 'auto', justifySelf: 'flex-end', marginLeft: 'auto' }} 
+                    onClick={() => setShowSettingsDrawer(true)} 
+                    title="Page Settings"
+                >
+                    <MoreVertical size={20} />
+                </button>
             </div>
 
             {/* Table */}
@@ -160,20 +196,21 @@ export default function DailyRoutinesListPage() {
                                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                     />
                                 </th>
-                                <th>Client</th>
-                                <th>Program</th>
-                                <th>Routines</th>
-                                <th>Sessions</th>
-                                <th>Last Session</th>
-                                <th>Last Employee</th>
-                                <th>Stats</th>
+                                {activeColumns.map(col => (
+                                    <th 
+                                        key={col.id}
+                                        style={{ minWidth: col.minWidth }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            {col.label}
+                                        </div>
+                                    </th>
+                                ))}
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filtered.map(sheet => {
-                                const last = getLastSession(sheet);
-                                const sessionCount = getSessionCount(sheet);
                                 return (
                                     <tr key={sheet.id} onClick={(e) => { 
                                         // If clicking a row and it's not on a button, navigate or toggle selection 
@@ -189,34 +226,7 @@ export default function DailyRoutinesListPage() {
                                                 style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                             />
                                         </td>
-                                        <td className={styles.clientCell} onClick={() => router.push(`/forms/daily-routines/${sheet.id}`)}>
-                                            <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>
-                                            {sheet.clientName || '—'}
-                                        </td>
-                                        <td><span className={styles.programChip}>{sheet.program || '—'}</span></td>
-                                        <td>{getStepCount(sheet)}</td>
-                                        <td>
-                                            <span className={styles.sessionCountBadge}>
-                                                <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
-                                                {sessionCount} day{sessionCount !== 1 ? 's' : ''}
-                                            </span>
-                                        </td>
-                                        <td className={styles.dateCell}>
-                                            {last ? new Date(last.date).toLocaleDateString() : '—'}
-                                        </td>
-                                        <td>{last?.employee || '—'}</td>
-                                        <td>
-                                            {(() => {
-                                                const { filled, highestPct } = getStats(sheet);
-                                                if (filled === 0) return <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>;
-                                                return (
-                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
-                                                        <span style={{ color: '#0f766e', background: '#eefcf5', border: '1px solid #6ee7b7', borderRadius: 6, padding: '2px 7px' }}>{filled} entries</span>
-                                                        {highestPct !== null && <span style={{ color: 'var(--primary)', background: 'var(--background-light)', border: '1px solid var(--border-light)', borderRadius: 6, padding: '2px 7px' }}>High: {highestPct}%</span>}
-                                                    </span>
-                                                );
-                                            })()}
-                                        </td>
+                                        {activeColumns.map(col => col.renderCell?.(sheet))}
                                         <td>
                                             <div className={styles.actions}>
                                                 <button className={styles.editBtn} title="View" onClick={(e) => { e.stopPropagation(); window.open(`/forms/daily-routines/${sheet.id}/view`, '_blank'); }}>
@@ -237,6 +247,15 @@ export default function DailyRoutinesListPage() {
                     </table>
                 </div>
             )}
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }

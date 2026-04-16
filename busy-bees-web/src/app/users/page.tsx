@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, MoreHorizontal, Phone, Mail, MapPin, Globe, Monitor, Filter, ArrowUpDown, X, Save, Camera } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Phone, Mail, MapPin, Globe, Monitor, Filter, ArrowUpDown, X, Save, Camera, MoreVertical } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import Autocomplete from 'react-google-autocomplete';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,8 @@ import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
 import { supabase } from '@/lib/supabase';
 import { usePresence } from '@/context/PresenceContext';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import styles from './page.module.css';
 
 const formatPhone = (val: string) => {
@@ -34,9 +36,33 @@ export default function UsersPage() {
     const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
     const { onlineUsers } = usePresence();
     
+    // Page settings state
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
     // Edit Modal State
     const [editingUser, setEditingUser] = useState<any | null>(null);
     const [formData, setFormData] = useState<any>(null);
+
+    // Dynamic Columns Configuration
+    const COLUMNS: ColumnDef<any>[] = useMemo(() => [
+        { id: 'employeeId', label: 'Employee ID', sortKey: 'employeeId', minWidth: '100px', renderCell: (user) => <td key="employeeId"><span style={{ fontWeight: 600 }}>{user.employeeId}</span></td> },
+        { id: 'firstName', label: 'First Name', sortKey: 'firstName', minWidth: '100px', renderCell: (user) => <td key="firstName">{user.firstName}</td> },
+        { id: 'lastName', label: 'Last Name', sortKey: 'lastName', minWidth: '100px', renderCell: (user) => <td key="lastName">{user.lastName}</td> },
+        { id: 'phone', label: 'Phone', sortKey: 'phone', minWidth: '120px', renderCell: (user) => <td key="phone">{user.phone}</td> },
+        { id: 'email', label: 'Email', sortKey: 'email', minWidth: '150px', renderCell: (user) => <td key="email">{user.email}</td> },
+        { id: 'address', label: 'Address', sortKey: 'address', minWidth: '150px', renderCell: (user) => <td key="address"><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.address}</span></td> },
+        { id: 'role', label: 'Role', sortKey: 'role', minWidth: '120px', renderCell: (user) => <td key="role"><span style={{ padding: '4px 8px', backgroundColor: 'var(--background-light)', borderRadius: '4px', fontSize: '12px' }}>{user.role}</span></td> },
+        { id: 'location', label: 'Current Location', sortKey: 'location', minWidth: '150px', renderCell: (user) => <td key="location"><div className={styles.locationCell}>{user.location ? (<a href={'https://www.google.com/maps?q=' + encodeURIComponent(user.location)} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}><MapPin size={14} color="var(--primary)" style={{ cursor: 'pointer' }} /><span className="hover-underline">{user.location}</span></a>) : (<span style={{ color: 'var(--text-secondary-light)' }}>Unknown</span>)}</div></td> },
+        { id: 'externalIp', label: 'Usual Login IP', sortKey: 'externalIp', minWidth: '120px', renderCell: (user) => <td key="externalIp"><div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}><Globe size={12} />{user.externalIp}</div></td> },
+        { id: 'browser', label: 'Browser', sortKey: 'browser', minWidth: '100px', renderCell: (user) => <td key="browser"><div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}><Monitor size={12} />{user.browser?.split(' ')[0] || 'Unknown'}</div></td> },
+        { id: 'status', label: 'Status', sortKey: 'status', minWidth: '100px', renderCell: (user) => { const liveStatus = user.status === 'Suspended' ? 'Suspended' : onlineUsers.some((u:any) => u.email === String(user.email).toLowerCase()) ? 'Online' : 'Offline'; return <td key="status"><span className={styles.statusBadge + ' ' + (liveStatus === 'Online' ? styles.active : liveStatus === 'Suspended' ? styles.suspended : styles.offline)}>{liveStatus}</span></td>; } },
+        { id: 'createdAt', label: 'Created At', sortKey: 'createdAt', minWidth: '140px', renderCell: (user) => <td key="createdAt"><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.createdAt}</span></td> },
+        { id: 'createdBy', label: 'Created By', sortKey: 'createdBy', minWidth: '100px', renderCell: (user) => <td key="createdBy"><span style={{ fontSize: '12px' }}>{user.createdBy}</span></td> },
+        { id: 'updatedAt', label: 'Last Edit At', sortKey: 'updatedAt', minWidth: '140px', renderCell: (user) => <td key="updatedAt"><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.updatedAt}</span></td> },
+        { id: 'updatedBy', label: 'Last Edit By', sortKey: 'updatedBy', minWidth: '100px', renderCell: (user) => <td key="updatedBy"><span style={{ fontSize: '12px' }}>{user.updatedBy}</span></td> }
+    ], [onlineUsers]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('users_table_config', COLUMNS);
 
     // Telemetry state for real data insertion
     const [realTelemetry, setRealTelemetry] = useState({ 
@@ -178,6 +204,10 @@ export default function UsersPage() {
                         <Filter size={16} color="currentColor" />
                         <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
                     </button>
+
+                    <button className={styles.filterBtn} style={{ padding: '8px', minWidth: 'auto' }} onClick={() => setShowSettingsDrawer(true)} title="Page Settings">
+                        <MoreVertical size={20} color="currentColor" />
+                    </button>
                 </div>
             </div>
 
@@ -208,96 +238,18 @@ export default function UsersPage() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th onClick={() => handleSort('employeeId')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Employee ID
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'employeeId' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('firstName')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    First Name
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'firstName' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('lastName')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Last Name
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'lastName' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('phone')} style={{ minWidth: '120px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Phone
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'phone' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('email')} style={{ minWidth: '150px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Email
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'email' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('address')} style={{ minWidth: '150px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Address
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'address' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('role')} style={{ minWidth: '120px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Role
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'role' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('location')} style={{ minWidth: '150px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Current Location
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'location' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('externalIp')} style={{ minWidth: '120px', cursor: 'pointer', userSelect: 'none' }} title="IP address usually logged in from">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Usual Login IP
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'externalIp' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('browser')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Browser
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'browser' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('status')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Status
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'status' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('createdAt')} style={{ minWidth: '140px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Created At
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'createdAt' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('createdBy')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Created By
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'createdBy' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('updatedAt')} style={{ minWidth: '140px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Last Edit At
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'updatedAt' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('updatedBy')} style={{ minWidth: '100px', cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Last Edit By
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'updatedBy' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
+                            {activeColumns.map(col => (
+                                <th 
+                                    key={col.id} 
+                                    onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined} 
+                                    style={{ minWidth: col.minWidth, cursor: col.sortKey ? 'pointer' : 'default', userSelect: 'none' }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {col.label}
+                                        {col.sortKey && <ArrowUpDown size={14} color={sortConfig?.key === col.sortKey ? 'var(--primary)' : 'var(--text-secondary-light)'} />}
+                                    </div>
+                                </th>
+                            ))}
                             <th style={{ minWidth: '120px', position: 'sticky', right: 0, backgroundColor: '#f9fafb' }}>Action</th>
                         </tr>
                     </thead>
@@ -308,51 +260,7 @@ export default function UsersPage() {
                                 onClick={() => router.push(`/users/${user.id}`)}
                                 style={{ cursor: 'pointer' }}
                             >
-                                <td><span style={{ fontWeight: 600 }}>{user.employeeId}</span></td>
-                                <td>{user.firstName}</td>
-                                <td>{user.lastName}</td>
-                                <td>{user.phone}</td>
-                                <td>{user.email}</td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.address}</span></td>
-                                <td><span style={{ padding: '4px 8px', backgroundColor: 'var(--background-light)', borderRadius: '4px', fontSize: '12px' }}>{user.role}</span></td>
-                                <td>
-                                    <div className={styles.locationCell}>
-                                        {user.location ? (
-                                            <a href={`https://www.google.com/maps?q=${encodeURIComponent(user.location)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>
-                                                <MapPin size={14} color="var(--primary)" style={{ cursor: 'pointer' }} />
-                                                <span className="hover-underline">{user.location}</span>
-                                            </a>
-                                        ) : (
-                                            <span style={{ color: 'var(--text-secondary-light)' }}>Unknown</span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}>
-                                        <Globe size={12} />
-                                        {user.externalIp}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary-light)' }}>
-                                        <Monitor size={12} />
-                                        {user.browser?.split(' ')[0] || 'Unknown'}
-                                    </div>
-                                </td>
-                                <td>
-                                    {(() => {
-                                        const liveStatus = user.status === 'Suspended' ? 'Suspended' : onlineUsers.some(u => u.email === String(user.email).toLowerCase()) ? 'Online' : 'Offline';
-                                        return (
-                                            <span className={`${styles.statusBadge} ${liveStatus === 'Online' ? styles.active : styles.offline}`}>
-                                                {liveStatus}
-                                            </span>
-                                        );
-                                    })()}
-                                </td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.createdAt}</span></td>
-                                <td><span style={{ fontSize: '12px' }}>{user.createdBy}</span></td>
-                                <td><span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{user.updatedAt}</span></td>
-                                <td><span style={{ fontSize: '12px' }}>{user.updatedBy}</span></td>
+                                {activeColumns.map(col => col.renderCell?.(user))}
                                 <td style={{ position: 'sticky', right: 0, backgroundColor: 'white', borderLeft: '1px solid var(--border-light)', zIndex: activeDropdown === user.id ? 20 : 1 }} onClick={(e) => e.stopPropagation()}>
                                     <div className={styles.contactIcons}>
                                         <button title="Call" onClick={() => window.open(`tel:${user.phone}`)}>
@@ -435,6 +343,16 @@ export default function UsersPage() {
                     Showing {sortedUsers.length} users
                 </div>
             </div>
+
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
 
             {/* Edit Modal */}
             {editingUser && formData && (

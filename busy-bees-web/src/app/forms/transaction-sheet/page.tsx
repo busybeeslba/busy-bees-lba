@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, Calendar, Eye, Activity, Filter, Printer } from 'lucide-react';
-import styles from '../baseline-sheet/page.module.css'; // Reusing existing styling
+import { Plus, Pencil, Trash2, Calendar, Eye, Activity, Filter, Printer, MoreVertical } from 'lucide-react';
+import React from 'react';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
+import styles from '../baseline-sheet/page.module.css';
 import { dbClient } from '@/lib/dbClient';
 
 export default function TransactionSheetListPage() {
@@ -145,6 +148,35 @@ export default function TransactionSheetListPage() {
         window.open(`/forms/transaction-sheet/report?${query}`, '_blank');
     };
 
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { id: 'id', label: 'ID', sortKey: 'id', renderCell: (sheet: any) => <td key="id" style={{ fontWeight: 600, color: '#64748b' }}>#{sheet.id}</td> },
+        { id: 'clientName', label: 'Client', sortKey: 'clientName', renderCell: (sheet: any) => <td key="clientName" className={styles.clientCell} onClick={() => router.push(`/forms/transaction-sheet/${sheet.id}`)}><span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>{sheet.clientName || '—'}</td> },
+        { id: 'date', label: 'Date Range', sortKey: 'date', renderCell: (sheet: any) => {
+            let dates = '—';
+            if (Array.isArray(sheet.sessions) && sheet.sessions.length > 0) {
+                const d1 = new Date(sheet.sessions[0].date + 'T12:00:00').toLocaleDateString();
+                const d2 = new Date(sheet.sessions[sheet.sessions.length - 1].date + 'T12:00:00').toLocaleDateString();
+                dates = d1 === d2 ? d1 : `${d1} - ${d2}`;
+            } else if (sheet.date) {
+                dates = new Date(sheet.date + 'T12:00:00').toLocaleDateString();
+            }
+            return <td key="date" className={styles.dateCell}><Calendar size={13} style={{ display: 'inline', marginRight: 6, opacity: 0.6 }} />{dates}</td>
+        } },
+        { id: 'locationsTrk', label: 'Locations Trk.', renderCell: (sheet: any) => {
+            const locationSpecs = Array.isArray(sheet.sessions) 
+                ? sheet.sessions.reduce((acc: number, sess: any) => acc + (Array.isArray(sess.locations) ? sess.locations.length : 0), 0)
+                : (Array.isArray(sheet.locations) ? sheet.locations.length : 0);
+            return <td key="locationsTrk"><span style={{ fontWeight: 600, color: '#334155' }}>{locationSpecs}</span> total</td>
+        } },
+        { id: 'employee', label: 'Employee', renderCell: (sheet: any) => <td key="employee">{sheet.employeeName || '—'}</td> },
+        { id: 'lastEdit', label: 'Last Edit', renderCell: (sheet: any) => <td key="lastEdit">{sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleDateString() : '—'}</td> },
+        { id: 'by', label: 'By', renderCell: (sheet: any) => <td key="by">{sheet.lastEditBy || '—'}</td> }
+    ], [router]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('transaction_sheet_list_config', COLUMNS);
+
     return (
         <div className={styles.page}>
             {/* Header */}
@@ -229,6 +261,15 @@ export default function TransactionSheetListPage() {
 
                 <div style={{ flex: 1 }} />
                 <span className={styles.countBadge}>{filtered.length} sheet{filtered.length !== 1 ? 's' : ''}</span>
+                
+                <button 
+                    className={styles.addBtn} 
+                    style={{ background: 'transparent', color: 'var(--text-secondary-light)', border: '1px solid var(--border-light)', padding: '6px', width: 'auto', marginLeft: '8px' }} 
+                    onClick={() => setShowSettingsDrawer(true)} 
+                    title="Page Settings"
+                >
+                    <MoreVertical size={20} />
+                </button>
             </div>
 
             {/* Table */}
@@ -251,13 +292,17 @@ export default function TransactionSheetListPage() {
                                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                     />
                                 </th>
-                                <th onClick={() => requestSort('id')} style={{cursor: 'pointer'}}>ID {sortConfig?.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                                <th onClick={() => requestSort('clientName')} style={{cursor: 'pointer'}}>Client {sortConfig?.key === 'clientName' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                                <th onClick={() => requestSort('date')} style={{cursor: 'pointer'}}>Date Range {sortConfig?.key === 'date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                                <th>Locations Trk.</th>
-                                <th>Employee</th>
-                                <th>Last Edit</th>
-                                <th>By</th>
+                                {activeColumns.map(col => (
+                                    <th 
+                                        key={col.id} 
+                                        onClick={col.sortKey ? () => requestSort(col.sortKey as string) : undefined}
+                                        style={{ cursor: col.sortKey ? 'pointer' : 'default', minWidth: col.minWidth }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            {col.label} {col.sortKey && sortConfig?.key === col.sortKey ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                                        </div>
+                                    </th>
+                                ))}
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -290,22 +335,8 @@ export default function TransactionSheetListPage() {
                                                 style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                             />
                                         </td>
-                                        <td style={{ fontWeight: 600, color: '#64748b' }}>#{sheet.id}</td>
-                                        <td className={styles.clientCell}>
-                                            <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>
-                                            {sheet.clientName || '—'}
-                                        </td>
-                                        <td className={styles.dateCell}>
-                                            <Calendar size={13} style={{ display: 'inline', marginRight: 6, opacity: 0.6 }} />
-                                            {dates}
-                                        </td>
-                                        <td>
-                                            <span style={{ fontWeight: 600, color: '#334155' }}>{locationSpecs}</span> total
-                                        </td>
-                                        <td>{sheet.employeeName || '—'}</td>
-                                        <td>{sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleDateString() : '—'}</td>
-                                        <td>{sheet.lastEditBy || '—'}</td>
-                                        <td>
+                                        {activeColumns.map(col => col.renderCell?.(sheet))}
+                                        <td onClick={e => e.stopPropagation()}>
                                             <div className={styles.actions}>
                                                 <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); window.open(`/forms/transaction-sheet/${sheet.id}/view`, '_blank'); }} title="View">
                                                     <Eye size={13} />
@@ -325,6 +356,15 @@ export default function TransactionSheetListPage() {
                     </table>
                 </div>
             )}
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }

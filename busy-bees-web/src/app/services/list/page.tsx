@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Pencil, Trash2, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Filter, ArrowUpDown, MoreVertical } from 'lucide-react';
 import AddServiceModal from '@/components/services/AddServiceModal';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import FacetedFilter from '@/components/ui/FacetedFilter';
 import styles from '../page.module.css';
 import { MOCK_AVAILABLE_SERVICES } from '@/lib/mockData';
@@ -115,7 +117,7 @@ export default function ServiceListPage() {
     };
 
 
-    const getProviderStyle = (providerName: string) => {
+    const getProviderStyle = React.useCallback((providerName: string) => {
         if (!providerName || providerName === 'Unassigned') return { backgroundColor: '#94a3b8', color: '#ffffff' };
 
         const pObj = providers.find(p => p.name === providerName);
@@ -127,7 +129,50 @@ export default function ServiceListPage() {
         for (let i = 0; i < providerName.length; i++) hash = providerName.charCodeAt(i) + ((hash << 5) - hash);
         const colors = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e'];
         return { backgroundColor: colors[Math.abs(hash) % colors.length], color: '#ffffff' };
-    };
+    }, [providers]);
+
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { 
+            id: 'serviceId', 
+            label: 'Service ID', 
+            sortKey: 'serviceId', 
+            renderCell: (service: any) => (
+                <td key="serviceId">
+                    <span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span>
+                </td>
+            )
+        },
+        { 
+            id: 'name', 
+            label: 'Service Name', 
+            sortKey: 'name', 
+            renderCell: (service: any) => (
+                <td key="name">
+                    <span style={{ color: 'var(--text-light)' }}>{service.name}</span>
+                </td>
+            )
+        },
+        { 
+            id: 'provider', 
+            label: 'Service Provider', 
+            sortKey: 'provider', 
+            renderCell: (service: any) => (
+                <td key="provider">
+                    <span
+                        className={styles.serviceBubble}
+                        style={getProviderStyle(service.provider || 'Unassigned')}
+                    >
+                        {service.provider || 'Unassigned'}
+                    </span>
+                </td>
+            )
+        }
+    ], [getProviderStyle, styles]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('services_list_table_config', COLUMNS);
+
 
     // Apply Advanced Filters
     let filteredServices = useDataFilter({
@@ -179,6 +224,10 @@ export default function ServiceListPage() {
                         <Filter size={16} color="currentColor" />
                         <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
                     </button>
+
+                    <button className={styles.filterBtn} onClick={() => setShowSettingsDrawer(true)} title="Page Settings" style={{ padding: '8px' }}>
+                        <MoreVertical size={20} />
+                    </button>
                 </div>
             </div>
 
@@ -227,24 +276,18 @@ export default function ServiceListPage() {
                                     style={{ cursor: 'pointer' }}
                                 />
                             </th>
-                            <th onClick={() => handleSort('serviceId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Service ID
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'serviceId' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('name')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Service Name
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'name' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('provider')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Service Provider
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'provider' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
+                            {activeColumns.map(col => (
+                                <th 
+                                    key={col.id} 
+                                    onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined} 
+                                    style={{ minWidth: col.minWidth, cursor: col.sortKey ? 'pointer' : 'default', userSelect: 'none' }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {col.label}
+                                        {col.sortKey && <ArrowUpDown size={14} color={sortConfig?.key === col.sortKey ? 'var(--primary)' : 'var(--text-secondary-light)'} />}
+                                    </div>
+                                </th>
+                            ))}
                             <th style={{ width: '100px', textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
@@ -264,20 +307,7 @@ export default function ServiceListPage() {
                                         style={{ cursor: 'pointer' }}
                                     />
                                 </td>
-                                <td>
-                                    <span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span>
-                                </td>
-                                <td>
-                                    <span style={{ color: 'var(--text-light)' }}>{service.name}</span>
-                                </td>
-                                <td>
-                                    <span
-                                        className={styles.serviceBubble}
-                                        style={getProviderStyle(service.provider || 'Unassigned')}
-                                    >
-                                        {service.provider || 'Unassigned'}
-                                    </span>
-                                </td>
+                                {activeColumns.map(col => col.renderCell?.(service))}
                                 <td>
                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                         <button
@@ -318,6 +348,16 @@ export default function ServiceListPage() {
                     setEditingService(null);
                 }}
                 onSave={handleSaveService}
+            />
+
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
             />
         </div>
     );

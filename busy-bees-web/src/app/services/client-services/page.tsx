@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Clock, Filter, ArrowUpDown, Trash2 } from 'lucide-react';
+import { Search, Clock, Filter, ArrowUpDown, Trash2, MoreVertical } from 'lucide-react';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
 import FilterDrawer from '@/components/ui/FilterDrawer';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import FacetedFilter from '@/components/ui/FacetedFilter';
 import styles from '../page.module.css';
 import { dbClient } from '@/lib/dbClient';
@@ -29,6 +31,22 @@ export default function ClientServicesPage() {
         }
         setSortConfig({ key, direction });
     };
+
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { id: 'serviceId', label: 'Service ID', sortKey: 'serviceId', renderCell: (service: any) => <td key="serviceId"><span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span></td> },
+        { id: 'clientId', label: 'Client ID', sortKey: 'clientId', renderCell: (service: any) => <td key="clientId"><span style={{ color: 'var(--text-secondary-light)' }}>{service.clientId}</span></td> },
+        { id: 'childName', label: "Child's Name", sortKey: 'childName', renderCell: (service: any) => <td key="childName"><span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{service.childName}</span></td> },
+        { id: 'type', label: 'Services Type', sortKey: 'type', renderCell: (service: any) => <td key="type"><span style={{ color: 'var(--text-light)' }}>{service.type}</span></td> },
+        { id: 'provider', label: 'Service Provider', sortKey: 'provider', renderCell: (service: any) => <td key="provider"><span style={{ color: 'var(--text-secondary-light)' }}>{service.provider}</span></td> },
+        { id: 'hours', label: 'Services Hours', sortKey: 'hours', renderCell: (service: any) => <td key="hours"><span className={styles.durationBadge}><Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />{service.hours}</span></td> },
+        { id: 'hoursUsed', label: 'Hours Used', renderCell: (service: any) => <td key="hoursUsed"><span className={styles.durationBadge} style={{ backgroundColor: 'var(--background-light)', color: 'var(--text-secondary-light)' }}><Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />0h</span></td> },
+        { id: 'remainHours', label: 'Remain Hours', renderCell: (service: any) => <td key="remainHours"><span className={styles.durationBadge} style={{ backgroundColor: 'rgba(52, 199, 89, 0.1)', color: 'var(--success)' }}><Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />{service.hours}</span></td> }
+    ], [styles]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('client_services_table_config', COLUMNS);
+
 
     useEffect(() => {
         // Fetch both resources in parallel from the shared database
@@ -164,6 +182,9 @@ export default function ClientServicesPage() {
                     <Filter size={16} color="currentColor" />
                     <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
                 </button>
+                <button className={styles.filterBtn} onClick={() => setShowSettingsDrawer(true)} title="Page Settings" style={{ padding: '8px' }}>
+                    <MoreVertical size={20} />
+                </button>
             </div>
 
             {/* Filter Drawer Panel */}
@@ -213,44 +234,18 @@ export default function ClientServicesPage() {
                                     style={{ cursor: 'pointer' }}
                                 />
                             </th>
-                            <th onClick={() => handleSort('serviceId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Service ID
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'serviceId' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('clientId')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Client ID
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'clientId' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('childName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Child's Name
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'childName' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('type')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Services Type
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'type' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('provider')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Service Provider
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'provider' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th onClick={() => handleSort('hours')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Services Hours
-                                    <ArrowUpDown size={14} color={sortConfig?.key === 'hours' ? 'var(--primary)' : 'var(--text-secondary-light)'} />
-                                </div>
-                            </th>
-                            <th>Hours Used</th>
-                            <th>Remain Hours</th>
+                            {activeColumns.map(col => (
+                                <th 
+                                    key={col.id} 
+                                    onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined} 
+                                    style={{ minWidth: col.minWidth, cursor: col.sortKey ? 'pointer' : 'default', userSelect: 'none' }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {col.label}
+                                        {col.sortKey && <ArrowUpDown size={14} color={sortConfig?.key === col.sortKey ? 'var(--primary)' : 'var(--text-secondary-light)'} />}
+                                    </div>
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
@@ -270,39 +265,7 @@ export default function ClientServicesPage() {
                                             style={{ cursor: 'pointer' }}
                                         />
                                     </td>
-                                    <td>
-                                        <span style={{ fontWeight: 600, color: 'var(--text-light)' }}>{service.serviceId}</span>
-                                    </td>
-                                    <td>
-                                        <span style={{ color: 'var(--text-secondary-light)' }}>{service.clientId}</span>
-                                    </td>
-                                    <td>
-                                        <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{service.childName}</span>
-                                    </td>
-                                    <td>
-                                        <span style={{ color: 'var(--text-light)' }}>{service.type}</span>
-                                    </td>
-                                    <td>
-                                        <span style={{ color: 'var(--text-secondary-light)' }}>{service.provider}</span>
-                                    </td>
-                                    <td>
-                                        <span className={styles.durationBadge}>
-                                            <Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                                            {service.hours}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={styles.durationBadge} style={{ backgroundColor: 'var(--background-light)', color: 'var(--text-secondary-light)' }}>
-                                            <Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                                            0h
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={styles.durationBadge} style={{ backgroundColor: 'rgba(52, 199, 89, 0.1)', color: 'var(--success)' }}>
-                                            <Clock size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                                            {service.hours}
-                                        </span>
-                                    </td>
+                                    {activeColumns.map(col => col.renderCell?.(service))}
                                 </tr>
                             ))
                         ) : (
@@ -318,6 +281,15 @@ export default function ClientServicesPage() {
                     Showing {filteredServices.length} rows
                 </div>
             </div>
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }

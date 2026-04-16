@@ -7,6 +7,8 @@ import {
     MapPin, X, ChevronRight, Briefcase, Hash
 } from 'lucide-react';
 import { useDataFilter, FilterRule, MatchType } from '@/hooks/useDataFilter';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import FilterDrawer from '@/components/ui/FilterDrawer';
 import styles from './page.module.css';
 import { dbClient } from '@/lib/dbClient';
@@ -154,6 +156,133 @@ export default function SessionSummaryPage() {
         <ArrowUpDown size={14} color={sortConfig?.key === col ? 'var(--primary)' : 'var(--text-secondary-light)'} />
     );
 
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = useMemo(() => [
+        { 
+            id: 'id', 
+            label: 'Session ID', 
+            sortKey: 'id',
+            renderCell: (session: any) => (
+                <td key={`id-${session.id}`}>
+                    <span style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace', fontSize: '13px' }}>
+                        {session.sessionId}
+                    </span>
+                </td>
+            )
+        },
+        {
+            id: 'startTime',
+            label: 'Date & Time',
+            sortKey: 'startTime',
+            renderCell: (session: any) => {
+                const { date, time } = formatDateTime(session.startTime);
+                return (
+                <td key={`startTime-${session.id}`}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Calendar size={14} color="var(--text-secondary-light)" />
+                        <div>
+                            <div style={{ fontWeight: 500 }}>{date}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{time}</div>
+                        </div>
+                    </div>
+                </td>
+                );
+            }
+        },
+        {
+            id: 'employeeName',
+            label: 'Employee',
+            sortKey: 'employeeName',
+            renderCell: (session: any) => (
+                <td key={`employeeName-${session.id}`}>
+                    <div style={{ fontWeight: 500 }}>{session.employeeName}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{session.employeeId}</div>
+                </td>
+            )
+        },
+        {
+            id: 'clientName',
+            label: 'Client',
+            sortKey: 'clientName',
+            renderCell: (session: any) => (
+                <td key={`clientName-${session.id}`}>
+                    <div style={{ fontWeight: 500 }}>{session.clientName}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{session.clientId}</div>
+                </td>
+            )
+        },
+        {
+            id: 'serviceType',
+            label: 'Service Type',
+            sortKey: 'serviceType',
+            renderCell: (session: any) => <td key={`serviceType-${session.id}`}>{session.serviceType}</td>
+        },
+        {
+            id: 'durationSeconds',
+            label: 'Duration',
+            sortKey: 'durationSeconds',
+            renderCell: (session: any) => (
+                <td key={`durationSeconds-${session.id}`}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={14} color="var(--text-secondary-light)" />
+                        {formatDuration(session.durationSeconds)}
+                    </div>
+                </td>
+            )
+        },
+        {
+            id: 'forms',
+            label: 'Forms',
+            renderCell: (session: any) => (
+                <td key={`forms-${session.id}`}>
+                    {session.documents.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            {session.documents.map((doc: any, i: number) => (
+                                <span key={i} className={styles.formBubble}>
+                                    <FileText size={12} />{doc.type}
+                                </span>
+                            ))}
+                        </div>
+                    ) : <span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>—</span>}
+                </td>
+            )
+        },
+        {
+            id: 'notes',
+            label: 'Notes',
+            renderCell: (session: any) => (
+                <td key={`notes-${session.id}`}>
+                    {session.notes ? (
+                        <span className={styles.notesPreview} title={session.notes}>
+                            {session.notes.length > 50 ? session.notes.slice(0, 50) + '…' : session.notes}
+                        </span>
+                    ) : (
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>—</span>
+                    )}
+                </td>
+            )
+        },
+        {
+            id: 'status',
+            label: 'Status',
+            sortKey: 'status',
+            renderCell: (session: any) => (
+                <td key={`status-${session.id}`}>
+                    <span className={`${styles.statusBadge} ${
+                        session.status === 'active' ? styles.active : 
+                        session.status === 'cancelled' ? styles.cancelled : styles.completed
+                    }`}>
+                        {session.status === 'active' ? 'Active' : 
+                         session.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+                    </span>
+                </td>
+            )
+        }
+    ], []);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('session_summary_table_config', COLUMNS);
+
     return (
         <div className={styles.container}>
             {/* Toolbar */}
@@ -177,6 +306,9 @@ export default function SessionSummaryPage() {
                     <button className={styles.filterBtn} onClick={() => setShowFilterDrawer(true)}>
                         <Filter size={16} color="currentColor" />
                         <span>Filter {filterRules.length > 0 && `(${filterRules.length})`}</span>
+                    </button>
+                    <button className={styles.filterBtn} style={{ padding: '8px' }} onClick={() => setShowSettingsDrawer(true)} title="Page Settings">
+                        <MoreVertical size={16} color="currentColor" />
                     </button>
                 </div>
             </div>
@@ -213,29 +345,17 @@ export default function SessionSummaryPage() {
                                         style={{ cursor: 'pointer' }}
                                     />
                                 </th>
-                                <th onClick={() => handleSort('id')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Session ID <SortIcon col="id" /></div>
-                                </th>
-                                <th onClick={() => handleSort('startTime')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Date &amp; Time <SortIcon col="startTime" /></div>
-                                </th>
-                                <th onClick={() => handleSort('employeeName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Employee <SortIcon col="employeeName" /></div>
-                                </th>
-                                <th onClick={() => handleSort('clientName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Client <SortIcon col="clientName" /></div>
-                                </th>
-                                <th onClick={() => handleSort('serviceType')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Service Type <SortIcon col="serviceType" /></div>
-                                </th>
-                                <th onClick={() => handleSort('durationSeconds')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Duration <SortIcon col="durationSeconds" /></div>
-                                </th>
-                                <th>Forms</th>
-                                <th>Notes</th>
-                                <th onClick={() => handleSort('status')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Status <SortIcon col="status" /></div>
-                                </th>
+                                {activeColumns.map(col => (
+                                    <th 
+                                        key={col.id} 
+                                        onClick={col.sortKey ? () => handleSort(col.sortKey as string) : undefined} 
+                                        style={{ cursor: col.sortKey ? 'pointer' : 'default', userSelect: 'none', minWidth: col.minWidth }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            {col.label} {col.sortKey && <SortIcon col={col.sortKey} />}
+                                        </div>
+                                    </th>
+                                ))}
                                 <th style={{ textAlign: 'center' }}>Action</th>
                             </tr>
                         </thead>
@@ -266,64 +386,7 @@ export default function SessionSummaryPage() {
                                                 style={{ cursor: 'pointer' }}
                                             />
                                         </td>
-                                        <td>
-                                            <span style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace', fontSize: '13px' }}>
-                                                {session.sessionId}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <Calendar size={14} color="var(--text-secondary-light)" />
-                                                <div>
-                                                    <div style={{ fontWeight: 500 }}>{date}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{time}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 500 }}>{session.employeeName}</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{session.employeeId}</div>
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 500 }}>{session.clientName}</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>{session.clientId}</div>
-                                        </td>
-                                        <td>{session.serviceType}</td>
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Clock size={14} color="var(--text-secondary-light)" />
-                                                {formatDuration(session.durationSeconds)}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {session.documents.length > 0 ? (
-                                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                                    {session.documents.map((doc: any, i: number) => (
-                                                        <span key={i} className={styles.formBubble}>
-                                                            <FileText size={12} />{doc.type}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            ) : <span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>—</span>}
-                                        </td>
-                                        <td>
-                                            {session.notes ? (
-                                                <span className={styles.notesPreview} title={session.notes}>
-                                                    {session.notes.length > 50 ? session.notes.slice(0, 50) + '…' : session.notes}
-                                                </span>
-                                            ) : (
-                                                <span style={{ fontSize: '12px', color: 'var(--text-secondary-light)' }}>—</span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <span className={`${styles.statusBadge} ${
-                                                session.status === 'active' ? styles.active : 
-                                                session.status === 'cancelled' ? styles.cancelled : styles.completed
-                                            }`}>
-                                                {session.status === 'active' ? 'Active' : 
-                                                 session.status === 'cancelled' ? 'Cancelled' : 'Completed'}
-                                            </span>
-                                        </td>
+                                        {activeColumns.map(col => col.renderCell?.(session))}
                                         <td onClick={e => e.stopPropagation()}>
                                             <div className={styles.actionMenuContainer}>
                                                 <button className={styles.actionBtn}
@@ -535,6 +598,16 @@ export default function SessionSummaryPage() {
                     </aside>
                 )}
             </div>
+
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }

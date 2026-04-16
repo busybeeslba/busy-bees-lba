@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, BarChart2, Calendar, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, BarChart2, Calendar, Eye, MoreVertical } from 'lucide-react';
+import React from 'react';
+import { useTableSettings, ColumnDef } from '@/hooks/useTableSettings';
+import TableSettingsDrawer from '@/components/ui/TableSettingsDrawer';
 import styles from './page.module.css';
 import { dbClient } from '@/lib/dbClient';
 
@@ -93,6 +96,34 @@ export default function MassTrialListPage() {
         return totalTrials > 0 ? Math.round(totalPlus / totalTrials * 100) : null;
     };
 
+    const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+
+    const COLUMNS: ColumnDef<any>[] = React.useMemo(() => [
+        { id: 'clientName', label: 'Client', renderCell: (sheet: any) => <td key="clientName" className={styles.clientCell} onClick={() => router.push(`/forms/mass-trial/${sheet.id}`)}><span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>{sheet.clientName || '—'}</td> },
+        { id: 'program', label: 'Program / STO', renderCell: (sheet: any) => <td key="program"><span className={styles.programChip}>{sheet.program || '—'}</span></td> },
+        { id: 'sto', label: 'STOs', renderCell: (sheet: any) => <td key="sto">{getStepCount(sheet)}</td> },
+        { id: 'sessions', label: 'Sessions', renderCell: (sheet: any) => { const c = getSessionCount(sheet); return <td key="sessions"><span className={styles.sessionCountBadge}><Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />{c} day{c !== 1 ? 's' : ''}</span></td> } },
+        { id: 'lastSession', label: 'Last Session', renderCell: (sheet: any) => { const last = getLastSession(sheet); return <td key="lastSession" className={styles.dateCell}>{last ? new Date(last.date + 'T12:00:00').toLocaleDateString() : '—'}</td> } },
+        { id: 'lastEmployee', label: 'Last Employee', renderCell: (sheet: any) => { const last = getLastSession(sheet); return <td key="lastEmployee">{last?.employee || '—'}</td> } },
+        { id: 'avgPct', label: 'Avg % Correct', renderCell: (sheet: any) => {
+            const pct = getAvgPct(sheet);
+            return <td key="avgPct" onClick={e => e.stopPropagation()}>
+                {pct !== null ? (
+                    <span style={{
+                        display: 'inline-block', background: pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#f0fdfa' : '#fef2f2',
+                        color: pct >= 80 ? '#15803d' : pct >= 60 ? '#0f766e' : '#dc2626',
+                        border: `1px solid ${pct >= 80 ? '#bbf7d0' : pct >= 60 ? '#99f6e4' : '#fca5a5'}`,
+                        borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 700,
+                    }}>
+                        {pct}%
+                    </span>
+                ) : <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>}
+            </td>
+        } }
+    ], [router]);
+
+    const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('mass_trial_forms_table_config', COLUMNS);
+
     return (
         <div className={styles.page}>
             {/* Header */}
@@ -104,27 +135,39 @@ export default function MassTrialListPage() {
                         <p className={styles.pageSubtitle}>Discrete Trial Training — 5 trials per STO per session</p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div>
                     {selectedIds.length > 0 && (
                         <button className={styles.deleteBtn} onClick={handleBulkDelete} style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Trash2 size={16} /> Delete Selected ({selectedIds.length})
                         </button>
                     )}
-                    <button className={styles.addBtn} onClick={() => router.push('/forms/mass-trial/new')}>
-                        <Plus size={16} /> Add New
-                    </button>
                 </div>
             </div>
 
             {/* Search */}
-            <div className={styles.toolbar}>
-                <input
-                    className={styles.searchInput}
-                    placeholder="Search by client or program…"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                />
-                <span className={styles.countBadge}>{filtered.length} sheet{filtered.length !== 1 ? 's' : ''}</span>
+            <div className={styles.toolbar} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                        className={styles.searchInput}
+                        placeholder="Search by client or program…"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                    <span className={styles.countBadge}>{filtered.length} sheet{filtered.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
+                    <button className={styles.addBtn} onClick={() => router.push('/forms/mass-trial/new')}>
+                        <Plus size={16} /> Add New
+                    </button>
+                    <button 
+                        className={styles.addBtn} 
+                        style={{ background: 'transparent', color: 'var(--text-secondary-light)', border: '1px solid var(--border-light)', padding: '6px', width: 'auto' }} 
+                        onClick={() => setShowSettingsDrawer(true)} 
+                        title="Page Settings"
+                    >
+                        <MoreVertical size={20} />
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
@@ -147,21 +190,21 @@ export default function MassTrialListPage() {
                                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                     />
                                 </th>
-                                <th>Client</th>
-                                <th>Program / STO</th>
-                                <th>STOs</th>
-                                <th>Sessions</th>
-                                <th>Last Session</th>
-                                <th>Last Employee</th>
-                                <th>Avg % Correct</th>
+                                {activeColumns.map(col => (
+                                    <th 
+                                        key={col.id}
+                                        style={{ minWidth: col.minWidth }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            {col.label}
+                                        </div>
+                                    </th>
+                                ))}
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filtered.map(sheet => {
-                                const last = getLastSession(sheet);
-                                const sessionCount = getSessionCount(sheet);
-                                const pct = getAvgPct(sheet);
                                 return (
                                     <tr key={sheet.id} onClick={(e) => { 
                                         // If clicking a row and it's not on a button, navigate or toggle selection 
@@ -177,34 +220,7 @@ export default function MassTrialListPage() {
                                                 style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
                                             />
                                         </td>
-                                        <td className={styles.clientCell} onClick={() => router.push(`/forms/mass-trial/${sheet.id}`)}>
-                                            <span className={styles.avatar}>{(sheet.clientName || '?')[0]}</span>
-                                            {sheet.clientName || '—'}
-                                        </td>
-                                        <td><span className={styles.programChip}>{sheet.program || '—'}</span></td>
-                                        <td>{getStepCount(sheet)}</td>
-                                        <td>
-                                            <span className={styles.sessionCountBadge}>
-                                                <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
-                                                {sessionCount} day{sessionCount !== 1 ? 's' : ''}
-                                            </span>
-                                        </td>
-                                        <td className={styles.dateCell}>
-                                            {last ? new Date(last.date + 'T12:00:00').toLocaleDateString() : '—'}
-                                        </td>
-                                        <td>{last?.employee || '—'}</td>
-                                        <td onClick={e => e.stopPropagation()}>
-                                            {pct !== null ? (
-                                                <span style={{
-                                                    display: 'inline-block', background: pct >= 80 ? '#f0fdf4' : pct >= 60 ? '#f0fdfa' : '#fef2f2',
-                                                    color: pct >= 80 ? '#15803d' : pct >= 60 ? '#0f766e' : '#dc2626',
-                                                    border: `1px solid ${pct >= 80 ? '#bbf7d0' : pct >= 60 ? '#99f6e4' : '#fca5a5'}`,
-                                                    borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 700,
-                                                }}>
-                                                    {pct}%
-                                                </span>
-                                            ) : <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>}
-                                        </td>
+                                        {activeColumns.map(col => col.renderCell?.(sheet))}
                                         <td onClick={e => e.stopPropagation()}>
                                             <div className={styles.actions}>
                                                 <button className={styles.editBtn} title="View" onClick={(e) => { e.stopPropagation(); window.open(`/forms/mass-trial/${sheet.id}/view`, '_blank'); }}>
@@ -225,6 +241,15 @@ export default function MassTrialListPage() {
                     </table>
                 </div>
             )}
+            <TableSettingsDrawer 
+                isOpen={showSettingsDrawer}
+                onClose={() => setShowSettingsDrawer(false)}
+                columns={allColumnsOrdered}
+                hiddenColumnIds={hiddenColumnIds}
+                onToggleVisibility={toggleColumnVisibility}
+                onMoveColumn={moveColumn}
+                onReset={resetToDefaults}
+            />
         </div>
     );
 }
