@@ -152,7 +152,7 @@ export default function ClientsPage() {
     const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
 
     const COLUMNS: ColumnDef<any>[] = useMemo(() => {
-        const baseCols = [
+        const baseCols: ColumnDef<any>[] = [
             { id: 'clientId', label: 'Client ID', sortKey: 'clientId', renderCell: (client: any) => <td key="clientId" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>CLI-{client.clientId}</span></td> },
             { id: 'kidsName', label: 'Child Name', sortKey: 'kidsName', renderCell: (client: any) => <td key="kidsName" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.clientName}>{client.kidsName}</span></td> },
             { id: 'age', label: 'Age', sortKey: 'dob', renderCell: (client: any) => <td key="age" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}><span className={styles.cellText}>{calculateAge(client.dob)}</span></td> },
