@@ -204,13 +204,39 @@ export default function ClientDashboardPage() {
 
 
     const handleSaveClient = async (data: any) => {
+        const primaryAddress = data.addresses?.find((a: any) => a.isPrimary) || data.addresses?.[0];
+        const primaryPhone = data.phones?.find((p: any) => p.isPrimary) || data.phones?.[0];
+        const primaryEmail = data.emails?.find((e: any) => e.isPrimary) || data.emails?.[0];
+
+        const dbPayload = {
+            id: client?.id || data.id || Date.now(),
+            name: `${data.firstName} ${data.lastName}`,
+            kidsName: `${data.firstName} ${data.lastName}`,
+            guardian: data.guardian || '',
+            guardianLastName: data.guardianLastName || '',
+            address: primaryAddress?.value || '',
+            phone: primaryPhone?.value || '',
+            dob: data.dob || '',
+            email: primaryEmail?.value || '',
+            teacher: data.teacher || '',
+            services: data.services,
+            assignedPrograms: data.assignedPrograms || '',
+            programCategories: data.programCategories || [],
+            iepMeeting: data.iepMeeting || '',
+            status: data.status || 'Active',
+            addresses: data.addresses,
+            phones: data.phones,
+            emails: data.emails,
+        };
+
         try {
             if (client?.id) {
-                await dbClient.patch(`/clients/${client.id}`, data);
+                await dbClient.patch(`/clients/${client.id}`, dbPayload);
             } else {
-                await dbClient.post('/clients', data);
+                await dbClient.post('/clients', dbPayload);
             }
-            setClient({ ...client, ...data });
+            // Update local state with the mapped db payload to ensure immediate UI consistency
+            setClient({ ...client, ...dbPayload });
         } catch (e) {
             console.error('Failed to save client', e);
         }
@@ -465,12 +491,27 @@ export default function ClientDashboardPage() {
                     {clientServices.map((srv: any, i: number) => (
                         <tr key={i}>
                             <td>
-                                <span className={styles.providerChip}>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                     {(() => {
+                                        if (srv.providerIds && Array.isArray(srv.providerIds) && srv.providerIds.length > 0) {
+                                            return srv.providerIds.map((pid: string, idx: number) => {
+                                                const u = usersList.find((u: any) => u.id === pid);
+                                                return (
+                                                    <span key={idx} className={styles.providerChip}>
+                                                        {u ? `${u.firstName} ${u.lastName}` : getProviderName(srv.serviceId)}
+                                                    </span>
+                                                );
+                                            });
+                                        }
+                                        // Legacy fallback
                                         const user = usersList.find((u: any) => u.id === srv.providerId);
-                                        return user ? `${user.firstName} ${user.lastName}` : getProviderName(srv.serviceId);
+                                        return (
+                                            <span className={styles.providerChip}>
+                                                {user ? `${user.firstName} ${user.lastName}` : getProviderName(srv.serviceId)}
+                                            </span>
+                                        );
                                     })()}
-                                </span>
+                                </div>
                             </td>
                             <td className={styles.srvName}>{getServiceName(srv.serviceId)}</td>
                             <td><span className={styles.hoursBadge}><Clock size={12} /> {srv.hours}</span></td>

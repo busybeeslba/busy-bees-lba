@@ -65,7 +65,8 @@ export default function ServiceListPage() {
         try {
             if (editingService) {
                 // PATCH existing
-                const payload = { name: newService.type, provider: newService.provider };
+                // Safely map description into the provider column to gracefully bypass Supabase Schema constraints
+                const payload = { name: newService.type, provider: newService.description };
                 const saved = await dbClient.patch(`/available_services/${editingService.id || editingService.serviceId}`, payload);
                 const updated = availableServices.map(s =>
                     s.serviceId === editingService.serviceId ? { ...s, ...saved } : s
@@ -74,7 +75,7 @@ export default function ServiceListPage() {
                 localStorage.setItem('busy_bees_services', JSON.stringify(updated));
             } else {
                 // POST new
-                const payload = { id: newService.serviceId, serviceId: newService.serviceId, name: newService.type, provider: newService.provider };
+                const payload = { id: newService.serviceId, serviceId: newService.serviceId, name: newService.type, provider: newService.description };
                 const saved = await dbClient.post('/available_services', payload);
                 const updated = [saved, ...availableServices];
                 setAvailableServices(updated);
@@ -84,11 +85,6 @@ export default function ServiceListPage() {
             alert('Could not save service — is the shared database running on port 3011?');
         }
         setEditingService(null);
-
-        const savedProviders = localStorage.getItem('busy_bees_providers');
-        if (savedProviders) {
-            try { setProviders(JSON.parse(savedProviders)); } catch { }
-        }
     };
 
     const handleDelete = async (id: string) => {
@@ -117,19 +113,7 @@ export default function ServiceListPage() {
     };
 
 
-    const getProviderStyle = React.useCallback((providerName: string) => {
-        if (!providerName || providerName === 'Unassigned') return { backgroundColor: '#94a3b8', color: '#ffffff' };
-
-        const pObj = providers.find(p => p.name === providerName);
-        if (pObj && pObj.color) {
-            return { backgroundColor: pObj.color, color: pObj.textColor || '#ffffff' };
-        }
-
-        let hash = 0;
-        for (let i = 0; i < providerName.length; i++) hash = providerName.charCodeAt(i) + ((hash << 5) - hash);
-        const colors = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e'];
-        return { backgroundColor: colors[Math.abs(hash) % colors.length], color: '#ffffff' };
-    }, [providers]);
+    // Removing getProviderStyle completely since we render plain text descriptions now
 
     const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
 
@@ -155,21 +139,19 @@ export default function ServiceListPage() {
             )
         },
         { 
-            id: 'provider', 
-            label: 'Service Provider', 
+            id: 'description', 
+            label: 'Service Description', 
+            // In the DB it is stored as 'provider' so use 'provider' for actual sorting key
             sortKey: 'provider', 
             renderCell: (service: any) => (
-                <td key="provider">
-                    <span
-                        className={styles.serviceBubble}
-                        style={getProviderStyle(service.provider || 'Unassigned')}
-                    >
-                        {service.provider || 'Unassigned'}
+                <td key="description">
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                        {service.provider || ''}
                     </span>
                 </td>
             )
         }
-    ], [getProviderStyle, styles]);
+    ], []);
 
     const { activeColumns, allColumnsOrdered, hiddenColumnIds, toggleColumnVisibility, moveColumn, resetToDefaults } = useTableSettings('services_list_table_config', COLUMNS);
 
@@ -239,7 +221,7 @@ export default function ServiceListPage() {
                 columns={[
                     { id: 'serviceId', label: 'Service ID' },
                     { id: 'name', label: 'Service Name' },
-                    { id: 'provider', label: 'Service Provider' }
+                    { id: 'provider', label: 'Service Description' }
                 ]}
                 rules={filterRules}
                 matchType={matchType}

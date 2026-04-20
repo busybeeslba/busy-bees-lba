@@ -184,7 +184,13 @@ export default function ClientsPage() {
                     <td key="serviceProvider" onClick={() => router.push(`/clients/${encodeURIComponent(client.clientId)}`)}>
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             {Array.isArray(client.services)
-                                ? Array.from(new Set(client.services.map((s: any) => {
+                                ? Array.from(new Set(client.services.flatMap((s: any) => {
+                                    if (s.providerIds && Array.isArray(s.providerIds) && s.providerIds.length > 0) {
+                                        return s.providerIds.map((pid: string) => {
+                                            const u = usersList.find(u => u.id === pid);
+                                            return u ? `${u.firstName} ${u.lastName}` : getServiceProvider(s.serviceId);
+                                        });
+                                    }
                                     const srvAssignedUser = usersList.find(u => u.id === s.providerId);
                                     return srvAssignedUser ? `${srvAssignedUser.firstName} ${srvAssignedUser.lastName}` : getServiceProvider(s.serviceId);
                                 }))).map((providerName: unknown, idx: number) => (

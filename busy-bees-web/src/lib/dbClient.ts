@@ -9,7 +9,7 @@ export const dbClient = {
         const id = parts[1];
         
         let q: any = supabase.from(table).select('*');
-        if (id) q = q.eq('id', id).single();
+        if (id) q = q.eq('id', id).maybeSingle();
         if (query) {
             const params = new URLSearchParams(query);
             let sortProp = '';

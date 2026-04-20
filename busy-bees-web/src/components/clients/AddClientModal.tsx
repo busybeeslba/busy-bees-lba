@@ -19,6 +19,7 @@ interface ServiceEntry {
     serviceId: string;
     hours: string;
     providerId?: string;
+    providerIds?: string[];
 }
 
 interface AddClientModalProps {
@@ -79,7 +80,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
     // Additional Fields
     const [teacher, setTeacher] = useState('');
     const [clientServices, setClientServices] = useState<ServiceEntry[]>([
-        { id: '1', serviceId: '', hours: '0h' }
+        { id: '1', serviceId: '', hours: '0h', providerIds: [] }
     ]);
     const [assignedPrograms, setAssignedPrograms] = useState('');
     const [iepMeeting, setIepMeeting] = useState('');
@@ -185,13 +186,18 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
             setStatus(initialData.status || 'Active');
             setTeacher(initialData.teacher || '');
             if (initialData.services && Array.isArray(initialData.services)) {
-                setClientServices(initialData.services.length > 0 ? initialData.services : [{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
+                // Ensure legacy providerId scalar fields migrate locally into the providerIds array format on open for safety
+                const mappedServices = initialData.services.length > 0 ? initialData.services.map((s: any) => ({
+                    ...s,
+                    providerIds: s.providerIds || (s.providerId ? [s.providerId] : [])
+                })) : [{ id: '1', serviceId: '', hours: '0h', providerIds: [] }];
+                setClientServices(mappedServices);
             } else if (initialData.services && typeof initialData.services === 'string') {
                 // Fallback for old string format based on name lookup
                 // Complex resolution omitted for brevity, fallback to empty selection
-                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
+                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerIds: [] }]);
             } else {
-                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
+                setClientServices([{ id: '1', serviceId: '', hours: '0h', providerIds: [] }]);
             }
             setAssignedPrograms(initialData.assignedPrograms || '');
             setIepMeeting(initialData.iepMeeting || '');
@@ -234,7 +240,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
             setDob('');
             setStatus('Active');
             setTeacher('');
-            setClientServices([{ id: '1', serviceId: '', hours: '0h', providerId: '' }]);
+            setClientServices([{ id: '1', serviceId: '', hours: '0h', providerIds: [] }]);
             setAssignedPrograms('');
             setIepMeeting('');
             setProgramCategories([]);
@@ -327,7 +333,7 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
     const addServiceEntry = () => {
         setClientServices(prev => [
             ...prev,
-            { id: Date.now().toString(), serviceId: '', hours: '0h', providerId: '' }
+            { id: Date.now().toString(), serviceId: '', hours: '0h', providerIds: [] }
         ]);
     };
 
@@ -429,19 +435,46 @@ export default function AddClientModal({ isOpen, onClose, onSave, initialData }:
                                 </option>
                             ))}
                         </select>
-                        <select
-                            className={styles.select}
-                            style={{ flex: 1.5 }}
-                            value={entry.providerId || ''}
-                            onChange={(e) => updateServiceEntry(entry.id, 'providerId', e.target.value)}
-                        >
-                            <option value="">Select a provider...</option>
-                            {usersList.map(u => (
-                                <option key={u.id} value={u.id}>
-                                    {u.firstName} {u.lastName}
-                                </option>
-                            ))}
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1.5 }}>
+                            <select
+                                className={styles.select}
+                                value=""
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val) {
+                                        const currentIds = entry.providerIds || [];
+                                        if (!currentIds.includes(val)) {
+                                            updateServiceEntry(entry.id, 'providerIds', [...currentIds, val] as any);
+                                        }
+                                    }
+                                }}
+                            >
+                                <option value="">Add a provider...</option>
+                                {usersList.map(u => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.firstName} {u.lastName}
+                                    </option>
+                                ))}
+                            </select>
+                            {(entry.providerIds || []).length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                                    {entry.providerIds!.map((pid: string) => {
+                                        const u = usersList.find(user => user.id === pid);
+                                        return (
+                                            <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '100px', cursor: 'default' }}>
+                                                {u ? `${u.firstName} ${u.lastName}` : 'Unknown'}
+                                                <button type="button" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    updateServiceEntry(entry.id, 'providerIds', entry.providerIds!.filter(id => id !== pid) as any);
+                                                }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0ea5e9', padding: 0, display: 'flex', alignItems: 'center' }}>
+                                                    <X size={10} />
+                                                </button>
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '80px', position: 'relative' }}>
                             <input
                                 type="text"
